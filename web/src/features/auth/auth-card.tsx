@@ -1,5 +1,5 @@
 import { useNavigate } from "@tanstack/react-router";
-import { type FormEvent, useEffect, useRef, useState } from "react";
+import { type FormEvent, useState } from "react";
 import { Button } from "#/components/ui/button";
 import { Input } from "#/components/ui/input";
 import { FieldLabel, Kicker } from "#/components/vtm/text";
@@ -7,8 +7,6 @@ import { authenticate } from "#/lib/auth";
 import { useCharacterStore } from "#/stores/character-store";
 import { usePlayerStore } from "#/stores/player-store";
 import { homeTarget } from "./home-path";
-
-const BUSY_MS = 420;
 
 export function AuthCard({ mode }: { mode: "login" | "signup" }) {
   const navigate = useNavigate();
@@ -18,10 +16,6 @@ export function AuthCard({ mode }: { mode: "login" | "signup" }) {
   const [password, setPassword] = useState("");
   const [password2, setPassword2] = useState("");
   const [error, setError] = useState("");
-  const [busy, setBusy] = useState(false);
-  const timer = useRef<ReturnType<typeof setTimeout>>(undefined);
-
-  useEffect(() => () => clearTimeout(timer.current), []);
 
   const edit =
     (set: (v: string) => void) => (e: { target: { value: string } }) => {
@@ -31,28 +25,20 @@ export function AuthCard({ mode }: { mode: "login" | "signup" }) {
 
   const submit = (e: FormEvent) => {
     e.preventDefault();
-    if (busy) {
+    const err = authenticate({ email, mode, name, password, password2 });
+    if (err) {
+      setError(err);
       return;
     }
-    setBusy(true);
-    setError("");
-    timer.current = setTimeout(() => {
-      setBusy(false);
-      const err = authenticate({ email, mode, name, password, password2 });
-      if (err) {
-        setError(err);
-        return;
-      }
-      setPassword("");
-      const target = homeTarget({
-        criada: useCharacterStore.getState().sheet.criada,
-        user: usePlayerStore.getState().user,
-      });
-      navigate({
-        search: target === "/criar" ? { passo: 1 } : undefined,
-        to: target,
-      });
-    }, BUSY_MS);
+    setPassword("");
+    const target = homeTarget({
+      criada: useCharacterStore.getState().sheet.criada,
+      user: usePlayerStore.getState().user,
+    });
+    navigate({
+      search: target === "/criar" ? { passo: 1 } : undefined,
+      to: target,
+    });
   };
 
   const toggleMode = () => {
@@ -61,11 +47,6 @@ export function AuthCard({ mode }: { mode: "login" | "signup" }) {
     setPassword2("");
     navigate({ search: signup ? {} : { modo: "cadastro" }, to: "/entrar" });
   };
-
-  let primary = signup ? "Criar conta" : "Entrar";
-  if (busy) {
-    primary = "Verificando…";
-  }
 
   return (
     <div className="grid min-h-screen place-items-center px-4 py-8">
@@ -141,12 +122,11 @@ export function AuthCard({ mode }: { mode: "login" | "signup" }) {
           </p>
         ) : null}
         <div className="mt-6 flex flex-col gap-3">
-          <Button className="w-full" disabled={busy} type="submit">
-            {primary}
+          <Button className="w-full" type="submit">
+            {signup ? "Criar conta" : "Entrar"}
           </Button>
           <Button
             className="w-full"
-            disabled={busy}
             onClick={toggleMode}
             type="button"
             variant="outline"
