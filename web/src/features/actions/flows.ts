@@ -1,10 +1,10 @@
 import { settings } from "#/lib/settings";
-import { patchSheet } from "#/lib/store";
 import type { Sheet } from "#/lib/types";
 import { healAggravated, rouseCheck, sleep } from "#/rules/actions";
 import { FEEDING_SOURCES, feed, feedingYield } from "#/rules/feeding";
 import { bloodPotency } from "#/rules/generation";
 import { willpowerMax } from "#/rules/tracks";
+import { patchSheet } from "#/stores/character-store";
 
 export type FlowKind = "rouse" | "sleep" | "agg" | "feed" | "frenzy";
 

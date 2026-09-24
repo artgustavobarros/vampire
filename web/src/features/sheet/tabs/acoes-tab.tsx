@@ -2,8 +2,8 @@ import { Button } from "#/components/ui/button";
 import { Panel } from "#/components/vtm/text";
 import { autoFit } from "#/components/vtm/trait-grid";
 import { useRuleDialog } from "#/features/actions/rule-dialog";
-import { useSheet } from "#/lib/store";
 import { bloodSurgeNote } from "#/rules/actions";
+import { useSheet } from "#/stores/character-store";
 import { CYCLE_HINT, HumanityCompactPanel, TrackPanel } from "../track-panels";
 
 export function AcoesTab() {

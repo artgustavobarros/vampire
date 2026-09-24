@@ -1,9 +1,14 @@
 import { afterEach, describe, expect, it, vi } from "vitest";
-import { authenticate, logout } from "./auth";
-import { store } from "./store";
+import { authenticate, logout } from "#/lib/auth";
+import { patchSheet, useCharacterStore } from "./character-store";
+import { usePlayerStore } from "./player-store";
+import { resetStores } from "./test-utils";
+
+const player = () => usePlayerStore.getState();
+const character = () => useCharacterStore.getState();
 
 afterEach(() => {
-  store.reset();
+  resetStores();
   vi.restoreAllMocks();
 });
 
@@ -20,8 +25,8 @@ describe("contas locais", () => {
     expect(JSON.parse(localStorage.getItem("vtm5.accounts") ?? "{}")).toEqual({
       "ana@exemplo.com": "123",
     });
-    expect(store.get().user).toBe("ana@exemplo.com");
-    expect(store.get().sheet.criada).toBe(false);
+    expect(player().user).toBe("ana@exemplo.com");
+    expect(character().sheet.criada).toBe(false);
   });
 
   it("valida o cadastro", () => {
@@ -77,41 +82,41 @@ describe("contas locais", () => {
       },
       { exampleData: true }
     );
-    expect(store.get().sheet.nome).toBe("Vitória Salles");
-    expect(store.get().sheet.cla).toBe("Ventrue");
+    expect(character().sheet.nome).toBe("Vitória Salles");
+    expect(character().sheet.cla).toBe("Ventrue");
   });
 
   it("sair limpa sessão e ficha", () => {
     signup();
-    store.patch({ nome: "Teste" });
+    patchSheet({ nome: "Teste" });
     logout();
     expect(localStorage.getItem("vtm5.session")).toBeNull();
-    expect(store.get().user).toBeNull();
-    expect(store.get().sheet.nome).toBeUndefined();
+    expect(player().user).toBeNull();
+    expect(character().sheet.nome).toBeUndefined();
   });
 });
 
-describe("store", () => {
+describe("stores", () => {
   it("salva cada patch e recarrega a ficha", () => {
     signup();
-    store.patch({ attrs: { ...store.get().sheet.attrs, Força: 3 } });
-    store.reset();
-    store.restore();
-    expect(store.get().sheet.attrs.Força).toBe(3);
-    expect(store.get().ready).toBe(true);
+    patchSheet({ attrs: { ...character().sheet.attrs, Força: 3 } });
+    resetStores();
+    player().restore();
+    expect(character().sheet.attrs.Força).toBe(3);
+    expect(player().ready).toBe(true);
   });
 
   it("sinaliza alerta de Fome em 5 e 0", () => {
     signup();
-    store.patch({ fome: 4 });
-    expect(store.get().hungerAlert).toBeNull();
-    store.patch({ fome: 5 });
-    expect(store.get().hungerAlert).toBe(5);
-    store.dismissHungerAlert();
-    store.patch({ fome: 5 });
-    expect(store.get().hungerAlert).toBeNull();
-    store.patch({ fome: 0 });
-    expect(store.get().hungerAlert).toBe(0);
+    patchSheet({ fome: 4 });
+    expect(character().hungerAlert).toBeNull();
+    patchSheet({ fome: 5 });
+    expect(character().hungerAlert).toBe(5);
+    character().dismissHungerAlert();
+    patchSheet({ fome: 5 });
+    expect(character().hungerAlert).toBeNull();
+    patchSheet({ fome: 0 });
+    expect(character().hungerAlert).toBe(0);
   });
 
   it("continua funcionando com armazenamento bloqueado", () => {
@@ -121,8 +126,41 @@ describe("store", () => {
     vi.spyOn(Storage.prototype, "getItem").mockImplementation(() => {
       throw new Error("bloqueado");
     });
-    expect(() => store.restore()).not.toThrow();
-    expect(() => store.patch({ nome: "X" })).not.toThrow();
-    expect(store.get().sheet.nome).toBe("X");
+    expect(() => player().restore()).not.toThrow();
+    expect(() => patchSheet({ nome: "X" })).not.toThrow();
+    expect(character().sheet.nome).toBe("X");
+  });
+
+  it("restaura o nome do jogador", () => {
+    signup();
+    resetStores();
+    player().restore();
+    expect(player().user).toBe("ana@exemplo.com");
+    expect(player().name).toBe("Ana");
+  });
+
+  it("restaura só uma vez", () => {
+    player().restore();
+    expect(player().user).toBeNull();
+    localStorage.setItem("vtm5.session", "ana@exemplo.com");
+    player().restore();
+    expect(player().user).toBeNull();
+  });
+
+  it("sair limpa jogador e personagem", () => {
+    signup();
+    patchSheet({ fome: 5, nome: "Teste" });
+    logout();
+    expect(player().name).toBeNull();
+    expect(character().owner).toBeNull();
+    expect(character().hungerAlert).toBeNull();
+    expect(character().sheet.nome).toBeUndefined();
+  });
+
+  it("alteração sem jogador fica só em memória", () => {
+    const setItem = vi.spyOn(Storage.prototype, "setItem");
+    patchSheet({ nome: "X" });
+    expect(character().sheet.nome).toBe("X");
+    expect(setItem).not.toHaveBeenCalled();
   });
 });

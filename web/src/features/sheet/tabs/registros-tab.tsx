@@ -5,8 +5,8 @@ import { Panel } from "#/components/vtm/text";
 import { autoFit } from "#/components/vtm/trait-grid";
 import { bloodPotencyRow } from "#/data/blood-potency";
 import { BIO_FIELDS, LONG_FIELDS } from "#/data/fields";
-import { patchSheet, useSheet } from "#/lib/store";
 import { bloodPotency, potencyNote } from "#/rules/generation";
+import { patchSheet, useSheet } from "#/stores/character-store";
 
 const TITLE =
   "mt-0 mb-3 font-label font-semibold text-ink text-xs uppercase leading-none tracking-[.12em]";

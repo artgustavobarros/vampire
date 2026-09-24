@@ -1,83 +1,127 @@
-import { useId } from "react";
+import { Controller, useWatch } from "react-hook-form";
+import {
+  Field,
+  FieldError,
+  FieldGroup,
+  FieldLabel,
+} from "#/components/ui/field";
 import { Input } from "#/components/ui/input";
 import { NativeSelect } from "#/components/vtm/fields";
-import { FieldLabel } from "#/components/vtm/text";
 import { autoFit } from "#/components/vtm/trait-grid";
 import { REQUIRED_SPECIALTY_SKILLS, SKILLS } from "#/data/traits";
-import { patchSheet, useSheet } from "#/lib/store";
-import type { Sheet } from "#/lib/types";
+import { useWizardForm } from "./form-fields";
 
-/** Grava a especialidade principal (posição 0) da habilidade. */
-function setPrimary(sheet: Sheet, skill: string | undefined, text: string) {
-  if (!skill) {
-    return;
-  }
-  const espec = sheet.espec ?? {};
-  const cur = (espec[skill] ?? []).slice();
-  cur[0] = text;
-  patchSheet({
-    espec: { ...espec, [skill]: cur.filter((v, i) => i === 0 || v) },
-  });
+/** Troca a especialidade principal (posição 0), mantendo as demais. */
+function withPrimary(current: string[] | undefined, text: string): string[] {
+  const next = (current ?? []).slice();
+  next[0] = text;
+  return next.filter((v, i) => i === 0 || v);
+}
+
+function SpecialtyField({
+  skill,
+  label,
+  placeholder,
+}: {
+  skill: string;
+  label: string;
+  placeholder: string;
+}) {
+  const { control } = useWizardForm();
+  const id = `wizard-espec-${skill}`;
+  return (
+    <Controller
+      control={control}
+      name={`espec.${skill}`}
+      render={({ field, fieldState }) => (
+        <Field data-invalid={fieldState.invalid}>
+          <FieldLabel htmlFor={id}>{label}</FieldLabel>
+          <Input
+            aria-invalid={fieldState.invalid}
+            id={id}
+            name={field.name}
+            onBlur={field.onBlur}
+            onChange={(e) =>
+              field.onChange(withPrimary(field.value, e.target.value))
+            }
+            placeholder={placeholder}
+            ref={field.ref}
+            value={field.value?.[0] ?? ""}
+          />
+          <FieldError errors={[fieldState.error]} />
+        </Field>
+      )}
+    />
+  );
 }
 
 export function Step4Specialties() {
-  const sheet = useSheet();
-  const skillId = useId();
-  const specId = useId();
+  const { control } = useWizardForm();
+  const [skills, especLivre] = useWatch({
+    control,
+    name: ["skills", "especLivre"],
+  });
   const required = REQUIRED_SPECIALTY_SKILLS.filter(
-    (k) => (sheet.skills[k] || 0) > 0
+    (k) => (skills[k] || 0) > 0
   );
-  const withDots = SKILLS.filter((k) => (sheet.skills[k] || 0) > 0);
+  const withDots = SKILLS.filter((k) => (skills[k] || 0) > 0);
 
   if (required.length) {
     return (
-      <>
+      <FieldGroup>
         {required.map((name) => (
-          <div className="border-line-soft border-b py-3" key={name}>
-            <FieldLabel className="mb-0" htmlFor={`${specId}-${name}`}>
-              {name} · nível {sheet.skills[name]}
-            </FieldLabel>
-            <Input
-              className="mt-2"
-              id={`${specId}-${name}`}
-              onChange={(e) => setPrimary(sheet, name, e.target.value)}
-              placeholder="Qual especialidade?"
-              value={sheet.espec?.[name]?.[0] ?? ""}
-            />
-          </div>
+          <SpecialtyField
+            key={name}
+            label={`${name} · nível ${skills[name]}`}
+            placeholder="Qual especialidade?"
+            skill={name}
+          />
         ))}
-      </>
+      </FieldGroup>
     );
   }
 
   return (
     <div className="grid gap-x-5 gap-y-4" style={autoFit(220)}>
-      <div>
-        <FieldLabel htmlFor={skillId}>Perícia</FieldLabel>
-        <NativeSelect
-          id={skillId}
-          onChange={(e) => patchSheet({ especLivre: e.target.value })}
-          value={sheet.especLivre ?? ""}
-        >
-          <option value="">— escolher perícia —</option>
-          {withDots.map((o) => (
-            <option key={o} value={o}>
-              {o}
-            </option>
-          ))}
-        </NativeSelect>
-      </div>
-      <div>
-        <FieldLabel htmlFor={specId}>Especialidade</FieldLabel>
-        <Input
-          id={specId}
-          onChange={(e) => setPrimary(sheet, sheet.especLivre, e.target.value)}
+      <Controller
+        control={control}
+        name="especLivre"
+        render={({ field, fieldState }) => (
+          <Field data-invalid={fieldState.invalid}>
+            <FieldLabel htmlFor="wizard-especLivre">Perícia</FieldLabel>
+            <NativeSelect
+              {...field}
+              aria-invalid={fieldState.invalid}
+              id="wizard-especLivre"
+            >
+              <option value="">— escolher perícia —</option>
+              {withDots.map((o) => (
+                <option key={o} value={o}>
+                  {o}
+                </option>
+              ))}
+            </NativeSelect>
+            <FieldError errors={[fieldState.error]} />
+          </Field>
+        )}
+      />
+      {especLivre ? (
+        <SpecialtyField
+          key={especLivre}
+          label="Especialidade"
           placeholder="ex. Interrogatório"
-          value={
-            (sheet.especLivre && sheet.espec?.[sheet.especLivre]?.[0]) || ""
-          }
+          skill={especLivre}
         />
-      </div>
+      ) : (
+        <Field data-disabled>
+          <FieldLabel htmlFor="wizard-espec-livre">Especialidade</FieldLabel>
+          <Input
+            disabled
+            id="wizard-espec-livre"
+            placeholder="Escolha a perícia primeiro"
+          />
+        </Field>
+      )}
     </div>
   );
 }

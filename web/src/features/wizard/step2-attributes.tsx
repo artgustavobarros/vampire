@@ -1,9 +1,11 @@
+import { Controller } from "react-hook-form";
+import { FieldError, FieldLegend, FieldSet } from "#/components/ui/field";
 import { TraitGrid } from "#/components/vtm/trait-grid";
 import { ATTRIBUTE_GROUPS } from "#/data/traits";
-import { patchSheet, useSheet } from "#/lib/store";
 import { cn } from "#/lib/utils";
 import { vitalityMax, willpowerMax } from "#/rules/tracks";
 import { attributeQuotas } from "#/rules/wizard";
+import { useWizardForm } from "./form-fields";
 
 const QUOTA_COLOR = {
   done: "text-moss",
@@ -12,49 +14,64 @@ const QUOTA_COLOR = {
 } as const;
 
 export function Step2Attributes() {
-  const sheet = useSheet();
-  const { quotas, summary } = attributeQuotas(sheet.attrs);
+  const { control } = useWizardForm();
   return (
-    <>
-      <div className="mb-3 flex flex-wrap gap-2">
-        {quotas.map((q) => (
-          <div
-            className={cn(
-              "min-w-24 border bg-wash p-3",
-              q.state === "over" ? "border-blood" : "border-line"
-            )}
-            key={q.level}
+    <Controller
+      control={control}
+      name="attrs"
+      render={({ field, fieldState }) => {
+        const attrs = field.value;
+        const { quotas, summary } = attributeQuotas(attrs);
+        return (
+          <FieldSet
+            className="outline-none"
+            data-invalid={fieldState.invalid}
+            ref={field.ref}
+            tabIndex={-1}
           >
-            <div className="font-label font-semibold text-ink-soft text-xs uppercase leading-none tracking-widest">
-              {q.label}
+            <FieldLegend className="sr-only">Atributos</FieldLegend>
+            <div className="flex flex-wrap gap-2">
+              {quotas.map((q) => (
+                <div
+                  className={cn(
+                    "min-w-24 border bg-wash p-3",
+                    q.state === "over" ? "border-blood" : "border-line"
+                  )}
+                  key={q.level}
+                >
+                  <div className="font-label font-semibold text-ink-soft text-xs uppercase leading-none tracking-widest">
+                    {q.label}
+                  </div>
+                  <div
+                    className={cn(
+                      "mt-2 font-label font-semibold text-2xl leading-none",
+                      QUOTA_COLOR[q.state]
+                    )}
+                  >
+                    {q.remaining}/{q.target}
+                  </div>
+                </div>
+              ))}
             </div>
-            <div
-              className={cn(
-                "mt-2 font-label font-semibold text-2xl leading-none",
-                QUOTA_COLOR[q.state]
-              )}
-            >
-              {q.remaining}/{q.target}
+            <div className="mb-3 text-base opacity-70">
+              Todos começam com 2. Escolha um atributo para 4, três para 3 e um
+              para 1; os quatro restantes ficam em 2. {summary}
             </div>
-          </div>
-        ))}
-      </div>
-      <div className="mb-6 text-base opacity-70">
-        Todos começam com 2. Escolha um atributo para 4, três para 3 e um para
-        1; os quatro restantes ficam em 2. {summary}
-      </div>
-      <TraitGrid
-        groups={ATTRIBUTE_GROUPS}
-        minColumn={232}
-        onChange={(name, v) =>
-          patchSheet({ attrs: { ...sheet.attrs, [name]: v } })
-        }
-        strongLabels
-        values={sheet.attrs}
-      />
-      <div className="mt-5 border-line border-t pt-3 font-label font-semibold text-ink-soft text-xs uppercase leading-none tracking-widest">
-        Vitalidade {vitalityMax(sheet)} · Força de Vontade {willpowerMax(sheet)}
-      </div>
-    </>
+            <FieldError className="mb-3" errors={[fieldState.error]} />
+            <TraitGrid
+              groups={ATTRIBUTE_GROUPS}
+              minColumn={232}
+              onChange={(name, v) => field.onChange({ ...attrs, [name]: v })}
+              strongLabels
+              values={attrs}
+            />
+            <div className="mt-2 border-line border-t pt-3 font-label font-semibold text-ink-soft text-xs uppercase leading-none tracking-widest">
+              Vitalidade {vitalityMax({ attrs })} · Força de Vontade{" "}
+              {willpowerMax({ attrs })}
+            </div>
+          </FieldSet>
+        );
+      }}
+    />
   );
 }

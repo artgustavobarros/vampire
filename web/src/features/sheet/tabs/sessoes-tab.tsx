@@ -3,8 +3,8 @@ import { Button } from "#/components/ui/button";
 import { Input } from "#/components/ui/input";
 import { FieldLabel, Panel } from "#/components/vtm/text";
 import { autoFit } from "#/components/vtm/trait-grid";
-import { patchSheet, useSheet } from "#/lib/store";
 import type { SessionLog } from "#/lib/types";
+import { patchSheet, useSheet } from "#/stores/character-store";
 
 const STAT =
   "mb-2 font-label font-semibold text-xs uppercase leading-none tracking-[.12em]";

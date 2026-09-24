@@ -11,15 +11,17 @@ import {
   useRuleDialog,
 } from "#/features/actions/rule-dialog";
 import { logout } from "#/lib/auth";
-import { useAppState } from "#/lib/store";
 import { cn } from "#/lib/utils";
+import { useSheet } from "#/stores/character-store";
+import { usePlayerStore } from "#/stores/player-store";
 import { isSheetTab, tabLabel, visibleTabs } from "./tabs";
 
 const MENU_ITEM =
   "cursor-pointer flex min-h-12 items-center border-line-soft border-b font-label font-semibold text-xs uppercase leading-none tracking-widest";
 
 export function SheetLayout() {
-  const { user, sheet } = useAppState();
+  const user = usePlayerStore((s) => s.user);
+  const sheet = useSheet();
   const { aba } = useParams({ strict: false });
   const current = aba && isSheetTab(aba) ? aba : "ficha";
   const [menuOpen, setMenuOpen] = useState(false);
@@ -84,7 +86,10 @@ export function SheetLayout() {
                   className={cn(MENU_ITEM, "text-left text-ink")}
                   onClick={() => {
                     setMenuOpen(false);
-                    navigate({ search: { passo: 1 }, to: "/criar" });
+                    navigate({
+                      search: { passo: 1, refazer: true },
+                      to: "/criar",
+                    });
                   }}
                   type="button"
                 >
@@ -117,7 +122,7 @@ export function SheetLayout() {
 }
 
 function BottomBar() {
-  const { sheet } = useAppState();
+  const sheet = useSheet();
   const dialog = useRuleDialog();
   const btn =
     "cursor-pointer flex min-h-12 flex-1 items-center justify-center px-3 py-4 font-label font-semibold text-white text-xs uppercase leading-none tracking-widest hover:opacity-85 focus-visible:outline-2 focus-visible:outline-white";

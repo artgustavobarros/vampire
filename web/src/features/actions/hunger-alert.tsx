@@ -4,8 +4,8 @@ import {
   DialogDescription,
   DialogTitle,
 } from "#/components/ui/dialog";
-import { store, useAppState } from "#/lib/store";
 import { cn } from "#/lib/utils";
+import { useCharacterStore } from "#/stores/character-store";
 
 const COPY = {
   0: {
@@ -22,21 +22,19 @@ const COPY = {
 
 /** Alerta em tela cheia quando a Fome chega a 5 ou a 0. */
 export function HungerAlert() {
-  const { hungerAlert } = useAppState();
+  const hungerAlert = useCharacterStore((s) => s.hungerAlert);
+  const dismiss = useCharacterStore((s) => s.dismissHungerAlert);
   const copy = hungerAlert === null ? null : COPY[hungerAlert];
   const beast = hungerAlert === 5;
   return (
-    <Dialog
-      onOpenChange={(open) => !open && store.dismissHungerAlert()}
-      open={!!copy}
-    >
+    <Dialog onOpenChange={(open) => !open && dismiss()} open={!!copy}>
       {copy ? (
         <DialogContent
           className={cn(
             "z-[70] max-w-[400px] animate-vfade gap-0 border-t-4 bg-surface p-6 shadow-[0_24px_64px_rgba(0,0,0,.55)] sm:max-w-[400px]",
             beast ? "border-t-ember" : "border-t-moss"
           )}
-          onClick={() => store.dismissHungerAlert()}
+          onClick={() => dismiss()}
           overlayClassName="z-[70] bg-black/80"
           showCloseButton={false}
         >
@@ -59,7 +57,7 @@ export function HungerAlert() {
               "mt-6 cursor-pointer px-5 py-3 text-center font-label font-semibold text-white text-xs uppercase leading-none tracking-[.14em]",
               beast ? "bg-ember" : "bg-moss"
             )}
-            onClick={() => store.dismissHungerAlert()}
+            onClick={() => dismiss()}
             type="button"
           >
             Entendido

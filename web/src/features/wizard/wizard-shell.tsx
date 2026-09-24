@@ -1,10 +1,22 @@
+import { zodResolver } from "@hookform/resolvers/zod";
 import { useNavigate } from "@tanstack/react-router";
-import type { ReactNode } from "react";
+import { type ReactNode, useCallback, useRef, useState } from "react";
+import { FormProvider, type Resolver, useForm } from "react-hook-form";
+import type { ZodType } from "zod";
 import { Button } from "#/components/ui/button";
 import { logout } from "#/lib/auth";
-import { patchSheet, store, useSheet } from "#/lib/store";
 import { cn } from "#/lib/utils";
 import { initialAttributes } from "#/rules/wizard";
+import { patchSheet, useCharacterStore } from "#/stores/character-store";
+import {
+  ALL_FIELDS,
+  STEP_SCHEMAS,
+  sheetToWizard,
+  stepFields,
+  type WizardKey,
+  type WizardValues,
+  wizardToPatch,
+} from "./schema";
 import { Step1Clan } from "./step1-clan";
 import { Step2Attributes } from "./step2-attributes";
 import { Step3Skills } from "./step3-skills";
@@ -59,18 +71,65 @@ const STEPS: { title: string; hint: string; body: () => ReactNode }[] = [
 
 export const WIZARD_STEPS = STEPS.length;
 
-export function WizardShell({ step }: { step: number }) {
+/** `raw: true` devolve os valores do formulário inteiro, não só os do passo. */
+const STEP_RESOLVERS: Resolver<WizardValues>[] = STEP_SCHEMAS.map((schema) =>
+  zodResolver(
+    // cada schema cobre só um recorte de WizardValues
+    schema as unknown as ZodType<WizardValues, WizardValues>,
+    undefined,
+    { raw: true }
+  )
+);
+
+export function WizardShell({
+  step,
+  refazer = false,
+}: {
+  step: number;
+  refazer?: boolean;
+}) {
   const navigate = useNavigate();
-  const sheet = useSheet();
   const current = STEPS[step - 1];
   const Body = current.body;
 
-  const go = (passo: number) => navigate({ search: { passo }, to: "/criar" });
+  // o resolver é estável e valida sempre com o schema do passo exibido
+  const stepRef = useRef(step);
+  stepRef.current = step;
+  const resolver = useCallback<Resolver<WizardValues>>(
+    (values, context, options) =>
+      STEP_RESOLVERS[stepRef.current - 1](values, context, options),
+    []
+  );
+  const [defaultValues] = useState(() =>
+    sheetToWizard(useCharacterStore.getState().sheet)
+  );
+  const form = useForm<WizardValues>({
+    defaultValues,
+    resolver,
+    reValidateMode: "onChange",
+  });
+
+  /** Grava os campos na ficha e zera erros e estado de envio para o próximo passo. */
+  const commit = (fields: readonly WizardKey[], extra: object = {}) => {
+    const values = form.getValues();
+    patchSheet({
+      ...wizardToPatch(values, fields, useCharacterStore.getState().sheet),
+      ...extra,
+    });
+    form.reset(values);
+  };
+
+  const go = (passo: number) =>
+    navigate({
+      search: refazer ? { passo, refazer } : { passo },
+      to: "/criar",
+    });
 
   const back = () => {
+    commit(stepFields(step));
     if (step > 1) {
       go(step - 1);
-    } else if (sheet.criada) {
+    } else if (refazer) {
       navigate({ params: { aba: "ficha" }, to: "/ficha/$aba" });
     } else {
       logout();
@@ -78,21 +137,30 @@ export function WizardShell({ step }: { step: number }) {
     }
   };
 
-  const next = () => {
-    if (step === 1) {
-      const attrs = initialAttributes(store.get().sheet.attrs);
-      if (attrs) {
-        patchSheet({ attrs });
-      }
-    }
+  const next = (values: WizardValues) => {
     if (step === STEPS.length) {
-      patchSheet({
+      const patch = wizardToPatch(
+        values,
+        ALL_FIELDS,
+        useCharacterStore.getState().sheet
+      );
+      commit([], {
+        ...patch,
         criada: true,
-        disc: store.get().sheet.disc.filter((d) => (d.nome ?? "").trim()),
+        disc: (patch.disc ?? []).filter((d) => d.nome.trim()),
       });
       navigate({ params: { aba: "ficha" }, to: "/ficha/$aba" });
       return;
     }
+    const fields = [...stepFields(step)];
+    if (step === 1) {
+      const attrs = initialAttributes(values.attrs);
+      if (attrs) {
+        form.setValue("attrs", attrs);
+        fields.push("attrs");
+      }
+    }
+    commit(fields);
     go(step + 1);
   };
 
@@ -100,7 +168,7 @@ export function WizardShell({ step }: { step: number }) {
     <div className="mx-auto max-w-[820px] px-4 py-6">
       <div className="mb-2 flex items-baseline justify-between gap-3">
         <div className="font-label font-semibold text-ink text-xs uppercase leading-none tracking-[.12em]">
-          Criação de personagem
+          {refazer ? "Refazer personagem" : "Criação de personagem"}
         </div>
         <div className="text-base text-ink-soft">
           Passo {step} de {STEPS.length}
@@ -121,24 +189,30 @@ export function WizardShell({ step }: { step: number }) {
           />
         ))}
       </div>
-      <div
-        className="animate-vfade border border-line bg-surface px-5 py-6"
-        key={step}
-      >
-        <h2 className="mt-0 mb-1 font-semibold text-[32px] leading-[1.2]">
-          {current.title}
-        </h2>
-        <p className="mt-0 mb-6 text-ink-soft text-lg italic">{current.hint}</p>
-        <Body />
-        <div className="mt-6 flex gap-3 border-line border-t pt-4">
-          <Button onClick={back} type="button" variant="outline">
-            Voltar
-          </Button>
-          <Button className="flex-1" onClick={next} type="button">
-            {step === STEPS.length ? "Concluir" : "Continuar"}
-          </Button>
-        </div>
-      </div>
+      <FormProvider {...form}>
+        <form
+          className="animate-vfade border border-line bg-surface px-5 py-6"
+          key={step}
+          noValidate
+          onSubmit={form.handleSubmit(next)}
+        >
+          <h2 className="mt-0 mb-1 font-semibold text-[32px] leading-[1.2]">
+            {current.title}
+          </h2>
+          <p className="mt-0 mb-6 text-ink-soft text-lg italic">
+            {current.hint}
+          </p>
+          <Body />
+          <div className="mt-6 flex gap-3 border-line border-t pt-4">
+            <Button onClick={back} type="button" variant="outline">
+              Voltar
+            </Button>
+            <Button className="flex-1" type="submit">
+              {step === STEPS.length ? "Concluir" : "Continuar"}
+            </Button>
+          </div>
+        </form>
+      </FormProvider>
     </div>
   );
 }

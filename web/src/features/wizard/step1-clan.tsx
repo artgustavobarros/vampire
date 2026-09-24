@@ -1,36 +1,57 @@
-import { useId } from "react";
-import { NativeSelect, SheetTextField } from "#/components/vtm/fields";
+import { Controller, useWatch } from "react-hook-form";
+import {
+  Field,
+  FieldDescription,
+  FieldError,
+  FieldLabel,
+  FieldLegend,
+  FieldSet,
+} from "#/components/ui/field";
+import { NativeSelect } from "#/components/vtm/fields";
 import { SelectableCard } from "#/components/vtm/selectable";
-import { FieldLabel } from "#/components/vtm/text";
 import { autoFit } from "#/components/vtm/trait-grid";
 import { CLANS, findClan } from "#/data/clans";
 import { GENERATIONS } from "#/data/generations";
-import { patchSheet, useSheet } from "#/lib/store";
-import { potencyFromGeneration, potencyNote } from "#/rules/generation";
+import { potencyNote } from "#/rules/generation";
+import { useWizardForm, WizardTextField } from "./form-fields";
 
 export function Step1Clan() {
-  const sheet = useSheet();
-  const clan = findClan(sheet.cla);
-  const genId = useId();
+  const { control } = useWizardForm();
+  const clan = findClan(useWatch({ control, name: "cla" }));
   return (
     <>
-      <div className="grid gap-2" style={autoFit(152)}>
-        {CLANS.map((c) => (
-          <SelectableCard
-            filled
-            key={c.name}
-            onClick={() => patchSheet({ cla: c.name })}
-            selected={sheet.cla === c.name}
+      <Controller
+        control={control}
+        name="cla"
+        render={({ field, fieldState }) => (
+          <FieldSet
+            className="outline-none"
+            data-invalid={fieldState.invalid}
+            ref={field.ref}
+            tabIndex={-1}
           >
-            <span className="block font-label font-semibold text-xs leading-none tracking-[.02em]">
-              {c.name}
-            </span>
-            <span className="mt-1 block text-base opacity-70">
-              {c.disciplines.join(" · ")}
-            </span>
-          </SelectableCard>
-        ))}
-      </div>
+            <FieldLegend className="sr-only">Clã</FieldLegend>
+            <div className="grid gap-2" style={autoFit(152)}>
+              {CLANS.map((c) => (
+                <SelectableCard
+                  filled
+                  key={c.name}
+                  onClick={() => field.onChange(c.name)}
+                  selected={field.value === c.name}
+                >
+                  <span className="block font-label font-semibold text-xs leading-none tracking-[.02em]">
+                    {c.name}
+                  </span>
+                  <span className="mt-1 block text-base opacity-70">
+                    {c.disciplines.join(" · ")}
+                  </span>
+                </SelectableCard>
+              ))}
+            </div>
+            <FieldError errors={[fieldState.error]} />
+          </FieldSet>
+        )}
+      />
       {clan && (
         <div className="mt-4 grid gap-3" style={autoFit(248)}>
           <ClanTrait
@@ -47,31 +68,32 @@ export function Step1Clan() {
       )}
       <div className="mt-6 border-line border-t pt-5">
         <div className="grid gap-x-5 gap-y-4" style={autoFit(220)}>
-          <SheetTextField
-            field={{ key: "senhor", label: "Senhor" }}
-            labelClassName="mb-2"
+          <WizardTextField label="Senhor" name="senhor" />
+          <Controller
+            control={control}
+            name="geracao"
+            render={({ field, fieldState }) => (
+              <Field data-invalid={fieldState.invalid}>
+                <FieldLabel htmlFor="wizard-geracao">Geração</FieldLabel>
+                <NativeSelect
+                  {...field}
+                  aria-invalid={fieldState.invalid}
+                  id="wizard-geracao"
+                >
+                  <option value="">— escolher geração —</option>
+                  {GENERATIONS.map((g) => (
+                    <option key={g.label} value={g.label}>
+                      {g.label}
+                    </option>
+                  ))}
+                </NativeSelect>
+                <FieldError errors={[fieldState.error]} />
+                <FieldDescription>
+                  {potencyNote({ geracao: field.value, potencia: 0 })}
+                </FieldDescription>
+              </Field>
+            )}
           />
-          <div>
-            <FieldLabel htmlFor={genId}>Geração</FieldLabel>
-            <NativeSelect
-              id={genId}
-              onChange={(e) =>
-                patchSheet({
-                  geracao: e.target.value,
-                  potencia: potencyFromGeneration(e.target.value) || 0,
-                })
-              }
-              value={sheet.geracao ?? ""}
-            >
-              <option value="">— escolher geração —</option>
-              {GENERATIONS.map((g) => (
-                <option key={g.label} value={g.label}>
-                  {g.label}
-                </option>
-              ))}
-            </NativeSelect>
-            <div className="mt-2 text-sm opacity-70">{potencyNote(sheet)}</div>
-          </div>
         </div>
       </div>
     </>

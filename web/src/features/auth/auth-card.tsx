@@ -4,7 +4,8 @@ import { Button } from "#/components/ui/button";
 import { Input } from "#/components/ui/input";
 import { FieldLabel, Kicker } from "#/components/vtm/text";
 import { authenticate } from "#/lib/auth";
-import { store } from "#/lib/store";
+import { useCharacterStore } from "#/stores/character-store";
+import { usePlayerStore } from "#/stores/player-store";
 import { homeTarget } from "./home-path";
 
 const BUSY_MS = 420;
@@ -43,9 +44,13 @@ export function AuthCard({ mode }: { mode: "login" | "signup" }) {
         return;
       }
       setPassword("");
+      const target = homeTarget({
+        criada: useCharacterStore.getState().sheet.criada,
+        user: usePlayerStore.getState().user,
+      });
       navigate({
-        search: homeTarget(store.get()) === "/criar" ? { passo: 1 } : undefined,
-        to: homeTarget(store.get()),
+        search: target === "/criar" ? { passo: 1 } : undefined,
+        to: target,
       });
     }, BUSY_MS);
   };

@@ -1,6 +1,6 @@
 import { createFileRoute, Navigate } from "@tanstack/react-router";
 import { AuthCard } from "#/features/auth/auth-card";
-import { useAppState } from "#/lib/store";
+import { usePlayerStore } from "#/stores/player-store";
 
 interface EntrarSearch {
   modo?: "cadastro";
@@ -14,7 +14,7 @@ export const Route = createFileRoute("/entrar")({
 
 function Entrar() {
   const { modo } = Route.useSearch();
-  const { user } = useAppState();
+  const user = usePlayerStore((s) => s.user);
 
   if (user) {
     return <Navigate replace to="/" />;

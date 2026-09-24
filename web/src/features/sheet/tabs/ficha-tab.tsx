@@ -10,8 +10,8 @@ import {
   RESONANCES,
 } from "#/data/fields";
 import { ATTRIBUTE_GROUPS, SKILL_GROUPS } from "#/data/traits";
-import { patchSheet, useSheet } from "#/lib/store";
 import { adjustHumanity, stains, toggleStain } from "#/rules/humanity";
+import { patchSheet, useSheet } from "#/stores/character-store";
 import { CYCLE_HINT, TrackPanel } from "../track-panels";
 
 const PANEL_TITLE =

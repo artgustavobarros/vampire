@@ -1,22 +1,23 @@
+import { Controller, useFieldArray, useWatch } from "react-hook-form";
+import { Field, FieldError } from "#/components/ui/field";
 import { Input } from "#/components/ui/input";
 import { DotRating } from "#/components/vtm/dot-rating";
 import { EmptyState } from "#/components/vtm/text";
-import { patchSheet, useSheet } from "#/lib/store";
-import type { Merit } from "#/lib/types";
 import { cn } from "#/lib/utils";
 import { meritTotals } from "#/rules/wizard";
+import { useWizardForm } from "./form-fields";
 
 const ACTION =
   "font-label font-semibold text-xs uppercase leading-none tracking-widest";
 
 export function Step7Merits() {
-  const sheet = useSheet();
-  const merits = sheet.meritos ?? [];
-  const totals = meritTotals(sheet);
-  const update = (i: number, change: Partial<Merit>) =>
-    patchSheet({
-      meritos: merits.map((m, j) => (j === i ? { ...m, ...change } : m)),
-    });
+  const { control } = useWizardForm();
+  const { fields, append, remove } = useFieldArray({
+    control,
+    name: "meritos",
+  });
+  const meritos = useWatch({ control, name: "meritos" });
+  const totals = meritTotals({ meritos });
 
   return (
     <>
@@ -24,50 +25,78 @@ export function Step7Merits() {
         <span>{totals.vantagens} pts em vantagens</span>
         <span>{totals.defeitos} pts em defeitos</span>
       </div>
-      {merits.map((m, i) => (
+      {fields.map((row, i) => (
         <div
-          className="flex flex-wrap items-center gap-3 border-line-soft border-b py-2"
-          key={i}
+          className="flex flex-wrap items-start gap-3 border-line-soft border-b py-2"
+          key={row.id}
         >
-          <button
-            className={cn(
-              ACTION,
-              "cursor-pointer whitespace-nowrap px-2 py-1",
-              m.tipo === "defeito" ? "bg-blood text-white" : "bg-ink text-white"
+          <Controller
+            control={control}
+            name={`meritos.${i}.tipo`}
+            render={({ field }) => (
+              <button
+                className={cn(
+                  ACTION,
+                  "mt-2 cursor-pointer whitespace-nowrap px-2 py-1",
+                  field.value === "defeito"
+                    ? "bg-blood text-white"
+                    : "bg-ink text-white"
+                )}
+                onClick={() =>
+                  field.onChange(
+                    field.value === "defeito" ? "vantagem" : "defeito"
+                  )
+                }
+                title="Alternar vantagem/defeito"
+                type="button"
+              >
+                {field.value === "defeito" ? "Defeito" : "Vantagem"}
+              </button>
             )}
-            onClick={() =>
-              update(i, { tipo: m.tipo === "defeito" ? "vantagem" : "defeito" })
-            }
-            title="Alternar vantagem/defeito"
-            type="button"
-          >
-            {m.tipo === "defeito" ? "Defeito" : "Vantagem"}
-          </button>
-          <Input
-            aria-label="Nome"
-            className="min-w-[140px] flex-1"
-            onChange={(e) => update(i, { nome: e.target.value })}
-            placeholder="Nome"
-            value={m.nome}
           />
-          <DotRating
-            label={`Pontos de ${m.nome || "linha"}`}
-            onChange={(v) => update(i, { pontos: v })}
-            size="sm"
-            value={m.pontos}
+          <Controller
+            control={control}
+            name={`meritos.${i}.nome`}
+            render={({ field, fieldState }) => (
+              <Field
+                className="min-w-[140px] flex-1"
+                data-invalid={fieldState.invalid}
+              >
+                <Input
+                  {...field}
+                  aria-invalid={fieldState.invalid}
+                  aria-label="Nome"
+                  placeholder="Nome"
+                />
+                <FieldError errors={[fieldState.error]} />
+              </Field>
+            )}
+          />
+          <Controller
+            control={control}
+            name={`meritos.${i}.pontos`}
+            render={({ field, fieldState }) => (
+              <Field className="mt-3 w-auto" data-invalid={fieldState.invalid}>
+                <DotRating
+                  label={`Pontos de ${meritos[i]?.nome || "linha"}`}
+                  onChange={field.onChange}
+                  size="sm"
+                  value={field.value}
+                />
+                <FieldError errors={[fieldState.error]} />
+              </Field>
+            )}
           />
           <button
-            className={cn(ACTION, "cursor-pointer text-ink/55")}
-            onClick={() =>
-              patchSheet({ meritos: merits.filter((_, j) => j !== i) })
-            }
+            className={cn(ACTION, "mt-4 cursor-pointer text-ink/55")}
+            onClick={() => remove(i)}
             type="button"
           >
             Remover
           </button>
         </div>
       ))}
-      {merits.length === 0 && (
+      {fields.length === 0 && (
         <EmptyState title="Nenhum mérito ou defeito">
           Méritos custam pontos positivos; defeitos devolvem pontos. Adicione o
           primeiro abaixo.
@@ -78,11 +107,7 @@ export function Step7Merits() {
           ACTION,
           "mt-3 inline-block cursor-pointer border border-line px-3 py-2"
         )}
-        onClick={() =>
-          patchSheet({
-            meritos: [...merits, { nome: "", pontos: 1, tipo: "vantagem" }],
-          })
-        }
+        onClick={() => append({ nome: "", pontos: 1, tipo: "vantagem" })}
         type="button"
       >
         Adicionar

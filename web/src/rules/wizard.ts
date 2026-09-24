@@ -84,7 +84,9 @@ export interface DistributionLine {
   target: number;
 }
 
-export function skillDistributionProgress(sheet: Sheet): DistributionLine[] {
+export function skillDistributionProgress(
+  sheet: Pick<Sheet, "dist" | "skills">
+): DistributionLine[] {
   const dist =
     SKILL_DISTRIBUTIONS.find((d) => d.name === (sheet.dist ?? "")) ??
     DEFAULT_DISTRIBUTION;
@@ -110,7 +112,7 @@ export function distributionSummary(
     .join(" · ");
 }
 
-export function meritTotals(sheet: Sheet): {
+export function meritTotals(sheet: Pick<Sheet, "meritos">): {
   vantagens: number;
   defeitos: number;
 } {

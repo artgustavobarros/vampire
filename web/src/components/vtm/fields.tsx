@@ -3,8 +3,8 @@ import { type ComponentProps, useId } from "react";
 import { fieldVariants, Input } from "#/components/ui/input";
 import { Textarea } from "#/components/ui/textarea";
 import type { TextFieldDef } from "#/data/fields";
-import { patchSheet, useSheet } from "#/lib/store";
 import { cn } from "#/lib/utils";
+import { patchSheet, useSheet } from "#/stores/character-store";
 import { FieldLabel } from "./text";
 
 /** `<select>` nativo com o visual de campo do standalone. */

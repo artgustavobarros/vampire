@@ -1,8 +1,10 @@
+import { Controller, useWatch } from "react-hook-form";
+import { FieldError, FieldLegend, FieldSet } from "#/components/ui/field";
 import { SelectableCard } from "#/components/vtm/selectable";
 import { autoFit } from "#/components/vtm/trait-grid";
 import { findPredator, PREDATORS } from "#/data/predators";
-import { patchSheet, useSheet } from "#/lib/store";
 import { cn } from "#/lib/utils";
+import { useWizardForm } from "./form-fields";
 
 const COST = /^−|Defeito|Exige|Perde/;
 const GAIN = /^\+|Vantagem|pontos em|Rebanho|Contatos|Fama|Recursos/;
@@ -22,41 +24,62 @@ const LABEL =
   "font-label font-semibold text-xs uppercase leading-none tracking-widest text-ink/60";
 
 export function Step6Predator() {
-  const sheet = useSheet();
-  const predator = findPredator(sheet.predador);
+  const { control, setValue } = useWizardForm();
+  const [predador, predEspec, predDisc] = useWatch({
+    control,
+    name: ["predador", "predEspec", "predDisc"],
+  });
+  const predator = findPredator(predador);
   return (
     <>
-      <div className="grid gap-2" style={autoFit(220)}>
-        {PREDATORS.map((p) => (
-          <SelectableCard
-            key={p.name}
-            onClick={() =>
-              patchSheet({ predador: p.name, predDisc: "", predEspec: "" })
-            }
-            selected={sheet.predador === p.name}
+      <Controller
+        control={control}
+        name="predador"
+        render={({ field, fieldState }) => (
+          <FieldSet
+            className="outline-none"
+            data-invalid={fieldState.invalid}
+            ref={field.ref}
+            tabIndex={-1}
           >
-            <span className="block font-label font-semibold text-xs leading-none tracking-[.02em]">
-              {p.name}
-            </span>
-            <span className="mt-1 block text-base leading-snug opacity-70">
-              {p.description}
-            </span>
-          </SelectableCard>
-        ))}
-      </div>
+            <FieldLegend className="sr-only">Tipo de predador</FieldLegend>
+            <div className="grid gap-2" style={autoFit(220)}>
+              {PREDATORS.map((p) => (
+                <SelectableCard
+                  key={p.name}
+                  onClick={() => {
+                    if (p.name !== field.value) {
+                      setValue("predEspec", "");
+                      setValue("predDisc", "");
+                    }
+                    field.onChange(p.name);
+                  }}
+                  selected={field.value === p.name}
+                >
+                  <span className="block font-label font-semibold text-xs leading-none tracking-[.02em]">
+                    {p.name}
+                  </span>
+                  <span className="mt-1 block text-base leading-snug opacity-70">
+                    {p.description}
+                  </span>
+                </SelectableCard>
+              ))}
+            </div>
+            <FieldError errors={[fieldState.error]} />
+          </FieldSet>
+        )}
+      />
       {predator && (
         <div className="mt-5 flex flex-col gap-4 border border-line p-4">
           <OptionGroup
             label="Especialidade — escolha uma"
-            onPick={(v) => patchSheet({ predEspec: v })}
+            name="predEspec"
             options={predator.specialties}
-            value={sheet.predEspec}
           />
           <OptionGroup
             label="Disciplina — um ponto em uma"
-            onPick={(v) => patchSheet({ predDisc: v })}
+            name="predDisc"
             options={predator.disciplines}
-            value={sheet.predDisc}
           />
           <div className="flex flex-col gap-2">
             <span className={LABEL}>Ajustes obrigatórios</span>
@@ -73,8 +96,8 @@ export function Step6Predator() {
             ))}
           </div>
           <div className="text-sm opacity-70">
-            {sheet.predEspec && sheet.predDisc
-              ? `Predador definido: ${predator.name} · ${sheet.predEspec} · +1 ${sheet.predDisc}`
+            {predEspec && predDisc
+              ? `Predador definido: ${predator.name} · ${predEspec} · +1 ${predDisc}`
               : "Escolha uma especialidade e uma Disciplina para completar o Predador."}
           </div>
         </div>
@@ -85,36 +108,47 @@ export function Step6Predator() {
 
 function OptionGroup({
   label,
+  name,
   options,
-  value,
-  onPick,
 }: {
   label: string;
+  name: "predEspec" | "predDisc";
   options: readonly string[];
-  value: string | undefined;
-  onPick: (v: string) => void;
 }) {
+  const { control } = useWizardForm();
   return (
-    <div className="flex flex-col gap-2">
-      <span className={LABEL}>{label}</span>
-      <div className="flex flex-wrap gap-2">
-        {options.map((o) => (
-          <button
-            aria-pressed={value === o}
-            className={cn(
-              "cursor-pointer border px-3 py-2 text-base leading-tight focus-visible:outline-2 focus-visible:outline-ink",
-              value === o
-                ? "border-moss bg-field"
-                : "border-ink/20 bg-transparent"
-            )}
-            key={o}
-            onClick={() => onPick(o)}
-            type="button"
-          >
-            {o}
-          </button>
-        ))}
-      </div>
-    </div>
+    <Controller
+      control={control}
+      name={name}
+      render={({ field, fieldState }) => (
+        <FieldSet
+          className="gap-2 outline-none"
+          data-invalid={fieldState.invalid}
+          ref={field.ref}
+          tabIndex={-1}
+        >
+          <FieldLegend className="mb-0">{label}</FieldLegend>
+          <div className="flex flex-wrap gap-2">
+            {options.map((o) => (
+              <button
+                aria-pressed={field.value === o}
+                className={cn(
+                  "cursor-pointer border px-3 py-2 text-base leading-tight focus-visible:outline-2 focus-visible:outline-ink",
+                  field.value === o
+                    ? "border-moss bg-field"
+                    : "border-ink/20 bg-transparent"
+                )}
+                key={o}
+                onClick={() => field.onChange(o)}
+                type="button"
+              >
+                {o}
+              </button>
+            ))}
+          </div>
+          <FieldError errors={[fieldState.error]} />
+        </FieldSet>
+      )}
+    />
   );
 }

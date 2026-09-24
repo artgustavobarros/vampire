@@ -68,6 +68,10 @@ export function writePlayerName(email: string, name: string): void {
   write(KEYS.name(email), name);
 }
 
+export function readPlayerName(email: string): string | null {
+  return read(KEYS.name(email));
+}
+
 export function readSheetRaw(email: string): unknown {
   const raw = read(KEYS.sheet(email));
   if (!raw) {

@@ -1,9 +1,13 @@
-import type { AppState } from "#/lib/store";
-
 /** Para onde levar o usuário conforme sessão e ficha. */
-export function homeTarget(app: AppState): "/entrar" | "/criar" | "/ficha" {
-  if (!app.user) {
+export function homeTarget({
+  criada,
+  user,
+}: {
+  criada: boolean;
+  user: string | null;
+}): "/entrar" | "/criar" | "/ficha" {
+  if (!user) {
     return "/entrar";
   }
-  return app.sheet.criada ? "/ficha" : "/criar";
+  return criada ? "/ficha" : "/criar";
 }

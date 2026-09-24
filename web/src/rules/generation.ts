@@ -25,11 +25,13 @@ export function potencyFromGeneration(
   return null;
 }
 
-export function bloodPotency(sheet: Sheet): number {
+type PotencySource = Pick<Sheet, "geracao" | "potencia">;
+
+export function bloodPotency(sheet: PotencySource): number {
   return potencyFromGeneration(sheet.geracao) ?? (sheet.potencia || 0);
 }
 
-export function potencyNote(sheet: Sheet, inWizard = false): string {
+export function potencyNote(sheet: PotencySource, inWizard = false): string {
   const potency = bloodPotency(sheet);
   if (potencyFromGeneration(sheet.geracao) !== null) {
     return `Geração ${sheet.geracao} — Potência de Sangue ${potency}.`;

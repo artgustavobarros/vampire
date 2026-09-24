@@ -9,17 +9,21 @@ import { Chip } from "#/components/vtm/selectable";
 import { EmptyState, FieldLabel } from "#/components/vtm/text";
 import { findClan } from "#/data/clans";
 import { DISCIPLINES } from "#/data/disciplines";
-import { patchSheet, store, useSheet } from "#/lib/store";
 import type { Discipline, Power } from "#/lib/types";
 import { cn } from "#/lib/utils";
+import {
+  patchSheet,
+  useCharacterStore,
+  useSheet,
+} from "#/stores/character-store";
 
 const LEVELS = [1, 2, 3, 4, 5];
 const ACTION =
   "cursor-pointer font-label font-semibold text-xs uppercase leading-none tracking-widest";
 
 function updateDiscipline(index: number, change: Partial<Discipline>) {
-  const disc = store
-    .get()
+  const disc = useCharacterStore
+    .getState()
     .sheet.disc.map((d, i) => (i === index ? { ...d, ...change } : d));
   patchSheet({ disc });
 }
@@ -91,7 +95,9 @@ function DisciplineCard({
           className="grid size-10 flex-none cursor-pointer place-items-center border border-line text-2xl text-ink-faint leading-none focus-visible:outline-2 focus-visible:outline-ink"
           onClick={() =>
             patchSheet({
-              disc: store.get().sheet.disc.filter((_, j) => j !== index),
+              disc: useCharacterStore
+                .getState()
+                .sheet.disc.filter((_, j) => j !== index),
             })
           }
           type="button"
@@ -281,7 +287,7 @@ function AddDisciplineDialog({
           },
         ]
       : [];
-    const current = store.get().sheet.disc;
+    const current = useCharacterStore.getState().sheet.disc;
     const idx = current.findIndex((d) => d.nome.trim() === name);
     const disc =
       idx >= 0

@@ -12,7 +12,7 @@ import {
   DialogDescription,
   DialogTitle,
 } from "#/components/ui/dialog";
-import { useSheet } from "#/lib/store";
+import { useSheet } from "#/stores/character-store";
 import { type Flow, type FlowKind, flowView } from "./flows";
 
 interface RuleDialogApi {

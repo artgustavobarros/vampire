@@ -1,4 +1,5 @@
 import { exampleSheet } from "#/data/example-sheet";
+import { usePlayerStore } from "#/stores/player-store";
 import { settings } from "./settings";
 import {
   clearSession,
@@ -8,7 +9,6 @@ import {
   writeSession,
   writeSheet,
 } from "./storage";
-import { store } from "./store";
 
 export interface AuthInput {
   email: string;
@@ -52,7 +52,7 @@ export function authenticate(
     if (options.exampleData) {
       writeSheet(email, exampleSheet());
     }
-    store.load(email);
+    usePlayerStore.getState().login(email);
     return null;
   }
   if (!accounts[email]) {
@@ -62,11 +62,11 @@ export function authenticate(
     return "Senha incorreta.";
   }
   writeSession(email);
-  store.load(email);
+  usePlayerStore.getState().login(email);
   return null;
 }
 
 export function logout(): void {
   clearSession();
-  store.logout();
+  usePlayerStore.getState().logout();
 }

@@ -1,10 +1,10 @@
 import { Panel } from "#/components/vtm/text";
 import { DamageTrack, HumanityTrack } from "#/components/vtm/tracks";
-import { patchSheet, useSheet } from "#/lib/store";
 import type { TrackKey } from "#/lib/types";
 import { cn } from "#/lib/utils";
 import { stains, toggleStain } from "#/rules/humanity";
 import { cycleBox, trackBoxes, trackMax } from "#/rules/tracks";
+import { patchSheet, useSheet } from "#/stores/character-store";
 
 const TITLE =
   "mb-3 font-label font-semibold text-ink-soft text-xs uppercase leading-none tracking-[.12em]";

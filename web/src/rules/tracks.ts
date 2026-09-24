@@ -1,10 +1,10 @@
 import type { DamageMark, Sheet, TrackKey } from "#/lib/types";
 
-export function vitalityMax(sheet: Sheet): number {
+export function vitalityMax(sheet: Pick<Sheet, "attrs">): number {
   return (sheet.attrs.Vigor || 1) + 3;
 }
 
-export function willpowerMax(sheet: Sheet): number {
+export function willpowerMax(sheet: Pick<Sheet, "attrs">): number {
   return (sheet.attrs.Autocontrole || 1) + (sheet.attrs.Determinação || 1);
 }
 
