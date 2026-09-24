@@ -1,0 +1,141 @@
+import { DotRating } from "#/components/vtm/dot-rating";
+import { SheetTextField } from "#/components/vtm/fields";
+import { Chip } from "#/components/vtm/selectable";
+import { Panel, SectionTitle } from "#/components/vtm/text";
+import { HumanityTrack } from "#/components/vtm/tracks";
+import { autoFit, TraitGrid } from "#/components/vtm/trait-grid";
+import {
+  IDENTITY_FIELDS,
+  RESONANCE_INTENSITIES,
+  RESONANCES,
+} from "#/data/fields";
+import { ATTRIBUTE_GROUPS, SKILL_GROUPS } from "#/data/traits";
+import { patchSheet, useSheet } from "#/lib/store";
+import { adjustHumanity, stains, toggleStain } from "#/rules/humanity";
+import { CYCLE_HINT, TrackPanel } from "../track-panels";
+
+const PANEL_TITLE =
+  "mt-0 mb-4 font-label font-semibold text-xs uppercase leading-none tracking-[.12em]";
+const LEVEL_BTN =
+  "cursor-pointer border border-line px-4 py-3 font-label font-semibold text-ink text-xs uppercase leading-none tracking-widest focus-visible:outline-2 focus-visible:outline-ink";
+
+export function FichaTab() {
+  const sheet = useSheet();
+  return (
+    <>
+      <Panel className="mb-6 grid gap-x-6 gap-y-4" style={autoFit(220)}>
+        {IDENTITY_FIELDS.map((f) => (
+          <SheetTextField
+            field={{ ...f, placeholder: undefined }}
+            key={f.key}
+          />
+        ))}
+      </Panel>
+
+      <SectionTitle>Atributos</SectionTitle>
+      <TraitGrid
+        className="mb-8"
+        groups={ATTRIBUTE_GROUPS}
+        minColumn={232}
+        onChange={(name, v) =>
+          patchSheet({ attrs: { ...sheet.attrs, [name]: v } })
+        }
+        values={sheet.attrs}
+      />
+
+      <div className="mb-8 grid gap-4" style={autoFit(260)}>
+        <TrackPanel hint={CYCLE_HINT} track="vit" />
+        <TrackPanel hint="Autocontrole + Determinação" track="fdv" />
+      </div>
+
+      <SectionTitle>Habilidades</SectionTitle>
+      <TraitGrid
+        className="mb-8"
+        groups={SKILL_GROUPS}
+        minColumn={248}
+        onChange={(name, v) =>
+          patchSheet({ skills: { ...sheet.skills, [name]: v } })
+        }
+        values={sheet.skills}
+      />
+
+      <div className="flex flex-col gap-4">
+        <Panel className="p-6">
+          <h3 className={`${PANEL_TITLE} text-blood`}>Fome</h3>
+          <DotRating
+            className="gap-3"
+            label="Fome"
+            onChange={(v) => patchSheet({ fome: v })}
+            size="lg"
+            tone="blood"
+            value={sheet.fome || 0}
+          />
+        </Panel>
+        <Panel className="p-6">
+          <h3 className={`${PANEL_TITLE} text-ink-soft`}>
+            Humanidade {sheet.humanidade || 0}
+          </h3>
+          <HumanityTrack
+            level={sheet.humanidade || 0}
+            onToggle={(i) => patchSheet(toggleStain(sheet, i))}
+            stains={stains(sheet)}
+          />
+          <div className="mt-4 flex gap-2">
+            <button
+              className={LEVEL_BTN}
+              onClick={() =>
+                patchSheet({ humanidade: adjustHumanity(sheet, -1) })
+              }
+              type="button"
+            >
+              − Nível
+            </button>
+            <button
+              className={LEVEL_BTN}
+              onClick={() =>
+                patchSheet({ humanidade: adjustHumanity(sheet, 1) })
+              }
+              type="button"
+            >
+              + Nível
+            </button>
+          </div>
+        </Panel>
+        <Panel className="p-6">
+          <h3 className={`${PANEL_TITLE} text-ink-soft`}>Ressonância</h3>
+          <div className="flex flex-wrap gap-2">
+            {RESONANCES.map((r) => (
+              <Chip
+                key={r}
+                onClick={() =>
+                  patchSheet({ ressonancia: sheet.ressonancia === r ? "" : r })
+                }
+                selected={sheet.ressonancia === r}
+              >
+                {r}
+              </Chip>
+            ))}
+          </div>
+          <div className="mt-4 mb-2 font-label font-semibold text-ink-faint text-xs uppercase leading-none tracking-[.12em]">
+            Intensidade
+          </div>
+          <div className="flex flex-wrap gap-2">
+            {RESONANCE_INTENSITIES.map((r) => (
+              <Chip
+                key={r}
+                onClick={() =>
+                  patchSheet({
+                    resIntensidade: sheet.resIntensidade === r ? "" : r,
+                  })
+                }
+                selected={sheet.resIntensidade === r}
+              >
+                {r}
+              </Chip>
+            ))}
+          </div>
+        </Panel>
+      </div>
+    </>
+  );
+}

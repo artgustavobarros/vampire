@@ -1,0 +1,135 @@
+@import "tailwindcss";
+@import "tw-animate-css";
+
+@import "@fontsource/cormorant-garamond/400.css";
+@import "@fontsource/cormorant-garamond/400-italic.css";
+@import "@fontsource/cormorant-garamond/600.css";
+@import "@fontsource/karla/600.css";
+
+/*
+ * Tokens da ficha V5 standalone (design/reference/template.html).
+ * Papel, tinta e sangue; cantos retos.
+ */
+:root {
+  --paper: #ededeb;
+  --surface: #f4f3f0;
+  --field: #ffffff;
+  --ink: #0d0d0d;
+  --ink-soft: rgba(13, 13, 13, 0.68);
+  --ink-faint: rgba(13, 13, 13, 0.45);
+  --ink-ghost: rgba(13, 13, 13, 0.38);
+  --line: rgba(13, 13, 13, 0.25);
+  --line-strong: rgba(13, 13, 13, 0.45);
+  --line-focus: rgba(13, 13, 13, 0.55);
+  --line-soft: rgba(13, 13, 13, 0.1);
+  --wash: rgba(13, 13, 13, 0.03);
+  --blood: #7a1220;
+  --blood-hover: #8c0f19;
+  --moss: #2f6b3c;
+  /* vermelho claro sobre fundo tinta (Fome na barra inferior e alerta) */
+  --ember: #e8535f;
+  --scrim: rgba(0, 0, 0, 0.55);
+
+  /* shadcn */
+  --background: var(--paper);
+  --foreground: var(--ink);
+  --card: var(--surface);
+  --card-foreground: var(--ink);
+  --popover: var(--surface);
+  --popover-foreground: var(--ink);
+  --primary: var(--ink);
+  --primary-foreground: #ffffff;
+  --secondary: var(--surface);
+  --secondary-foreground: var(--ink);
+  --muted: var(--wash);
+  --muted-foreground: var(--ink-soft);
+  --accent: var(--wash);
+  --accent-foreground: var(--ink);
+  --destructive: var(--blood);
+  --destructive-foreground: #ffffff;
+  --border: var(--line);
+  --input: var(--line);
+  --ring: var(--line-focus);
+  --radius: 0px;
+}
+
+@theme inline {
+  --font-serif: "Cormorant Garamond", Georgia, serif;
+  --font-label: "Karla", ui-sans-serif, system-ui, sans-serif;
+  --font-sans: "Cormorant Garamond", Georgia, serif;
+
+  /* o standalone usa 18px/1.5 para texto corrido */
+  --text-lg--line-height: 1.5;
+
+  --color-paper: var(--paper);
+  --color-surface: var(--surface);
+  --color-field: var(--field);
+  --color-ink: var(--ink);
+  --color-ink-soft: var(--ink-soft);
+  --color-ink-faint: var(--ink-faint);
+  --color-ink-ghost: var(--ink-ghost);
+  --color-line: var(--line);
+  --color-line-strong: var(--line-strong);
+  --color-line-focus: var(--line-focus);
+  --color-line-soft: var(--line-soft);
+  --color-wash: var(--wash);
+  --color-blood: var(--blood);
+  --color-blood-hover: var(--blood-hover);
+  --color-moss: var(--moss);
+  --color-ember: var(--ember);
+  --color-scrim: var(--scrim);
+
+  --color-background: var(--background);
+  --color-foreground: var(--foreground);
+  --color-card: var(--card);
+  --color-card-foreground: var(--card-foreground);
+  --color-popover: var(--popover);
+  --color-popover-foreground: var(--popover-foreground);
+  --color-primary: var(--primary);
+  --color-primary-foreground: var(--primary-foreground);
+  --color-secondary: var(--secondary);
+  --color-secondary-foreground: var(--secondary-foreground);
+  --color-muted: var(--muted);
+  --color-muted-foreground: var(--muted-foreground);
+  --color-accent: var(--accent);
+  --color-accent-foreground: var(--accent-foreground);
+  --color-destructive: var(--destructive);
+  --color-destructive-foreground: var(--destructive-foreground);
+  --color-border: var(--border);
+  --color-input: var(--input);
+  --color-ring: var(--ring);
+
+  --radius-sm: var(--radius);
+  --radius-md: var(--radius);
+  --radius-lg: var(--radius);
+  --radius-xl: var(--radius);
+
+  --animate-vfade: vfade 0.25s ease;
+  --animate-vpulse: vpulse 1.2s ease-in-out infinite;
+  --animate-vspin: vspin 0.9s linear infinite;
+
+  @keyframes vfade {
+    from {
+      opacity: 0;
+      transform: translateY(8px);
+    }
+    to {
+      opacity: 1;
+      transform: none;
+    }
+  }
+  @keyframes vpulse {
+    0%,
+    100% {
+      opacity: 0.35;
+    }
+    50% {
+      opacity: 0.85;
+    }
+  }
+  @keyframes vspin {
+    to {
+      transform: rotate(360deg);
+    }
+  }
+}
