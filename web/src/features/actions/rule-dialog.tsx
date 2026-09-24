@@ -47,7 +47,7 @@ export function RuleDialogProvider({ children }: { children: ReactNode }) {
       <Dialog onOpenChange={(open) => !open && setFlow(null)} open={!!view}>
         {view ? (
           <DialogContent
-            className="max-h-[calc(100dvh-40px)] max-w-[420px] animate-vfade gap-0 overflow-y-auto bg-surface p-6 shadow-[0_24px_64px_rgba(0,0,0,.4)] sm:max-w-[420px]"
+            className="max-h-[calc(100dvh-40px)] max-w-105 animate-vfade gap-0 overflow-y-auto bg-surface p-6 shadow-[0_24px_64px_rgba(0,0,0,.4)] sm:max-w-105"
             overlayClassName="bg-black/70"
             showCloseButton={false}
           >

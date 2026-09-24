@@ -1,3 +1,4 @@
+import { InfoTrigger } from "#/components/vtm/info-trigger";
 import { Panel } from "#/components/vtm/text";
 import { DamageTrack, HumanityTrack } from "#/components/vtm/tracks";
 import type { TrackKey } from "#/lib/types";
@@ -28,7 +29,15 @@ export function TrackPanel({
   return (
     <Panel>
       <h3 className={cn(TITLE, "mt-0")}>
-        {label} · máx {max}
+        <InfoTrigger
+          target={{
+            atual: `Máximo ${max}`,
+            kind: track === "vit" ? "vitalidade" : "vontade",
+          }}
+        >
+          {label}
+        </InfoTrigger>{" "}
+        · máx {max}
       </h3>
       <DamageTrack
         label={label}
@@ -47,7 +56,16 @@ export function HumanityCompactPanel() {
   return (
     <Panel>
       <h3 className={cn(TITLE, "mt-0")}>
-        Humanidade · {sheet.humanidade || 0} / 10
+        <InfoTrigger
+          target={{
+            atual: `${sheet.humanidade || 0} / 10`,
+            kind: "humanidade",
+            marca: String(sheet.humanidade || 0),
+          }}
+        >
+          Humanidade
+        </InfoTrigger>{" "}
+        · {sheet.humanidade || 0} / 10
       </h3>
       <HumanityTrack
         level={sheet.humanidade || 0}

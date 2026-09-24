@@ -6,8 +6,17 @@ import {
   Outlet,
   RouterProvider,
 } from "@tanstack/react-router";
-import { fireEvent, render, screen } from "@testing-library/react";
+import {
+  fireEvent,
+  render,
+  screen,
+  waitFor,
+  within,
+} from "@testing-library/react";
+import { toast } from "sonner";
 import { afterEach, describe, expect, it } from "vitest";
+import { Toaster } from "#/components/ui/sonner";
+import { InfoProvider } from "#/features/info/info-sheet";
 import { blankSheet } from "#/lib/sheet";
 import { writeSheet } from "#/lib/storage";
 import type { Sheet } from "#/lib/types";
@@ -20,12 +29,20 @@ import { completeSheet } from "./test-fixtures";
 const EMAIL = "ana@exemplo.com";
 const TOREADOR = /^Toreador/;
 const BRUJAH = /^Brujah/;
+const EXPECTED_ARRAY = /expected array/;
 
 /** Monta `/criar` num roteador em memória, com a ficha e a entrada como stubs. */
 function renderWizard(sheet: Sheet, url: string) {
   writeSheet(EMAIL, sheet);
   usePlayerStore.getState().login(EMAIL);
-  const root = createRootRoute({ component: Outlet });
+  const root = createRootRoute({
+    component: () => (
+      <InfoProvider>
+        <Outlet />
+        <Toaster bottom={16} />
+      </InfoProvider>
+    ),
+  });
   const criar = createRoute({
     component: CriarRoute.options.component,
     getParentRoute: () => root,
@@ -58,7 +75,22 @@ const click = (target: string | RegExp | HTMLElement) =>
       : screen.getByRole("button", { name: target })
   );
 
+/** Texto do toast "Passo incompleto" visível. */
+async function stepToast() {
+  const alert = await screen.findByRole("alert");
+  expect(alert).toHaveTextContent("Passo incompleto");
+  expect(alert.closest("form")).toBeNull();
+  return alert;
+}
+
+/** Nenhuma mensagem de erro é renderizada dentro do formulário do assistente. */
+function expectNoInlineText(text: string) {
+  const form = screen.getByRole("button", { name: "Voltar" }).closest("form");
+  expect(form && within(form).queryByText(text)).toBeNull();
+}
+
 afterEach(() => {
+  toast.dismiss();
   resetStores();
 });
 
@@ -67,8 +99,9 @@ describe("assistente com react-hook-form", () => {
     renderWizard(blankSheet(), "/criar?passo=1");
     await screen.findByText("Passo 1 de 8");
     click("Continuar");
-    expect(await screen.findByText("Escolha um clã")).toBeInTheDocument();
-    expect(screen.getByText("Escolha a geração")).toBeInTheDocument();
+    const alert = await stepToast();
+    expect(alert).toHaveTextContent("Escolha um clã. Escolha a geração.");
+    expectNoInlineText("Escolha um clã");
     expect(screen.getByRole("group", { name: "Clã" })).toHaveFocus();
     expect(screen.getByLabelText("Geração")).toHaveAttribute(
       "aria-invalid",
@@ -81,10 +114,17 @@ describe("assistente com react-hook-form", () => {
   it("o erro some ao corrigir o campo", async () => {
     renderWizard(blankSheet(), "/criar?passo=1");
     click(await screen.findByText("Continuar"));
-    await screen.findByText("Escolha um clã");
+    await stepToast();
+    const cla = screen.getByRole("group", { name: "Clã" });
+    expect(cla).toHaveAttribute("data-invalid", "true");
     click(TOREADOR);
-    expect(await screen.findByText("Escolha a geração")).toBeInTheDocument();
-    expect(screen.queryByText("Escolha um clã")).not.toBeInTheDocument();
+    await waitFor(() =>
+      expect(cla).not.toHaveAttribute("data-invalid", "true")
+    );
+    expect(screen.getByLabelText("Geração")).toHaveAttribute(
+      "aria-invalid",
+      "true"
+    );
   });
 
   it("passo válido grava na ficha e avança", async () => {
@@ -133,9 +173,10 @@ describe("assistente com react-hook-form", () => {
   it("Concluir sem nome não marca a ficha como criada", async () => {
     renderWizard(completeSheet({ nome: "" }), "/criar?passo=8");
     click(await screen.findByText("Concluir"));
-    expect(
-      await screen.findByText("Informe o nome do personagem")
-    ).toBeInTheDocument();
+    expect(await stepToast()).toHaveTextContent(
+      "Informe o nome do personagem."
+    );
+    expectNoInlineText("Informe o nome do personagem");
     expect(screen.getByLabelText("Nome")).toHaveAttribute(
       "aria-invalid",
       "true"
@@ -161,8 +202,116 @@ describe("assistente com react-hook-form", () => {
     renderWizard(completeSheet({ meritos: [] }), "/criar?passo=7");
     click(await screen.findByText("Adicionar"));
     click("Continuar");
-    expect(await screen.findByText("Informe o nome")).toBeInTheDocument();
+    expect(await stepToast()).toHaveTextContent("Informe o nome.");
+    expect(screen.getByPlaceholderText("Nome")).toHaveAttribute(
+      "aria-invalid",
+      "true"
+    );
     expect(screen.getByText("Passo 7 de 8")).toBeInTheDocument();
+  });
+
+  it("clique repetido em Continuar não empilha toasts", async () => {
+    renderWizard(blankSheet(), "/criar?passo=1");
+    click(await screen.findByText("Continuar"));
+    await stepToast();
+    click("Continuar");
+    await stepToast();
+    expect(screen.getAllByRole("alert")).toHaveLength(1);
+  });
+
+  it("habilidade fora do formato aparece no progresso e no toast", async () => {
+    renderWizard(completeSheet(), "/criar?passo=3");
+    await screen.findByText("Passo 3 de 8");
+    click("Ocultismo 4");
+    expect(screen.getByText("Fora do formato: 1")).toBeInTheDocument();
+    click("Continuar");
+    expect(await stepToast()).toHaveTextContent(
+      "Fora do formato: Ocultismo (4)."
+    );
+    expect(screen.getByText("Passo 3 de 8")).toBeInTheDocument();
+    // 4 → 1 → 0: volta ao formato
+    click("Ocultismo 1");
+    click("Ocultismo 1");
+    expect(screen.queryByText("Fora do formato: 1")).not.toBeInTheDocument();
+    click("Continuar");
+    expect(await screen.findByText("Passo 4 de 8")).toBeInTheDocument();
+  });
+
+  it("escolher a habilidade livre e digitar a especialidade avança", async () => {
+    renderWizard(
+      completeSheet({ espec: {}, especLivre: "" }),
+      "/criar?passo=4"
+    );
+    await screen.findByText("Passo 4 de 8");
+    fireEvent.change(screen.getByLabelText("Perícia"), {
+      target: { value: "Briga" },
+    });
+    fireEvent.change(screen.getByLabelText("Especialidade"), {
+      target: { value: "Agarrar" },
+    });
+    click("Continuar");
+    expect(await screen.findByText("Passo 5 de 8")).toBeInTheDocument();
+    expect(screen.queryByText(EXPECTED_ARRAY)).not.toBeInTheDocument();
+    expect(stored().espec).toEqual({ Briga: ["Agarrar"] });
+  });
+
+  it("habilidade obrigatória sem especialidade mostra só a mensagem do passo", async () => {
+    const base = completeSheet();
+    renderWizard(
+      completeSheet({
+        espec: {},
+        skills: { ...base.skills, Ofícios: 1, Tecnologia: 0 },
+      }),
+      "/criar?passo=4"
+    );
+    await screen.findByText("Passo 4 de 8");
+    click("Continuar");
+    const alert = await stepToast();
+    expect(alert).toHaveTextContent("Informe uma especialidade.");
+    expect(alert).not.toHaveTextContent(EXPECTED_ARRAY);
+  });
+
+  it("perícia escolhida sem especialidade pede a especialidade, sem erro de tipo", async () => {
+    const base = completeSheet();
+    renderWizard(
+      completeSheet({
+        espec: {},
+        especLivre: "",
+        skills: { ...base.skills, "Armas Brancas": 1, Tecnologia: 0 },
+      }),
+      "/criar?passo=4"
+    );
+    await screen.findByText("Passo 4 de 8");
+    fireEvent.change(screen.getByLabelText("Perícia"), {
+      target: { value: "Armas Brancas" },
+    });
+    click("Continuar");
+    const alert = await stepToast();
+    expect(alert).toHaveTextContent("Informe uma especialidade.");
+    expect(alert).not.toHaveTextContent(EXPECTED_ARRAY);
+    fireEvent.change(screen.getByLabelText("Especialidade"), {
+      target: { value: "Armas improvisadas" },
+    });
+    click("Continuar");
+    expect(await screen.findByText("Passo 5 de 8")).toBeInTheDocument();
+    expect(stored().espec).toEqual({ "Armas Brancas": ["Armas improvisadas"] });
+  });
+
+  it("trocar a habilidade livre grava só a escolhida", async () => {
+    renderWizard(
+      completeSheet({ espec: {}, especLivre: "" }),
+      "/criar?passo=4"
+    );
+    await screen.findByText("Passo 4 de 8");
+    const pericia = screen.getByLabelText("Perícia");
+    fireEvent.change(pericia, { target: { value: "Briga" } });
+    fireEvent.change(pericia, { target: { value: "Atletismo" } });
+    fireEvent.change(screen.getByLabelText("Especialidade"), {
+      target: { value: "Corrida" },
+    });
+    click("Continuar");
+    expect(await screen.findByText("Passo 5 de 8")).toBeInTheDocument();
+    expect(stored().espec).toEqual({ Atletismo: ["Corrida"] });
   });
 });
 

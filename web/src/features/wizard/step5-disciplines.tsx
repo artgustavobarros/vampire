@@ -2,7 +2,6 @@ import { Controller, useWatch } from "react-hook-form";
 import {
   Field,
   FieldDescription,
-  FieldError,
   FieldLegend,
   FieldSet,
 } from "#/components/ui/field";
@@ -104,7 +103,6 @@ function DisciplineRow({
                   </option>
                 ))}
               </NativeSelect>
-              <FieldError errors={[fieldState.error]} />
             </Field>
           )}
         />
@@ -118,7 +116,6 @@ function DisciplineRow({
                 onChange={field.onChange}
                 value={field.value || 0}
               />
-              <FieldError errors={[fieldState.error]} />
             </Field>
           )}
         />
@@ -162,7 +159,6 @@ function DisciplineRow({
                       </SelectableCard>
                     ))}
                 </div>
-                <FieldError errors={[fieldState.error]} />
               </Field>
             );
           }}

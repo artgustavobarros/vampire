@@ -1,10 +1,5 @@
 import { Controller, useWatch } from "react-hook-form";
-import {
-  Field,
-  FieldError,
-  FieldGroup,
-  FieldLabel,
-} from "#/components/ui/field";
+import { Field, FieldGroup, FieldLabel } from "#/components/ui/field";
 import { Input } from "#/components/ui/input";
 import { NativeSelect } from "#/components/vtm/fields";
 import { autoFit } from "#/components/vtm/trait-grid";
@@ -32,6 +27,7 @@ function SpecialtyField({
   return (
     <Controller
       control={control}
+      defaultValue={[]}
       name={`espec.${skill}`}
       render={({ field, fieldState }) => (
         <Field data-invalid={fieldState.invalid}>
@@ -48,7 +44,6 @@ function SpecialtyField({
             ref={field.ref}
             value={field.value?.[0] ?? ""}
           />
-          <FieldError errors={[fieldState.error]} />
         </Field>
       )}
     />
@@ -101,7 +96,6 @@ export function Step4Specialties() {
                 </option>
               ))}
             </NativeSelect>
-            <FieldError errors={[fieldState.error]} />
           </Field>
         )}
       />

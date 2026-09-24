@@ -1,16 +1,17 @@
 import { Controller, useWatch } from "react-hook-form";
-import { FieldError, FieldLegend, FieldSet } from "#/components/ui/field";
+import { FieldLegend, FieldSet } from "#/components/ui/field";
 import { SelectableCard } from "#/components/vtm/selectable";
 import { autoFit, TraitGrid } from "#/components/vtm/trait-grid";
 import { SKILL_DISTRIBUTIONS } from "#/data/distributions";
 import { SKILL_GROUPS } from "#/data/traits";
 import { cn } from "#/lib/utils";
-import { distributionSummary, skillDistributionProgress } from "#/rules/wizard";
+import { distributionSummary, skillDistributionCheck } from "#/rules/wizard";
 import { useWizardForm } from "./form-fields";
 
 export function Step3Skills() {
   const { control } = useWizardForm();
   const [dist, skills] = useWatch({ control, name: ["dist", "skills"] });
+  const { lines, stray } = skillDistributionCheck({ dist, skills });
   return (
     <>
       <Controller
@@ -43,12 +44,11 @@ export function Step3Skills() {
                 </SelectableCard>
               ))}
             </div>
-            <FieldError errors={[fieldState.error]} />
           </FieldSet>
         )}
       />
       <div className="mb-5 flex flex-wrap gap-4 border-line border-b pt-3 pb-5">
-        {skillDistributionProgress({ dist, skills }).map((l) => (
+        {lines.map((l) => (
           <span
             className={cn(
               "font-label font-semibold text-xs uppercase leading-snug tracking-widest",
@@ -59,6 +59,11 @@ export function Step3Skills() {
             Nível {l.level}: {l.current} de {l.target}
           </span>
         ))}
+        {stray.length > 0 && (
+          <span className="font-label font-semibold text-blood text-xs uppercase leading-snug tracking-widest">
+            Fora do formato: {stray.length}
+          </span>
+        )}
       </div>
       <Controller
         control={control}
@@ -71,9 +76,9 @@ export function Step3Skills() {
             tabIndex={-1}
           >
             <FieldLegend className="sr-only">Habilidades</FieldLegend>
-            <FieldError errors={[fieldState.error]} />
             <TraitGrid
               groups={SKILL_GROUPS}
+              infoKind="skill"
               minColumn={248}
               onChange={(name, v) =>
                 field.onChange({ ...field.value, [name]: v })

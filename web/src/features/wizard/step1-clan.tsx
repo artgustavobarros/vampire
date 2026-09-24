@@ -2,7 +2,6 @@ import { Controller, useWatch } from "react-hook-form";
 import {
   Field,
   FieldDescription,
-  FieldError,
   FieldLabel,
   FieldLegend,
   FieldSet,
@@ -48,7 +47,6 @@ export function Step1Clan() {
                 </SelectableCard>
               ))}
             </div>
-            <FieldError errors={[fieldState.error]} />
           </FieldSet>
         )}
       />
@@ -87,7 +85,6 @@ export function Step1Clan() {
                     </option>
                   ))}
                 </NativeSelect>
-                <FieldError errors={[fieldState.error]} />
                 <FieldDescription>
                   {potencyNote({ geracao: field.value, potencia: 0 })}
                 </FieldDescription>

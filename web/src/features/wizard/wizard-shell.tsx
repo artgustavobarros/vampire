@@ -1,13 +1,20 @@
 import { zodResolver } from "@hookform/resolvers/zod";
 import { useNavigate } from "@tanstack/react-router";
 import { type ReactNode, useCallback, useRef, useState } from "react";
-import { FormProvider, type Resolver, useForm } from "react-hook-form";
+import {
+  type FieldErrors,
+  FormProvider,
+  type Resolver,
+  useForm,
+} from "react-hook-form";
 import type { ZodType } from "zod";
 import { Button } from "#/components/ui/button";
 import { logout } from "#/lib/auth";
+import { notify } from "#/lib/toast";
 import { cn } from "#/lib/utils";
 import { initialAttributes } from "#/rules/wizard";
 import { patchSheet, useCharacterStore } from "#/stores/character-store";
+import { collectErrorMessages, formatStepErrors } from "./error-messages";
 import {
   ALL_FIELDS,
   STEP_SCHEMAS,
@@ -164,8 +171,15 @@ export function WizardShell({
     go(step + 1);
   };
 
+  /** O passo inválido avisa por toast; os campos só ficam marcados. */
+  const invalid = (errors: FieldErrors<WizardValues>) => {
+    notify(formatStepErrors(collectErrorMessages(errors)), {
+      titulo: "Passo incompleto",
+    });
+  };
+
   return (
-    <div className="mx-auto max-w-[820px] px-4 py-6">
+    <div className="mx-auto max-w-205 px-4 py-6">
       <div className="mb-2 flex items-baseline justify-between gap-3">
         <div className="font-label font-semibold text-ink text-xs uppercase leading-none tracking-[.12em]">
           {refazer ? "Refazer personagem" : "Criação de personagem"}
@@ -194,7 +208,7 @@ export function WizardShell({
           className="animate-vfade border border-line bg-surface px-5 py-6"
           key={step}
           noValidate
-          onSubmit={form.handleSubmit(next)}
+          onSubmit={form.handleSubmit(next, invalid)}
         >
           <h2 className="mt-0 mb-1 font-semibold text-[32px] leading-[1.2]">
             {current.title}

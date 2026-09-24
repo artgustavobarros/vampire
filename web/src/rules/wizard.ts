@@ -102,6 +102,47 @@ export function skillDistributionProgress(
     });
 }
 
+export interface StraySkill {
+  level: number;
+  name: string;
+}
+
+export interface DistributionCheck {
+  lines: DistributionLine[];
+  /** vazia quando a distribuição está completa */
+  message: string;
+  /** habilidades com pontos num nível que a distribuição não prevê */
+  stray: StraySkill[];
+}
+
+function lineMessage({ level, current, target }: DistributionLine): string {
+  const diff = target - current;
+  const n = Math.abs(diff);
+  if (diff > 0) {
+    return `Nível ${level}: ${n === 1 ? "falta" : "faltam"} ${n}.`;
+  }
+  return `Nível ${level}: ${n === 1 ? "sobra" : "sobram"} ${n}.`;
+}
+
+/** Progresso e validação do passo 3 numa regra só: tudo verde = passo válido. */
+export function skillDistributionCheck(
+  sheet: Pick<Sheet, "dist" | "skills">
+): DistributionCheck {
+  const lines = skillDistributionProgress(sheet);
+  const levels = new Set(lines.map((l) => l.level));
+  const stray = SKILLS.flatMap((name) => {
+    const level = sheet.skills[name] || 0;
+    return level > 0 && !levels.has(level) ? [{ level, name }] : [];
+  });
+  const parts = lines.filter((l) => !l.done).map(lineMessage);
+  if (stray.length) {
+    parts.push(
+      `Fora do formato: ${stray.map((s) => `${s.name} (${s.level})`).join(", ")}.`
+    );
+  }
+  return { lines, message: parts.join(" "), stray };
+}
+
 export function distributionSummary(
   targets: Readonly<Record<number, number>>
 ): string {

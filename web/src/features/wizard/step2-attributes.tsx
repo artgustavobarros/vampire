@@ -1,5 +1,5 @@
 import { Controller } from "react-hook-form";
-import { FieldError, FieldLegend, FieldSet } from "#/components/ui/field";
+import { FieldLegend, FieldSet } from "#/components/ui/field";
 import { TraitGrid } from "#/components/vtm/trait-grid";
 import { ATTRIBUTE_GROUPS } from "#/data/traits";
 import { cn } from "#/lib/utils";
@@ -57,9 +57,9 @@ export function Step2Attributes() {
               Todos começam com 2. Escolha um atributo para 4, três para 3 e um
               para 1; os quatro restantes ficam em 2. {summary}
             </div>
-            <FieldError className="mb-3" errors={[fieldState.error]} />
             <TraitGrid
               groups={ATTRIBUTE_GROUPS}
+              infoKind="attr"
               minColumn={232}
               onChange={(name, v) => field.onChange({ ...attrs, [name]: v })}
               strongLabels

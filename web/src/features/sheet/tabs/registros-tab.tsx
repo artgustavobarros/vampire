@@ -1,6 +1,7 @@
 import { Input } from "#/components/ui/input";
 import { DotRating } from "#/components/vtm/dot-rating";
 import { SheetTextArea, SheetTextField } from "#/components/vtm/fields";
+import { InfoTrigger } from "#/components/vtm/info-trigger";
 import { Panel } from "#/components/vtm/text";
 import { autoFit } from "#/components/vtm/trait-grid";
 import { bloodPotencyRow } from "#/data/blood-potency";
@@ -102,7 +103,12 @@ export function RegistrosTab() {
       <section className="mb-6 bg-ink p-4 text-white">
         <div className="mb-4 flex flex-wrap items-center justify-between gap-4">
           <h3 className="m-0 font-label font-semibold text-white/60 text-xs uppercase leading-none tracking-[.12em]">
-            Potência de Sangue
+            <InfoTrigger
+              onDark
+              target={{ atual: `Nível ${bp.level}`, kind: "potencia" }}
+            >
+              Potência de Sangue
+            </InfoTrigger>
           </h3>
           <span className="text-lg text-white/60 leading-none">
             Nível {bp.level}

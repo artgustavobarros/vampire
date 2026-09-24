@@ -4,6 +4,8 @@
  *
  * As senhas ficam em texto puro, como no standalone (decisão desta fase).
  */
+import { notify } from "./toast";
+
 const KEYS = {
   accounts: "vtm5.accounts",
   name: (email: string) => `vtm5.name.${email}`,
@@ -19,11 +21,21 @@ function read(key: string): string | null {
   }
 }
 
+/** O aviso de falha de gravação aparece uma vez por sessão. */
+let warnedWriteFail = false;
+
 function write(key: string, value: string): void {
   try {
     localStorage.setItem(key, value);
   } catch {
     // armazenamento indisponível: segue só em memória
+    if (!warnedWriteFail) {
+      warnedWriteFail = true;
+      notify("Suas mudanças ficam só nesta aba até o armazenamento voltar.", {
+        duracao: 0,
+        titulo: "Não salvou",
+      });
+    }
   }
 }
 

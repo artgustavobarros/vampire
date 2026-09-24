@@ -59,8 +59,7 @@ describe("schemas do assistente", () => {
     expect(issues(3, values({ dist: "" }))).toHaveProperty("dist");
     const skills = { ...completeSheet().skills, Persuasão: 2 };
     expect(issues(3, values({ skills }))).toEqual({
-      skills:
-        "Distribuição incompleta: ajuste as habilidades ao formato escolhido.",
+      skills: "Nível 3: falta 1. Nível 2: sobra 1.",
     });
   });
 
@@ -203,6 +202,13 @@ describe("mapeamento ficha ↔ formulário", () => {
       geracao: "9ª",
       potencia: 2,
       senhor: "",
+    });
+  });
+
+  it("descarta especialidades vazias", () => {
+    const v = values({ espec: { Briga: [], Esportes: ["Corrida", ""] } });
+    expect(wizardToPatch(v, ["espec"], completeSheet()).espec).toEqual({
+      Esportes: ["Corrida"],
     });
   });
 

@@ -3,10 +3,10 @@ import { CLANS } from "#/data/clans";
 import { SKILL_DISTRIBUTIONS } from "#/data/distributions";
 import { GENERATIONS } from "#/data/generations";
 import { findPredator, PREDATORS } from "#/data/predators";
-import { ATTRIBUTES, REQUIRED_SPECIALTY_SKILLS, SKILLS } from "#/data/traits";
+import { ATTRIBUTES, REQUIRED_SPECIALTY_SKILLS } from "#/data/traits";
 import type { Discipline, Merit, Sheet } from "#/lib/types";
 import { potencyFromGeneration } from "#/rules/generation";
-import { attributeQuotas, skillDistributionProgress } from "#/rules/wizard";
+import { attributeQuotas, skillDistributionCheck } from "#/rules/wizard";
 
 /** Campos de identidade do passo 8 (clã, senhor, geração e predador têm passo próprio). */
 export const FINAL_KEYS = [
@@ -78,6 +78,20 @@ export function sheetToWizard(sheet: Sheet): WizardValues {
  * Converte os `fields` do formulário num patch da ficha. Disciplinas além das
  * duas do assistente (criadas na aba Disciplinas) são preservadas.
  */
+/** Tira especialidades vazias e as habilidades que ficaram sem nenhuma. */
+function cleanSpecialties(
+  espec: WizardValues["espec"]
+): Record<string, string[]> {
+  const out: Record<string, string[]> = {};
+  for (const [skill, list] of Object.entries(espec)) {
+    const filled = (list ?? []).filter((v) => v.trim());
+    if (filled.length) {
+      out[skill] = filled;
+    }
+  }
+  return out;
+}
+
 export function wizardToPatch(
   values: WizardValues,
   fields: readonly WizardKey[],
@@ -87,6 +101,9 @@ export function wizardToPatch(
   const target = patch as Record<string, unknown>;
   for (const key of fields) {
     target[key] = values[key];
+  }
+  if (fields.includes("espec")) {
+    patch.espec = cleanSpecialties(values.espec);
   }
   if (fields.includes("geracao")) {
     patch.potencia = potencyFromGeneration(values.geracao) || 0;
@@ -138,19 +155,9 @@ const step3 = z
     skills: traitRecord,
   })
   .superRefine((values, ctx) => {
-    const lines = skillDistributionProgress(values);
-    const levels = new Set(lines.map((l) => l.level));
-    const stray = SKILLS.some((n) => {
-      const v = values.skills[n] || 0;
-      return v > 0 && !levels.has(v);
-    });
-    if (stray || lines.some((l) => !l.done)) {
-      ctx.addIssue({
-        code: "custom",
-        message:
-          "Distribuição incompleta: ajuste as habilidades ao formato escolhido.",
-        path: ["skills"],
-      });
+    const { message } = skillDistributionCheck(values);
+    if (message) {
+      ctx.addIssue({ code: "custom", message, path: ["skills"] });
     }
   });
 

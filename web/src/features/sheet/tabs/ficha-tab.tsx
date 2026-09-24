@@ -1,5 +1,6 @@
 import { DotRating } from "#/components/vtm/dot-rating";
 import { SheetTextField } from "#/components/vtm/fields";
+import { InfoTrigger } from "#/components/vtm/info-trigger";
 import { Chip } from "#/components/vtm/selectable";
 import { Panel, SectionTitle } from "#/components/vtm/text";
 import { HumanityTrack } from "#/components/vtm/tracks";
@@ -36,6 +37,7 @@ export function FichaTab() {
       <TraitGrid
         className="mb-8"
         groups={ATTRIBUTE_GROUPS}
+        infoKind="attr"
         minColumn={232}
         onChange={(name, v) =>
           patchSheet({ attrs: { ...sheet.attrs, [name]: v } })
@@ -52,6 +54,7 @@ export function FichaTab() {
       <TraitGrid
         className="mb-8"
         groups={SKILL_GROUPS}
+        infoKind="skill"
         minColumn={248}
         onChange={(name, v) =>
           patchSheet({ skills: { ...sheet.skills, [name]: v } })
@@ -61,7 +64,17 @@ export function FichaTab() {
 
       <div className="flex flex-col gap-4">
         <Panel className="p-6">
-          <h3 className={`${PANEL_TITLE} text-blood`}>Fome</h3>
+          <h3 className={`${PANEL_TITLE} text-blood`}>
+            <InfoTrigger
+              target={{
+                atual: `Fome ${sheet.fome || 0}`,
+                kind: "fome",
+                marca: String(sheet.fome || 0),
+              }}
+            >
+              Fome
+            </InfoTrigger>
+          </h3>
           <DotRating
             className="gap-3"
             label="Fome"
@@ -73,7 +86,15 @@ export function FichaTab() {
         </Panel>
         <Panel className="p-6">
           <h3 className={`${PANEL_TITLE} text-ink-soft`}>
-            Humanidade {sheet.humanidade || 0}
+            <InfoTrigger
+              target={{
+                atual: `${sheet.humanidade || 0} / 10`,
+                kind: "humanidade",
+                marca: String(sheet.humanidade || 0),
+              }}
+            >
+              Humanidade {sheet.humanidade || 0}
+            </InfoTrigger>
           </h3>
           <HumanityTrack
             level={sheet.humanidade || 0}
@@ -102,7 +123,19 @@ export function FichaTab() {
           </div>
         </Panel>
         <Panel className="p-6">
-          <h3 className={`${PANEL_TITLE} text-ink-soft`}>Ressonância</h3>
+          <h3 className={`${PANEL_TITLE} text-ink-soft`}>
+            <InfoTrigger
+              target={{
+                atual: [sheet.ressonancia, sheet.resIntensidade]
+                  .filter(Boolean)
+                  .join(" · "),
+                kind: "ressonancia",
+                marca: sheet.ressonancia,
+              }}
+            >
+              Ressonância
+            </InfoTrigger>
+          </h3>
           <div className="flex flex-wrap gap-2">
             {RESONANCES.map((r) => (
               <Chip

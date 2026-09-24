@@ -1,7 +1,8 @@
 import { Controller, useFieldArray, useWatch } from "react-hook-form";
-import { Field, FieldError } from "#/components/ui/field";
+import { Field } from "#/components/ui/field";
 import { Input } from "#/components/ui/input";
 import { DotRating } from "#/components/vtm/dot-rating";
+import { InfoButton } from "#/components/vtm/info-trigger";
 import { EmptyState } from "#/components/vtm/text";
 import { cn } from "#/lib/utils";
 import { meritTotals } from "#/rules/wizard";
@@ -68,7 +69,6 @@ export function Step7Merits() {
                   aria-label="Nome"
                   placeholder="Nome"
                 />
-                <FieldError errors={[fieldState.error]} />
               </Field>
             )}
           />
@@ -83,9 +83,18 @@ export function Step7Merits() {
                   size="sm"
                   value={field.value}
                 />
-                <FieldError errors={[fieldState.error]} />
               </Field>
             )}
+          />
+          <InfoButton
+            aria-label={`Sobre ${meritos[i]?.nome || "esta linha"}`}
+            className="mt-1"
+            target={{
+              key: meritos[i]?.nome ?? "",
+              kind: "merit",
+              pontos: meritos[i]?.pontos ?? 0,
+              tipo: meritos[i]?.tipo ?? "vantagem",
+            }}
           />
           <button
             className={cn(ACTION, "mt-4 cursor-pointer text-ink/55")}

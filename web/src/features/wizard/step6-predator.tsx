@@ -1,5 +1,5 @@
 import { Controller, useWatch } from "react-hook-form";
-import { FieldError, FieldLegend, FieldSet } from "#/components/ui/field";
+import { FieldLegend, FieldSet } from "#/components/ui/field";
 import { SelectableCard } from "#/components/vtm/selectable";
 import { autoFit } from "#/components/vtm/trait-grid";
 import { findPredator, PREDATORS } from "#/data/predators";
@@ -65,7 +65,6 @@ export function Step6Predator() {
                 </SelectableCard>
               ))}
             </div>
-            <FieldError errors={[fieldState.error]} />
           </FieldSet>
         )}
       />
@@ -146,7 +145,6 @@ function OptionGroup({
               </button>
             ))}
           </div>
-          <FieldError errors={[fieldState.error]} />
         </FieldSet>
       )}
     />

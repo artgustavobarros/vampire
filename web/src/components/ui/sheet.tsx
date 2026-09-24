@@ -1,6 +1,7 @@
 "use client"
 
 import * as React from "react"
+import { ignoreToastInteraction } from "#/components/ui/sonner"
 import { cn } from "#/lib/utils"
 import { XIcon } from "lucide-react"
 import { Dialog as SheetPrimitive } from "radix-ui"
@@ -46,6 +47,7 @@ function SheetOverlay({
 function SheetContent({
   className,
   children,
+  onInteractOutside,
   side = "right",
   showCloseButton = true,
   ...props
@@ -70,6 +72,10 @@ function SheetContent({
             "inset-x-0 bottom-0 h-auto border-t data-[state=closed]:slide-out-to-bottom data-[state=open]:slide-in-from-bottom",
           className
         )}
+        onInteractOutside={(event) => {
+          ignoreToastInteraction(event)
+          onInteractOutside?.(event)
+        }}
         {...props}
       >
         {children}

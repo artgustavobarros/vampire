@@ -1,10 +1,13 @@
 import type { TraitGroup } from "#/data/traits";
 import { cn } from "#/lib/utils";
 import { DotRating } from "./dot-rating";
+import { InfoTrigger } from "./info-trigger";
 
 interface TraitGridProps {
   className?: string;
   groups: readonly TraitGroup[];
+  /** o nome de cada traço abre o painel de descrição deste tipo */
+  infoKind: "attr" | "skill";
   /** largura mínima da coluna (auto-fit) */
   minColumn: number;
   onChange: (name: string, value: number) => void;
@@ -16,6 +19,7 @@ interface TraitGridProps {
 /** Grupos de atributos ou habilidades com pontos. */
 export function TraitGrid({
   groups,
+  infoKind,
   values,
   onChange,
   minColumn,
@@ -44,7 +48,17 @@ export function TraitGrid({
               className="flex items-center gap-3 border-line-soft border-b py-2"
               key={name}
             >
-              <span className="flex-1 text-lg">{name}</span>
+              <span className="flex-1 text-lg">
+                <InfoTrigger
+                  target={{
+                    key: name,
+                    kind: infoKind,
+                    nivel: values[name] || 0,
+                  }}
+                >
+                  {name}
+                </InfoTrigger>
+              </span>
               <DotRating
                 label={name}
                 onChange={(v) => onChange(name, v)}

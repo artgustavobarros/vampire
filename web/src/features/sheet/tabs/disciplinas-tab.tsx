@@ -5,10 +5,12 @@ import { Input } from "#/components/ui/input";
 import { Textarea } from "#/components/ui/textarea";
 import { DotRating } from "#/components/vtm/dot-rating";
 import { NativeSelect } from "#/components/vtm/fields";
+import { InfoButton, InfoTrigger } from "#/components/vtm/info-trigger";
 import { Chip } from "#/components/vtm/selectable";
 import { EmptyState, FieldLabel } from "#/components/vtm/text";
 import { findClan } from "#/data/clans";
 import { DISCIPLINES } from "#/data/disciplines";
+import { notify } from "#/lib/toast";
 import type { Discipline, Power } from "#/lib/types";
 import { cn } from "#/lib/utils";
 import {
@@ -84,6 +86,10 @@ function DisciplineCard({
           placeholder="Disciplina"
           value={d.nome}
         />
+        <InfoButton
+          aria-label={`Sobre ${label}`}
+          target={{ key: d.nome, kind: "disc", nivel: d.nivel || 0 }}
+        />
         <DotRating
           className="flex-none gap-2"
           label={`Nível de ${label}`}
@@ -141,6 +147,7 @@ function DisciplineCard({
             </button>
             {isOpen && (
               <PowerEditor
+                disc={d.nome}
                 onChange={(change) => setPower(j, change)}
                 onRemove={() => {
                   setPowers(d.powers.filter((_, k) => k !== j));
@@ -157,10 +164,12 @@ function DisciplineCard({
 }
 
 function PowerEditor({
+  disc,
   power,
   onChange,
   onRemove,
 }: {
+  disc: string;
   power: Power;
   onChange: (change: Partial<Power>) => void;
   onRemove: () => void;
@@ -209,13 +218,27 @@ function PowerEditor({
         rows={3}
         value={power.desc ?? ""}
       />
-      <button
-        className={cn(ACTION, "self-start py-2 text-ink")}
-        onClick={onRemove}
-        type="button"
-      >
-        Remover poder
-      </button>
+      <div className="flex flex-wrap gap-6">
+        <InfoTrigger
+          className={cn(ACTION, "py-2 text-ink")}
+          target={{
+            desc: power.desc,
+            disc,
+            key: power.nome,
+            kind: "poder",
+            nivel: power.nivel || 1,
+          }}
+        >
+          Sobre este poder
+        </InfoTrigger>
+        <button
+          className={cn(ACTION, "py-2 text-ink")}
+          onClick={onRemove}
+          type="button"
+        >
+          Remover poder
+        </button>
+      </div>
     </div>
   );
 }
@@ -247,11 +270,7 @@ function AddDisciplineDialog({
 }) {
   const sheet = useSheet();
   const [form, setForm] = useState<AddForm>(EMPTY_FORM);
-  const [error, setError] = useState("");
-  const set = (change: Partial<AddForm>) => {
-    setForm({ ...form, ...change });
-    setError("");
-  };
+  const set = (change: Partial<AddForm>) => setForm({ ...form, ...change });
 
   const suggested = findClan(sheet.cla)?.disciplines ?? [];
   const existing = sheet.disc.map((d) => d.nome.trim()).filter(Boolean);
@@ -266,7 +285,6 @@ function AddDisciplineDialog({
   const changeOpen = (next: boolean) => {
     if (next) {
       setForm(EMPTY_FORM);
-      setError("");
     }
     onOpenChange(next);
   };
@@ -274,7 +292,7 @@ function AddDisciplineDialog({
   const confirm = () => {
     const name = (form.disc || form.livre).trim();
     if (!name) {
-      setError("Selecione ou digite uma disciplina.");
+      notify("Selecione ou digite uma disciplina.");
       return;
     }
     const power: Power[] = form.nome.trim()
@@ -381,11 +399,6 @@ function AddDisciplineDialog({
           rows={3}
           value={form.desc}
         />
-        {error ? (
-          <p className="mt-3 mb-0 text-blood text-lg" role="alert">
-            {error}
-          </p>
-        ) : null}
         <div className="mt-6 flex flex-col gap-2">
           <Button className="w-full" onClick={confirm} type="button">
             Adicionar

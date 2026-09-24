@@ -12,6 +12,7 @@ import {
   attributeQuotas,
   initialAttributes,
   meritTotals,
+  skillDistributionCheck,
   skillDistributionProgress,
 } from "./wizard";
 
@@ -198,6 +199,54 @@ describe("assistente", () => {
       sheet({ dist: "Equilibrado", skills })
     );
     expect(lines[0]).toEqual({ current: 2, done: false, level: 3, target: 3 });
+  });
+  describe("checagem da distribuição", () => {
+    /** Preenche as habilidades na ordem de SKILLS conforme `plan` (nível → quantidade). */
+    const fill = (plan: Record<number, number>) => {
+      const skills = { ...blankSheet().skills };
+      const names = Object.keys(skills);
+      let i = 0;
+      for (const [level, n] of Object.entries(plan)) {
+        for (let k = 0; k < n; k += 1) {
+          skills[names[i]] = Number(level);
+          i += 1;
+        }
+      }
+      return skills;
+    };
+    const balanced = () => fill({ 1: 7, 2: 5, 3: 3 });
+
+    it("Equilibrado completo é válido", () => {
+      const r = skillDistributionCheck({
+        dist: "Equilibrado",
+        skills: balanced(),
+      });
+      expect(r.message).toBe("");
+      expect(r.stray).toEqual([]);
+    });
+    it("Especialista completo com 4 é válido", () => {
+      const skills = fill({ 1: 3, 2: 3, 3: 3, 4: 1 });
+      const r = skillDistributionCheck({ dist: "Especialista", skills });
+      expect(r.message).toBe("");
+    });
+    it("nível incompleto diz quanto falta", () => {
+      const skills = { ...blankSheet().skills, Briga: 3, Etiqueta: 3 };
+      const r = skillDistributionCheck({ dist: "Equilibrado", skills });
+      expect(r.message).toContain("Nível 3: falta 1.");
+      expect(r.message).toContain("Nível 1: faltam 7.");
+    });
+    it("nível com excesso diz quanto sobra", () => {
+      const skills = { ...balanced(), Tecnologia: 2 };
+      const r = skillDistributionCheck({ dist: "Equilibrado", skills });
+      expect(r.message).toBe("Nível 2: sobra 1.");
+    });
+    it("habilidade fora do formato é listada", () => {
+      const skills = { ...balanced(), Tecnologia: 4 };
+      const r = skillDistributionCheck({ dist: "Equilibrado", skills });
+      expect(r.lines.every((l) => l.done)).toBe(true);
+      expect(r.stray).toEqual([{ level: 4, name: "Tecnologia" }]);
+      expect(r.message).toBe("Fora do formato: Tecnologia (4).");
+    });
   });
   it("totais de méritos", () => {
     const s = sheet({

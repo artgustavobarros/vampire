@@ -4,6 +4,7 @@ import { Button } from "#/components/ui/button";
 import { Input } from "#/components/ui/input";
 import { FieldLabel, Kicker } from "#/components/vtm/text";
 import { authenticate } from "#/lib/auth";
+import { notify } from "#/lib/toast";
 import { useCharacterStore } from "#/stores/character-store";
 import { usePlayerStore } from "#/stores/player-store";
 import { homeTarget } from "./home-path";
@@ -15,19 +16,16 @@ export function AuthCard({ mode }: { mode: "login" | "signup" }) {
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const [password2, setPassword2] = useState("");
-  const [error, setError] = useState("");
 
   const edit =
-    (set: (v: string) => void) => (e: { target: { value: string } }) => {
+    (set: (v: string) => void) => (e: { target: { value: string } }) =>
       set(e.target.value);
-      setError("");
-    };
 
   const submit = (e: FormEvent) => {
     e.preventDefault();
     const err = authenticate({ email, mode, name, password, password2 });
     if (err) {
-      setError(err);
+      notify(err);
       return;
     }
     setPassword("");
@@ -42,7 +40,6 @@ export function AuthCard({ mode }: { mode: "login" | "signup" }) {
   };
 
   const toggleMode = () => {
-    setError("");
     setPassword("");
     setPassword2("");
     navigate({ search: signup ? {} : { modo: "cadastro" }, to: "/entrar" });
@@ -51,7 +48,7 @@ export function AuthCard({ mode }: { mode: "login" | "signup" }) {
   return (
     <div className="grid min-h-screen place-items-center px-4 py-8">
       <form
-        className="w-full max-w-[420px] border border-line bg-surface px-6 py-8"
+        className="w-full max-w-105 border border-line bg-surface px-6 py-8"
         noValidate
         onSubmit={submit}
       >
@@ -116,11 +113,6 @@ export function AuthCard({ mode }: { mode: "login" | "signup" }) {
             />
           </>
         )}
-        {error ? (
-          <p className="mt-3 mb-0 text-blood text-lg" role="alert">
-            {error}
-          </p>
-        ) : null}
         <div className="mt-6 flex flex-col gap-3">
           <Button className="w-full" type="submit">
             {signup ? "Criar conta" : "Entrar"}
@@ -134,10 +126,6 @@ export function AuthCard({ mode }: { mode: "login" | "signup" }) {
             {signup ? "Já tenho conta" : "Criar conta"}
           </Button>
         </div>
-        <p className="mt-6 mb-0 text-base text-ink-faint">
-          Conta e ficha ficam salvas apenas neste dispositivo. Não há
-          sincronização entre aparelhos.
-        </p>
       </form>
     </div>
   );

@@ -5,7 +5,7 @@ export function BootScreen() {
     <div className="grid min-h-screen place-items-center px-4 py-8">
       <div
         aria-busy="true"
-        className="flex w-full max-w-[420px] flex-col items-center gap-5"
+        className="flex w-full max-w-105 flex-col items-center gap-5"
         role="status"
       >
         <div className="size-8 animate-vspin rounded-full border border-line border-l-2 border-l-blood" />
