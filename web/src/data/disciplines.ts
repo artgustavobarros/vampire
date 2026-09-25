@@ -23,7 +23,7 @@ export interface PowerTemplate {
 }
 
 export const POWERS: Readonly<Record<string, readonly PowerTemplate[]>> = {
-  "Alquimia de Sangue Fino": [
+  "Alquimia de Sangue-fraco": [
     {
       cost: "Um Rouse Check",
       description:

@@ -112,7 +112,7 @@ describe("buildInfo", () => {
 
   it("poder do catálogo com Rouse", () => {
     const info = buildInfo({
-      disc: "Alquimia de Sangue Fino",
+      disc: "Alquimia de Sangue-fraco",
       key: "Sangue Falso",
       kind: "poder",
       nivel: 1,
@@ -152,7 +152,7 @@ describe("buildInfo", () => {
 
   it("poder ativo sem rolagem", () => {
     const info = buildInfo({
-      disc: "Alquimia de Sangue Fino",
+      disc: "Alquimia de Sangue-fraco",
       key: "Desperta o Sangue Adormecido",
       kind: "poder",
       nivel: 1,

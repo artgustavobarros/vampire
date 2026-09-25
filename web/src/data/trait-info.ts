@@ -241,7 +241,7 @@ export const SKILL_INFO: Readonly<Record<string, readonly [string, string]>> = {
 };
 
 export const DISC_INFO: Readonly<Record<string, string>> = {
-  "Alquimia de Sangue Fino":
+  "Alquimia de Sangue-fraco":
     "Fórmulas que imitam Disciplinas usando sangue fraco.",
   Animalismo: "Domínio sobre animais e sobre a Besta, a sua e a dos outros.",
   Auspícios:

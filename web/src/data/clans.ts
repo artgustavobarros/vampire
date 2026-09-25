@@ -12,70 +12,70 @@ export const CLANS: readonly Clan[] = [
   {
     bane: "Temperamento Violento",
     baneText:
-      "Some a Gravidade da Perdição à dificuldade de testes para resistir a frenesi de fúria.",
-    compulsion: "Rebeldia",
+      "O Sangue dos Brujah fervilhe com fúria malcontida, que explode sob a menor provocação.",
+    compulsion: "Rebelião",
     compulsionText:
-      "Precisa contrariar quem manda ou desfazer o que acabou de aceitar.",
+      "Se posiciona contra qualquer um ou qualquer coisa que lhe pareça representar o status quo na situação.",
     disciplines: ["Celeridade", "Potência", "Presença"],
     name: "Brujah",
   },
   {
     bane: "Traços Bestiais",
     baneText:
-      "Em frenesi ganha traços animais: cada um dá −1 em uma categoria de teste pela cena.",
-    compulsion: "Selvageria",
+      "Quando em frenesi ganham um ou mais de um aspecto animalesco: um traço físico, um odor o um comportamento.",
+    compulsion: "Impulsos Ferais",
     compulsionText:
-      "Perde a fala articulada e resolve tudo por instinto e violência.",
-    disciplines: ["Animalismo", "Fortitude", "Protean"],
+      "Retorna a um estado animal a um ponto onde a fala se torna difícil, as roupas desconfortáveis e os argumentos são mais bem-resolvidos com garras e presas.",
+    disciplines: ["Animalismo", "Fortitude", "Proteanismo"],
     name: "Gangrel",
   },
   {
     bane: "Perspectiva Fraturada",
     baneText:
-      "Uma desordem sempre presente: em falha bestial ou frenesi, penalidade igual à Gravidade da Perdição.",
+      "Todos são amaldiçoados com pelo menos um tipo de transtorno mental.",
     compulsion: "Delírio",
     compulsionText:
-      "Alucinações e paranoia: −2 em testes sociais e de Percepção.",
-    disciplines: ["Auspícios", "Domínio", "Ofuscação"],
+      "Experimenta o que podem ser verdades ou presságios, mas que os outros chama de delírios trazidos à tona pela Fome",
+    disciplines: ["Auspícios", "Dominação", "Ofuscação"],
     name: "Malkaviano",
   },
   {
     bane: "Repulsivo",
     baneText:
-      "Aparência 0 e impossível se passar por humano; falha automática em disfarce.",
+      "Eles são vistos como grotestos e quase sempre aterrorizantes.",
     compulsion: "Criptofilia",
     compulsionText:
-      "Só se move atrás de um segredo novo e não compartilha o que sabe.",
+      "Ele é consumido por uma fome de segredos quase tão forte quanto sua sede de sangue.",
     disciplines: ["Animalismo", "Ofuscação", "Potência"],
     name: "Nosferatu",
   },
   {
     bane: "Fixação Estética",
     baneText:
-      "Diante de algo feio ou de um ambiente sem beleza, perde dados iguais à Gravidade da Perdição.",
+      "Eles desejam tão intensamente a beleza que acabam sofrendo em sua ausência.",
     compulsion: "Obsessão",
-    compulsionText: "Fica preso a uma coisa bela e ignora todo o resto.",
+    compulsionText: "Torna-se temporariamente obcecado com algo singularmente belo, ficando incapaz de pensar em qualquer outra coisa.",
     disciplines: ["Auspícios", "Celeridade", "Presença"],
     name: "Toreador",
   },
   {
     bane: "Sangue Deficiente",
     baneText:
-      "Seu sangue não cria laços nem vínculos como devia; Vitae instável.",
+      "O Vitae Tremere não tem mais a capacide de criar Laços de Sangue com outros Membros.",
     compulsion: "Perfeccionismo",
     compulsionText:
-      "Nada menos que impecável serve: −2 acumulável até um sucesso crítico.",
-    disciplines: ["Auspícios", "Domínio", "Feitiçaria de Sangue"],
+      "Nada a não ser o melhor satisfaz. Qualquer outra coisa provova uma profunda sensaçãõ de falha.",
+    disciplines: ["Auspícios", "Dominação", "Feitiçaria de Sangue"],
     name: "Tremere",
   },
   {
     bane: "Paladar Refinado",
     baneText:
-      "Só se alimenta de um tipo específico de presa; outro sangue é vomitado.",
+      "Quando bebe sangue de qualquer mortal que não seja da sua preferência, ele precisa fazer um grande esforço de vontade para que o sangue não folte na forma de vômito escarlate.",
     compulsion: "Arrogância",
     compulsionText:
-      "Precisa mandar na cena e ser obedecido, ou nada mais importa.",
-    disciplines: ["Domínio", "Fortitude", "Presença"],
+      "A necessidade que tem de governas aflora. Nada pode impedi-lo de assumir o controle de uma situação.",
+    disciplines: ["Dominação", "Fortitude", "Presença"],
     name: "Ventrue",
   },
   {
@@ -84,8 +84,8 @@ export const CLANS: readonly Clan[] = [
       "Não aparece em espelhos, câmeras e microfones sem falhar tecnologia por perto.",
     compulsion: "Crueldade",
     compulsionText:
-      "Não pode hesitar: qualquer recuo custa −2 até levar a coisa até o fim.",
-    disciplines: ["Domínio", "Oblívio", "Potência"],
+      "Fracasso não é uma opção. ",
+    disciplines: ["Dominação", "Oblívio", "Potência"],
     name: "Lasombra",
   },
   {
@@ -101,11 +101,11 @@ export const CLANS: readonly Clan[] = [
   {
     bane: "Aversão à Luz",
     baneText:
-      "Luz forte machuca mais: dano extra e penalidades iguais à Gravidade da Perdição.",
+      "O sangue do ministro abomina a luz.",
     compulsion: "Transgressão",
     compulsionText:
       "Tem que levar alguém a quebrar um tabu, ou quebrá-lo você mesmo.",
-    disciplines: ["Ofuscação", "Presença", "Protean"],
+    disciplines: ["Ofuscação", "Presença", "Proteanismo"],
     name: "Ministério",
   },
   {
@@ -121,7 +121,7 @@ export const CLANS: readonly Clan[] = [
   {
     bane: "Condenado a Vagar",
     baneText: "Dormir duas vezes no mesmo lugar traz dano agravado ao acordar.",
-    compulsion: "Tentar o Destino",
+    compulsion: "Destino Tentador",
     compulsionText:
       "Precisa escolher o caminho mais arriscado só para ver o que acontece.",
     disciplines: ["Animalismo", "Ofuscação", "Presença"],
@@ -130,11 +130,11 @@ export const CLANS: readonly Clan[] = [
   {
     bane: "Preso à Terra",
     baneText:
-      "Precisa dormir cercado por terra do seu domínio, ou não recupera nada.",
+      "Precisa dormir cercado por terra do seu Dominação, ou não recupera nada.",
     compulsion: "Cobiça",
     compulsionText:
       "Tem de possuir e controlar o que considera seu, sem dividir.",
-    disciplines: ["Animalismo", "Domínio", "Protean"],
+    disciplines: ["Animalismo", "Dominação", "Proteanismo"],
     name: "Tzimisce",
   },
   {
@@ -144,26 +144,26 @@ export const CLANS: readonly Clan[] = [
     compulsion: "Empatia Afetiva",
     compulsionText:
       "Sente a dor alheia como sua e precisa aliviá-la antes de agir.",
-    disciplines: ["Auspícios", "Domínio", "Fortitude"],
+    disciplines: ["Auspícios", "Dominação", "Fortitude"],
     name: "Salubri",
   },
   {
     bane: "Marginalizado",
     baneText:
-      "Sem clã nem Perdição fixa: subir Disciplinas custa mais e ninguém confia em você.",
+      "Intocados pelos Antidiluvianos, os Caitiff não compartilham nenhuma perdição.",
     compulsion: "Nenhuma",
     compulsionText: "Caitiff não tem Compulsão de clã.",
     disciplines: ["Livre escolha"],
     name: "Caitiff",
   },
   {
-    bane: "Sangue Fino",
+    bane: "Sangue-ralo",
     baneText:
       "Sem Perdição de clã, mas também sem Potência de Sangue e com méritos e falhas próprios.",
     compulsion: "Nenhuma",
     compulsionText: "Sangue Fraco não tem Compulsão de clã.",
-    disciplines: ["Alquimia de Sangue Fino"],
-    name: "Sangue Fraco",
+    disciplines: ["Alquimia de Sangue-ralo"],
+    name: "Sangue-ralo",
   },
 ];
 
