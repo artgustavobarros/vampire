@@ -380,6 +380,19 @@ describe("mapeamento ficha ↔ formulário", () => {
     ).toEqual(["", "", "Presença"]);
   });
 
+  it("outra especialidade do Predador volta a ficar pendente", () => {
+    const sheet = completeSheet({
+      predEspec: "Briga (Agarrar)",
+      predEspecNome: "Mata-leão",
+    });
+    const same = wizardToPatch(sheetToWizard(sheet), STEP_FIELDS[5], sheet);
+    expect("predEspecNome" in same).toBe(false);
+    const v = values({ predEspec: "Furtividade (Emboscada)" });
+    const other = wizardToPatch(v, STEP_FIELDS[5], sheet);
+    expect("predEspecNome" in other).toBe(true);
+    expect(other.predEspecNome).toBeUndefined();
+  });
+
   it("preserva disciplinas além das duas do assistente", () => {
     const sheet = completeSheet();
     sheet.disc.push({ nivel: 1, nome: "Presença", powers: [] });

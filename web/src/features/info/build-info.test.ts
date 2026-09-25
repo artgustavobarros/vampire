@@ -26,6 +26,37 @@ describe("buildInfo", () => {
     );
   });
 
+  it("especialidade comum", () => {
+    const info = buildInfo({
+      key: "Direito",
+      kind: "espec",
+      nivel: 1,
+      skill: "Erudição",
+    });
+    expect(info.kicker).toBe("Especialidade · Erudição");
+    expect(info.titulo).toBe("Direito");
+    expect(info.atual).toBe("Erudição 1");
+    expect(info.desc).toBe(
+      "Um foco dentro de Erudição. Quando a rolagem de Erudição se encaixa nesta especialidade, some 1 dado à parada."
+    );
+    expect(info.niveis).toEqual([]);
+    expect(info.nota).toBe("");
+    expect(info.renomear).toBe(false);
+  });
+
+  it("especialidade pendente do Predador", () => {
+    const info = buildInfo({
+      key: "Chantagem",
+      kind: "espec",
+      nivel: 3,
+      predador: "Extorsionário",
+      skill: "Intimidação",
+    });
+    expect(info.atual).toBe("Intimidação 3");
+    expect(info.nota).toContain("Tipo de Predador (Extorsionário)");
+    expect(info.renomear).toBe(true);
+  });
+
   it("disciplina fora do catálogo", () => {
     const info = buildInfo({ key: "Serpentis", kind: "disc", nivel: 2 });
     expect(info.desc).toBe(

@@ -108,7 +108,7 @@ function cleanSpecialties(
 export function wizardToPatch(
   values: WizardValues,
   fields: readonly WizardKey[],
-  sheet: Pick<Sheet, "disc">
+  sheet: Pick<Sheet, "disc" | "predEspec">
 ): Partial<Sheet> {
   const patch: Partial<Sheet> = {};
   const target = patch as Record<string, unknown>;
@@ -132,6 +132,10 @@ export function wizardToPatch(
     patch.predEspec = "";
     patch.predDisc = "";
     patch.predEscolhas = {};
+  }
+  if ("predEspec" in patch && patch.predEspec !== (sheet.predEspec ?? "")) {
+    // outra especialidade do Predador volta a ficar pendente
+    patch.predEspecNome = undefined;
   }
   return patch;
 }

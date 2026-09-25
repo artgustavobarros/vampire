@@ -14,6 +14,7 @@ import {
 } from "#/components/ui/sheet";
 import { cn } from "#/lib/utils";
 import { buildInfo, type InfoTable, type InfoTarget } from "./build-info";
+import { SpecialtyRename } from "./specialty-rename";
 
 interface InfoApi {
   open: (target: InfoTarget) => void;
@@ -134,6 +135,13 @@ export function InfoProvider({ children }: { children: ReactNode }) {
                 <p className="mt-6 mb-0 font-serif text-base text-ink-soft">
                   {info.nota}
                 </p>
+              ) : null}
+              {info.renomear ? (
+                <SpecialtyRename
+                  key={info.titulo}
+                  nome={info.titulo}
+                  onDone={() => setOpen(false)}
+                />
               ) : null}
             </>
           ) : null}

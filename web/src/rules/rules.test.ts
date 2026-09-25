@@ -20,7 +20,7 @@ import {
   predatorMerits,
   removePredator,
 } from "./predator";
-import { specialtiesBySkill } from "./specialties";
+import { confirmPredatorSpecialty, specialtiesBySkill } from "./specialties";
 import { addDamage, cycleBox, trackBoxes, vitalityMax } from "./tracks";
 import {
   attributeQuotas,
@@ -498,6 +498,8 @@ describe("notas da geração", () => {
 });
 
 describe("especialidades", () => {
+  const e = (nome: string, pendente = false) => ({ nome, pendente });
+
   it("junta as do assistente sem vazios", () => {
     expect(
       specialtiesBySkill(
@@ -505,13 +507,24 @@ describe("especialidades", () => {
           espec: { Briga: [" "], Persuasão: ["Negociação", "", "Sedução"] },
         })
       )
-    ).toEqual({ Persuasão: ["Negociação", "Sedução"] });
+    ).toEqual({ Persuasão: [e("Negociação"), e("Sedução")] });
   });
 
-  it("acrescenta a do Predador", () => {
+  it("acrescenta a do Predador como pendente", () => {
     expect(
       specialtiesBySkill(sheet({ predEspec: "Intimidação (Chantagem)" }))
-    ).toEqual({ Intimidação: ["Chantagem"] });
+    ).toEqual({ Intimidação: [e("Chantagem", true)] });
+  });
+
+  it("usa o nome confirmado da do Predador", () => {
+    expect(
+      specialtiesBySkill(
+        sheet({
+          predEspec: "Intimidação (Chantagem)",
+          predEspecNome: "Extorsão",
+        })
+      )
+    ).toEqual({ Intimidação: [e("Extorsão")] });
   });
 
   it("não repete a do Predador", () => {
@@ -522,11 +535,22 @@ describe("especialidades", () => {
           predEspec: "Persuasão (Seduzir)",
         })
       )
-    ).toEqual({ Persuasão: ["Seduzir"] });
+    ).toEqual({ Persuasão: [e("Seduzir", true)] });
   });
 
   it("ignora Predador fora do formato", () => {
     expect(specialtiesBySkill(sheet({ predEspec: "Chantagem" }))).toEqual({});
+  });
+
+  it("confirma o nome aparado da do Predador", () => {
+    const s = sheet({ predEspec: "Intimidação (Chantagem)" });
+    expect(confirmPredatorSpecialty(s, "  Extorsão ")).toEqual({
+      nome: "Extorsão",
+      patch: { predEspecNome: "Extorsão" },
+      skill: "Intimidação",
+    });
+    expect(confirmPredatorSpecialty(s, "  ")).toBeNull();
+    expect(confirmPredatorSpecialty(sheet({}), "Extorsão")).toBeNull();
   });
 });
 

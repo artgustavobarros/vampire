@@ -1,5 +1,6 @@
 import type { TraitGroup } from "#/data/traits";
 import { cn } from "#/lib/utils";
+import type { SpecialtyEntry } from "#/rules/specialties";
 import { DotRating } from "./dot-rating";
 import { InfoTrigger } from "./info-trigger";
 
@@ -11,8 +12,10 @@ interface TraitGridProps {
   /** largura mínima da coluna (auto-fit) */
   minColumn: number;
   onChange: (name: string, value: number) => void;
-  /** especialidades por traço, em selos abaixo do nome */
-  specialties?: Record<string, readonly string[]>;
+  /** Tipo de Predador, citado no painel da especialidade pendente */
+  predador?: string;
+  /** especialidades por traço, em selos abaixo do nome que abrem o painel */
+  specialties?: Record<string, readonly SpecialtyEntry[]>;
   /** cor do título do grupo: tinta (assistente) ou suave (ficha) */
   strongLabels?: boolean;
   values: Record<string, number>;
@@ -25,6 +28,7 @@ export function TraitGrid({
   values,
   onChange,
   minColumn,
+  predador,
   specialties,
   strongLabels,
   className,
@@ -51,12 +55,11 @@ export function TraitGrid({
             return (
               <div
                 className={cn(
-                  "flex flex-col gap-3 border-line-soft border-b py-2 w-full",
-
+                  "flex w-full flex-col gap-3 border-line-soft border-b py-2"
                 )}
                 key={name}
               >
-                <div className="flex flex-1 gap-1 justify-between">
+                <div className="flex flex-1 justify-between gap-1">
                   <span className="text-lg">
                     <InfoTrigger
                       target={{
@@ -80,11 +83,24 @@ export function TraitGrid({
                     className="m-0 flex list-none flex-wrap gap-1 p-0"
                   >
                     {specs.map((s) => (
-                      <li
-                        className="border border-ink bg-white px-1.5 py-1 font-label font-semibold text-ink text-xs leading-none"
-                        key={s}
-                      >
-                        {s}
+                      <li key={s.nome}>
+                        <InfoTrigger
+                          className={cn(
+                            "border bg-white px-1.5 py-1 font-label font-semibold text-xs leading-none",
+                            s.pendente
+                              ? "border-blood text-blood"
+                              : "border-ink text-ink"
+                          )}
+                          target={{
+                            key: s.nome,
+                            kind: "espec",
+                            nivel: values[name] || 0,
+                            predador: s.pendente ? predador || "" : undefined,
+                            skill: name,
+                          }}
+                        >
+                          {s.nome}
+                        </InfoTrigger>
                       </li>
                     ))}
                   </ul>

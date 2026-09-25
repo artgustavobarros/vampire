@@ -20,6 +20,14 @@ import { potencyFromGeneration } from "#/rules/generation";
 /** O que abrir no painel; cada gatilho passa o valor atual do personagem. */
 export type InfoTarget =
   | { kind: "attr" | "skill"; key: string; nivel: number }
+  /** `predador` só vem na especialidade do Predador ainda não confirmada */
+  | {
+      kind: "espec";
+      key: string;
+      skill: string;
+      nivel: number;
+      predador?: string;
+    }
   | { kind: "disc"; key: string; nivel: number }
   | { kind: "poder"; key: string; disc: string; nivel: number; desc?: string }
   | { kind: "merit"; key: string; tipo: MeritKind; pontos: number }
@@ -66,6 +74,8 @@ export interface InfoContent {
   niveis: InfoLevel[];
   nivelTit: string;
   nota: string;
+  /** mostra o formulário de renomear a especialidade do Predador */
+  renomear?: boolean;
   tabelas?: InfoTable[];
   titulo: string;
 }
@@ -125,6 +135,25 @@ function skillInfo(
     niveis: dotLevels(SKILL_SCALE, target.nivel),
     nivelTit: "O que cada ponto significa",
     nota: espec ? `Especialidades comuns: ${espec}.` : "",
+    titulo: target.key,
+  };
+}
+
+function specialtyInfo(
+  target: Extract<InfoTarget, { kind: "espec" }>
+): InfoContent {
+  const { skill, predador } = target;
+  return {
+    atual: `${skill} ${target.nivel}`,
+    desc: `Um foco dentro de ${skill}. Quando a rolagem de ${skill} se encaixa nesta especialidade, some 1 dado à parada.`,
+    kicker: `Especialidade · ${skill}`,
+    niveis: [],
+    nivelTit: "",
+    nota:
+      predador === undefined
+        ? ""
+        : `Veio do seu Tipo de Predador${predador ? ` (${predador})` : ""}. Você pode renomear ou manter o nome atual uma única vez. Depois de confirmar, ela vira uma especialidade comum.`,
+    renomear: predador !== undefined,
     titulo: target.key,
   };
 }
@@ -359,6 +388,8 @@ export function buildInfo(target: InfoTarget): InfoContent {
       return attrInfo(target);
     case "skill":
       return skillInfo(target);
+    case "espec":
+      return specialtyInfo(target);
     case "disc":
       return discInfo(target);
     case "poder":

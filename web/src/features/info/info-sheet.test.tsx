@@ -56,4 +56,34 @@ describe("painel de descrição", () => {
       "w-[400px]"
     );
   });
+
+  it("especialidade pendente mostra o formulário de renomear", async () => {
+    render(
+      <InfoProvider>
+        <InfoTrigger
+          target={{
+            key: "Chantagem",
+            kind: "espec",
+            nivel: 3,
+            predador: "Extorsionário",
+            skill: "Intimidação",
+          }}
+        >
+          Chantagem
+        </InfoTrigger>
+      </InfoProvider>
+    );
+    fireEvent.click(screen.getByRole("button", { name: "Chantagem" }));
+
+    const dialog = await screen.findByRole("dialog", { name: "Chantagem" });
+    const field = screen.getByLabelText("Nome da especialidade");
+    expect(field).toHaveValue("Chantagem");
+    expect(dialog).toHaveTextContent("(Extorsionário)");
+
+    const confirm = screen.getByRole("button", { name: "Confirmar nome" });
+    expect(confirm).toBeEnabled();
+    fireEvent.change(field, { target: { value: "  " } });
+    expect(confirm).toBeDisabled();
+    expect(screen.getByRole("button", { name: "Manter atual" })).toBeEnabled();
+  });
 });

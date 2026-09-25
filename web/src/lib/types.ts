@@ -86,6 +86,8 @@ export type Sheet = Partial<Record<TextFieldKey, string>> & {
   /** nome da distribuição de habilidades */
   dist?: string;
   predEspec?: string;
+  /** nome confirmado da especialidade do Predador; sem ele, ela está pendente */
+  predEspecNome?: string;
   predDisc?: string;
   /** escolhas dos ajustes do Predador: id do ajuste → pontos por opção */
   predEscolhas?: Record<string, Record<string, number>>;
