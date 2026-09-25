@@ -1,5 +1,6 @@
 import { Controller } from "react-hook-form";
 import { FieldLegend, FieldSet } from "#/components/ui/field";
+import { InfoTrigger } from "#/components/vtm/info-trigger";
 import { TraitGrid } from "#/components/vtm/trait-grid";
 import { ATTRIBUTE_GROUPS } from "#/data/traits";
 import { cn } from "#/lib/utils";
@@ -22,6 +23,8 @@ export function Step2Attributes() {
       render={({ field, fieldState }) => {
         const attrs = field.value;
         const { quotas, summary } = attributeQuotas(attrs);
+        const vit = vitalityMax({ attrs });
+        const vontade = willpowerMax({ attrs });
         return (
           <FieldSet
             className="outline-none"
@@ -66,8 +69,18 @@ export function Step2Attributes() {
               values={attrs}
             />
             <div className="mt-2 border-line border-t pt-3 font-label font-semibold text-ink-soft text-xs uppercase leading-none tracking-widest">
-              Vitalidade {vitalityMax({ attrs })} · Força de Vontade{" "}
-              {willpowerMax({ attrs })}
+              <InfoTrigger
+                target={{ atual: `Máximo ${vit}`, kind: "vitalidade" }}
+              >
+                Vitalidade
+              </InfoTrigger>{" "}
+              {vit} ·{" "}
+              <InfoTrigger
+                target={{ atual: `Máximo ${vontade}`, kind: "vontade" }}
+              >
+                Força de Vontade
+              </InfoTrigger>{" "}
+              {vontade}
             </div>
           </FieldSet>
         );

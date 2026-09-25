@@ -640,6 +640,28 @@ describe("regras do clã nos passos 5 a 7", () => {
     ).toHaveValue("12ª");
   });
 
+  it("rótulo Vitalidade do passo 2 abre o painel", async () => {
+    renderWizard(completeSheet(), "/criar?passo=2");
+    click(await screen.findByRole("button", { name: "Vitalidade" }));
+    const dialog = await screen.findByRole("dialog", { name: "Vitalidade" });
+    expect(dialog).toHaveTextContent("Máximo 6");
+    expect(
+      screen.getByRole("button", { hidden: true, name: "Vigor 3" })
+    ).toHaveAttribute("aria-pressed", "true");
+    expect(
+      screen.getByRole("button", { hidden: true, name: "Vigor 4" })
+    ).toHaveAttribute("aria-pressed", "false");
+  });
+
+  it("rótulo Força de Vontade do passo 2 abre o painel", async () => {
+    renderWizard(completeSheet(), "/criar?passo=2");
+    click(await screen.findByRole("button", { name: "Força de Vontade" }));
+    const dialog = await screen.findByRole("dialog", {
+      name: "Força de Vontade",
+    });
+    expect(dialog).toHaveTextContent("Máximo 4");
+  });
+
   it("título da Perdição abre o painel", async () => {
     renderWizard(completeSheet(), "/criar?passo=1");
     click(await screen.findByText("Temperamento Violento"));

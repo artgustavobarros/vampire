@@ -30,93 +30,73 @@ export const ATTR_INFO: Readonly<
   Record<string, readonly [string, readonly string[]]>
 > = {
   Autocontrole: [
-    "Calma sob pressão e domínio das emoções. Com Determinação, forma a Força de Vontade.",
+    "O Autocontrole permite qeu você permaneça calmo, controle suas emoções e tranquilize os outros. Também representa sua capacidade de manter a calma em tudo, de tiroteios a encontros íntimos. Autocontrole + Determinação resultam na sua Força de Vontade.",
     [
-      "Explode à toa.",
-      "Médio.",
-      "Mantém a compostura em crises.",
-      "Frio como gelo.",
-      "Imperturbável. Nada tira você do eixo.",
+     "O menor insulto ou confronto pode levá-lo ao frenesi.","Você pode subjugar seus instintos predatórios na maioria das situações não hostis.","Outros procuram sua orientação quando o sangue atinge o ventilador.","Você pode blefar sem esforço nas cartas e administrar sua Besta até certo ponto.","A Besta é seu animal de estimação."
     ],
   ],
   Carisma: [
-    "Presença e poder de atrair, inspirar e agradar.",
+    "O Carisma mede seu charme natural, graça e sex appeal. Quando você tem este Atributo, ele atrai as pessoas para você, facilitando muito sua alimentação. O Carisma não depende de boa aparência, que é a sua própria Qualidade.",
     [
-      "Passa despercebido ou incomoda.",
-      "Agradável.",
-      "Faz amigos com facilidade.",
-      "Magnético. Atrai atenção onde entra.",
-      "Líder nato. As pessoas querem seguir você.",
+      "Você pode falar claramente, embora pocucas pesoas tendam a ouvir.",
+      "Geralmente agradável, apesar de sua natureza não viva, você pode até fazer amigos.",
+      "As pessoas confiam em você implicatmente, por isso você faz amigos com facilidade.",
+      "Você possui magnetismo pessoal significativo e atrai seguidores como moscas.",
+      "Você pode liderar uma cidade em rebelião, se assim quiser.",
     ],
   ],
   Destreza: [
-    "Coordenação, reflexo e precisão do corpo e das mãos.",
+    "A Destreza governa sua agilidade e elegância, a rapidez com que você se esquiva de uma estaca que mira seu coração e quanto controle motor fino você possui quando está contra o relógio",
     [
-      "Desajeitado. Tropeça, derruba coisas.",
-      "Médio.",
-      "Ágil. Bom em esportes de precisão.",
-      "Treinado. Acrobata, atirador, dançarino.",
-      "Graça excepcional. Movimento quase perfeito.",
+      "Você pode correr, mas se equilibrar e se esquivar são um desafio.","Sua arrancada é sólida e, às vezes, você parece gracioso em seus movimentos.","Sua agilidade é impressionante e sua coordenação é tao boa quanot a de qualquer amador treinado","Você pode se destacar em acrobacias e se mover de uma mneira que poucos humanos conseguem.","Seus movimentos são fluidos e hipnóticos - quase sobre-humanos."
     ],
   ],
   Determinação: [
-    "Foco e persistência. Com Autocontrole, forma a Força de Vontade.",
+    "A Determinação fornece foco e propósito. Ela mede sua concentração e fortitude mental. A Determinação impele vigílias que varam a noite e bloqueiam distrações. Sua Força de Vontade é igual ao seu Autocontrole + Determinação.",
     [
-      "Desiste fácil.",
-      "Médio.",
-      "Termina o que começa.",
-      "Obstinado.",
-      "Inabalável.",
+    "Você só presta atenção nas coisas mais urgentes.","Você consegue se concentrar por um long período, contanto que não seja muito longo.","Distraí-lo exige mais esforço do que a maioria das pessoas está disposta a fazer.","Voc~e pode superar obstáculos e chegar a uma dedução empregando nada mais do que força-bruta mental.","Você consegue pensar em meio a um tiroteio ou vigiar a porta de uma orgia de sangue e depois limpar cada gota ou projétil derramado."
     ],
   ],
   Força: [
-    "Potência física bruta: levantar, empurrar, golpear, arrombar.",
+    "A Força determina o tamanho de um mortal que você pode levantar, o quão forte você pode atingi-lo e o quanto de força você pode obrigar seu corpo mortor a exercer.",
     [
-      "Fraco. Carrega compras com esforço.",
-      "Médio. Uma pessoa comum, sem treino.",
-      "Forte. Treina com frequência; arromba uma porta simples.",
-      "Muito forte. Levanta o próprio peso com facilidade.",
-      "No limite humano. Derruba quase qualquer um.",
+      "Você pode esmagar facilmente uma lavinha de cerveja.",
+      "Você é fisicamente mediano.",
+      "Você pode ser capaz de arrombar uma porta de madeira.",
+      "Você é uma espécime de físico privilegiado, provavelmente com uma musculatura vistosa.",
+      "Você é um verdadeiro pináculo de força e provavlmente é capaz de arrombar uma porta corta-fogo de metal, rasgar uma cerca de arame ou estourar um portão trnacado por correntes.",
     ],
   ],
   Inteligência: [
-    "Raciocínio lógico, memória e conhecimento acumulado.",
+    "A Inteligência mede sua capacidade de pensar, pesquisar e aplicar a lógica. Você pode lembrar e analisar informações de livros ou de seus sentidos. Nenhum enimga ou mistério pode iludir os verdadeiramente inteligentes.",
     [
-      "Aprende devagar.",
-      "Médio.",
-      "Esperto. Aprende rápido.",
-      "Brilhante.",
-      "Gênio.",
+      "Você pode ler escrever com competência, embora alguns termos o confundam.","Você é inteligente o suficiente para perceber suas limitações.","Você é brilhante, capaz de juntar pistas sem dificuldade.","Você provavelmente é consultado por membro do Clã Tremere por sua sabedoria.",'O termo "gênio" não abarca as profundezas e o alcance de seu intelecto.'
     ],
   ],
   Manipulação: [
-    "Fazer os outros agirem como você quer, com ou sem a verdade.",
+    "Manipulação é a sua capacidade de convecer os outros do seu ponto de vista, mentir de forma convincente e partir após enganar alguém sem que ninguém tenha notado.",
     [
-      "Transparente. Mente mal.",
-      "Médio.",
-      "Convence sem esforço aparente.",
-      "Joga com as pessoas como peças.",
-      "Mestre. Quase ninguém percebe.",
+      "Desde que seja honesto, você pode convencer as pessoas a fazer o qeu você quer.",
+      "Sua capacidade de enganar supera a vontade dos simplórios e fracos de mente.",
+      "Você nunca precisa pagar o preço total de nada.",
+      "Você poderia ser um líder de um culto - ou um político",
+      "Você poderia convencer o Príncipe a investir em propriedades no deserto, ou talvez até a cancelar uma Caçada de SAngue por sua cabeça.",
     ],
   ],
   Raciocínio: [
-    "Rapidez de pensamento e reação ao inesperado.",
+    'O Raciocínio é usado para pensar com rapidez e reagir corretamente com base em pouca informação. "Você ouve um som" é Raciocínio; "Você ouve dois guardas chegando" é Inteligência. O Raciocínio permite qeu você perceba uma emboscada ou responda de bate-pronto à Harpia no tribunal, em vez de pensar na melhor responsta apenas na noite seguinte.',
     [
-      "Demora a reagir.",
-      "Médio.",
-      "Pensa rápido numa conversa ou numa briga.",
-      "Raramente é pego de surpresa.",
-      "Responde antes de a pergunta terminar.",
+      "Você acaba entendendo, mas precisa de explicação.","Voc~e pode apostar a sorte no póquer ou pisar nos freios a tempo. Quase sempre.", "Você pode analisar uma situação e descobrir rapidamente a melhor rota de fuga.","Voc~e nunac é pego desprevenido e sempre tem uma resposta inteligente na ponta da língua.","Você poensa e responde mais rapidamente do que a maioria das pessoas pode compreender."
     ],
   ],
   Vigor: [
-    "Resistência a dor, cansaço e ferimento. Define a Vitalidade (Vigor + 3).",
+    "Sua resistência física. Vigor absorve danos físicos, como uma bala em alta velocidade ou a lâmina de um caçador, além de permitir que você não ce a esforço árduo. Seu Vigor + 3 resulta no seu valor de Vitalidade",
     [
-      "Frágil. Cansa e se machuca fácil.",
-      "Médio.",
-      "Resistente. Aguenta uma briga sem cair.",
-      "Duro. Resiste como um atleta de fundo.",
-      "Quase inquebrável para um corpo humano.",
+        "Mesmo esforços menores o deixam sem fôlego.",
+        "Você pode levar uma surra, mas considera fazer as pazes.",
+        "Alguns dias da caminhada difícil com uma mochila pesada não são problema para você",
+        "Você pode vencer uma maratona ou aguentar grandes quantidades de dor, ao menos fisicamente.",
+        "Mesmo se fosse um mortal, você nunca derramaria uma gota de suor."
     ],
   ],
 };
