@@ -12,8 +12,13 @@ import { POWERS, type PowerTemplate } from "#/data/disciplines";
 import { notify } from "#/lib/toast";
 import type { Power } from "#/lib/types";
 import { cn } from "#/lib/utils";
-
-import { powerLimitHint, powerToggleBlock, trimPowers } from "#/rules/wizard";
+import {
+  clanDisciplineOptions,
+  disciplineDistribution,
+  powerLimitHint,
+  powerToggleBlock,
+  trimPowers,
+} from "#/rules/wizard";
 import { useWizardForm } from "./form-fields";
 
 const toPower = (p: PowerTemplate): Power => ({
@@ -25,7 +30,34 @@ const toPower = (p: PowerTemplate): Power => ({
   rouse: p.rouse,
 });
 
-export function DisciplineRow({
+export function Step5Disciplines() {
+  const { control } = useWizardForm();
+  const [cla, disc] = useWatch({ control, name: ["cla", "disc"] });
+  const { aviso, kind, options } = clanDisciplineOptions(cla);
+  const status = disciplineDistribution(disc, cla);
+  return (
+    <>
+      <div className="mb-2 text-base text-ink-soft">{aviso}</div>
+      {kind !== "thin" && (
+        <>
+          {[0, 1].map((i) => (
+            <DisciplineRow index={i} key={i} options={options} />
+          ))}
+          <div
+            className={cn(
+              "mt-4 font-label font-semibold text-xs uppercase leading-snug tracking-widest",
+              status.ok ? "text-moss" : "text-ink-soft"
+            )}
+          >
+            {status.message}
+          </div>
+        </>
+      )}
+    </>
+  );
+}
+
+function DisciplineRow({
   index,
   options,
 }: {

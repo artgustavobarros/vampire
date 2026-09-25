@@ -56,7 +56,7 @@ const STEPS: { title: string; hint: string; body: () => ReactNode }[] = [
   },
   {
     body: Step5Disciplines,
-    hint: "Duas Disciplinas do clã e a Potência de Sangue.",
+    hint: "Duas Disciplinas do clã: dois pontos em uma, um na outra.",
     title: "Disciplinas",
   },
   {

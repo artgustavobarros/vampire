@@ -1,14 +1,18 @@
 import { GENERATIONS } from "#/data/generations";
 import type { Sheet } from "#/lib/types";
 
+const NON_DIGITS = /[^0-9]/g;
+
+/** Número da geração ("12ª" → 12); `NaN` quando não há número. */
+function generationNumber(generation: string | undefined): number {
+  return Number.parseInt(String(generation ?? "").replace(NON_DIGITS, ""), 10);
+}
+
 /** Potência de Sangue da geração; `null` quando a geração não é reconhecida. */
 export function potencyFromGeneration(
   generation: string | undefined
 ): number | null {
-  const n = Number.parseInt(
-    String(generation ?? "").replace(/[^0-9]/g, ""),
-    10
-  );
+  const n = generationNumber(generation);
   if (!n) {
     return null;
   }
@@ -20,7 +24,7 @@ export function potencyFromGeneration(
     return 0;
   }
   if (n < 4) {
-    return 7;
+    return 5;
   }
   return null;
 }
@@ -31,38 +35,21 @@ export function bloodPotency(sheet: PotencySource): number {
   return potencyFromGeneration(sheet.geracao) ?? (sheet.potencia || 0);
 }
 
-export function potencyNote(sheet: PotencySource, inWizard = false): string {
+export function potencyNote(sheet: PotencySource): string {
   const potency = bloodPotency(sheet);
   if (potencyFromGeneration(sheet.geracao) !== null) {
-    // no passo 5 a geração já aparece no rótulo ao lado
-    return inWizard
-      ? `Potência de Sangue ${potency}.`
-      : `Geração ${sheet.geracao} — Potência de Sangue ${potency}.`;
+    return `Geração ${sheet.geracao} — Potência de Sangue ${potency}.`;
   }
   if (sheet.geracao) {
     return `Geração "${sheet.geracao}" não reconhecida — usando Potência de Sangue ${potency}.`;
   }
-  return inWizard
-    ? "Escolha a Geração no passo 1 para definir a Potência de Sangue."
-    : "Escolha a Geração para definir a Potência de Sangue.";
+  return "Escolha a Geração para definir a Potência de Sangue.";
 }
 
-/** Faixa de idade/poder de uma geração numérica (16 = 16ª). */
-export function generationCategory(n: number): string {
-  if (n >= 14) {
-    return "Sangue-ralo";
-  }
-  if (n >= 12) {
-    return "Neófito";
-  }
-  if (n >= 10) {
-    return "Ancilla";
-  }
-  if (n >= 8) {
-    return "Ancião";
-  }
-  if (n >= 6) {
-    return "Ancião poderoso";
-  }
-  return "Matusalém";
+/** Geração do senhor, uma acima da do personagem. */
+export function sireNote(generation: string | undefined): string {
+  const n = generationNumber(generation);
+  return n
+    ? `Seu senhor é da ${n - 1}ª Geração (você é sempre uma Geração acima do senhor).`
+    : "Você é sempre uma Geração acima do seu senhor.";
 }

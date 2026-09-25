@@ -12,7 +12,7 @@ import { autoFit } from "#/components/vtm/trait-grid";
 import { CLANS, findClan } from "#/data/clans";
 import { GENERATIONS } from "#/data/generations";
 import type { InfoTarget } from "#/features/info/build-info";
-import { bloodPotency, potencyNote } from "#/rules/generation";
+import { bloodPotency, potencyNote, sireNote } from "#/rules/generation";
 import { useWizardForm, WizardTextField } from "./form-fields";
 
 export function Step1Clan() {
@@ -81,7 +81,7 @@ export function Step1Clan() {
                 {/* rótulo abre o painel; o select é nomeado por aria-label */}
                 <InfoTrigger
                   className="block font-label font-semibold text-ink-soft text-xs uppercase leading-none tracking-[.12em]"
-                  target={{ geracao: field.value, kind: "geracao" }}
+                  target={{ geracao: field.value, kind: "geracao", potencia }}
                 >
                   Geração
                 </InfoTrigger>
@@ -100,6 +100,9 @@ export function Step1Clan() {
                 </NativeSelect>
                 <FieldDescription>
                   {potencyNote({ geracao: field.value, potencia: 0 })}
+                </FieldDescription>
+                <FieldDescription className="-mt-1">
+                  {sireNote(field.value)}
                 </FieldDescription>
               </Field>
             )}

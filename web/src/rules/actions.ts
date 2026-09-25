@@ -32,7 +32,8 @@ export function rouseCheck(
 }
 
 export function bloodSurgeNote(sheet: Sheet): string {
-  return `Surto de Sangue: ${bloodPotencyRow(bloodPotency(sheet)).bloodSurge} no teste.`;
+  const surge = bloodPotencyRow(bloodPotency(sheet)).bloodSurge;
+  return `Surto de Sangue: ${surge.toLowerCase()} ao teste.`;
 }
 
 export function sleep(sheet: Sheet, healOnSleep: boolean): ActionResult {

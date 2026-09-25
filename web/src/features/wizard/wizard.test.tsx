@@ -486,19 +486,48 @@ describe("regras do clã nos passos 5 a 7", () => {
     ).toHaveAttribute("aria-pressed", "false");
   });
 
-  it("Geração abre o painel nos passos 5 e 1", async () => {
+  it("passo 5 não mostra Potência nem Geração", async () => {
     renderWizard(completeSheet(), "/criar?passo=5");
-    click(await screen.findByRole("button", { name: "Geração 12ª" }));
-    const dialog = await screen.findByRole("dialog", { name: "Geração" });
-    expect(dialog).toHaveTextContent("12ª · Potência 1");
+    await screen.findByText("Passo 5 de 8");
+    expect(
+      screen.getByText(
+        "Duas Disciplinas do clã: dois pontos em uma, um na outra."
+      )
+    ).toBeInTheDocument();
+    expect(
+      screen.getByText("Distribuição completa: 2 e 1.")
+    ).toBeInTheDocument();
+    expect(
+      screen.queryByRole("button", { name: "Geração 12ª" })
+    ).not.toBeInTheDocument();
+    expect(
+      screen.queryByRole("button", { name: "Potência de Sangue" })
+    ).not.toBeInTheDocument();
+  });
+
+  it("passo 1 mostra a Potência e a Geração do senhor", async () => {
+    renderWizard(completeSheet(), "/criar?passo=1");
+    fireEvent.change(await screen.findByLabelText("Geração"), {
+      target: { value: "9ª" },
+    });
+    expect(
+      screen.getByText("Geração 9ª — Potência de Sangue 2.")
+    ).toBeInTheDocument();
+    expect(
+      screen.getByText(
+        "Seu senhor é da 8ª Geração (você é sempre uma Geração acima do senhor)."
+      )
+    ).toBeInTheDocument();
   });
 
   it("rótulo Geração do passo 1 abre o painel", async () => {
     renderWizard(completeSheet(), "/criar?passo=1");
     click(await screen.findByRole("button", { name: "Geração" }));
-    expect(
-      await screen.findByRole("dialog", { name: "Geração" })
-    ).toHaveTextContent("Potência de Sangue 1 · Neófito");
+    const dialog = await screen.findByRole("dialog", { name: "Geração" });
+    expect(dialog).toHaveTextContent("12ª Geração · Potência 1");
+    expect(dialog.querySelector("tr[aria-current]")).toHaveTextContent(
+      "Adicione 2 dados"
+    );
     expect(
       screen.getByRole("combobox", { hidden: true, name: "Geração" })
     ).toHaveValue("12ª");

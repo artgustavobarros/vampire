@@ -13,7 +13,7 @@ import {
   SheetTitle,
 } from "#/components/ui/sheet";
 import { cn } from "#/lib/utils";
-import { buildInfo, type InfoTarget } from "./build-info";
+import { buildInfo, type InfoTable, type InfoTarget } from "./build-info";
 
 interface InfoApi {
   open: (target: InfoTarget) => void;
@@ -53,7 +53,13 @@ export function InfoProvider({ children }: { children: ReactNode }) {
       {children}
       <Sheet onOpenChange={setOpen} open={open}>
         <SheetContent
-          className="data-[state=open]:slide-in-from-right-6! w-[400px] max-w-[92vw] gap-0 overflow-y-auto border-line p-6 data-[state=closed]:duration-200 data-[state=open]:duration-200 sm:max-w-[400px]"
+          className={cn(
+            "data-[state=open]:slide-in-from-right-6! max-w-[92vw] gap-0 overflow-y-auto border-line p-6 data-[state=closed]:duration-200 data-[state=open]:duration-200",
+            // tabelas largas pedem o painel mais largo
+            info?.tabelas?.length
+              ? "w-[760px] sm:max-w-[760px]"
+              : "w-[400px] sm:max-w-[400px]"
+          )}
           showCloseButton={false}
           side="right"
         >
@@ -121,6 +127,9 @@ export function InfoProvider({ children }: { children: ReactNode }) {
                   </ul>
                 </>
               ) : null}
+              {info.tabelas?.map((tb) => (
+                <InfoTableView key={tb.titulo} table={tb} />
+              ))}
               {info.nota ? (
                 <p className="mt-6 mb-0 font-serif text-base text-ink-soft">
                   {info.nota}
@@ -131,5 +140,57 @@ export function InfoProvider({ children }: { children: ReactNode }) {
         </SheetContent>
       </Sheet>
     </InfoContext.Provider>
+  );
+}
+
+function InfoTableView({ table }: { table: InfoTable }) {
+  return (
+    <>
+      <div className={cn(LABEL, "mt-8 mb-2 text-ink-soft")}>{table.titulo}</div>
+      <div className="overflow-x-auto border-line border-t">
+        <table
+          className="grid border-collapse"
+          style={{ gridTemplateColumns: table.grid, minWidth: table.minW }}
+        >
+          <thead className="contents">
+            <tr className="contents">
+              {table.colunas.map((c) => (
+                <th
+                  className="border-line border-b p-2 text-left font-bold font-label text-[11px] text-ink uppercase leading-[1.3] tracking-[.08em]"
+                  key={c}
+                  scope="col"
+                >
+                  {c}
+                </th>
+              ))}
+            </tr>
+          </thead>
+          <tbody className="contents">
+            {table.linhas.map((row) => (
+              <tr
+                aria-current={row.current ? "true" : undefined}
+                className="contents"
+                key={row.cells[0]}
+              >
+                {row.cells.map((cell, k) => (
+                  <td
+                    className={cn(
+                      "whitespace-pre-line border-b p-2 font-serif text-[15px] text-ink leading-[1.4]",
+                      row.current
+                        ? "border-ink bg-field"
+                        : "border-line-soft bg-transparent",
+                      (row.current || k === 0) && "font-bold"
+                    )}
+                    key={table.colunas[k]}
+                  >
+                    {cell}
+                  </td>
+                ))}
+              </tr>
+            ))}
+          </tbody>
+        </table>
+      </div>
+    </>
   );
 }

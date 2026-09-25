@@ -1,8 +1,7 @@
-import { bloodPotencyRow } from "#/data/blood-potency";
+import { BLOOD_POTENCY, bloodPotencyRow } from "#/data/blood-potency";
 import { CLAN_FULL } from "#/data/clan-rules";
 import { findClan } from "#/data/clans";
 import { POWERS } from "#/data/disciplines";
-import { GENERATIONS } from "#/data/generations";
 import {
   ATTR_INFO,
   DISC_INFO,
@@ -16,7 +15,7 @@ import {
 } from "#/data/trait-info";
 import { ATTRIBUTE_GROUPS, SKILL_GROUPS, type TraitGroup } from "#/data/traits";
 import type { MeritKind } from "#/lib/types";
-import { generationCategory, potencyFromGeneration } from "#/rules/generation";
+import { potencyFromGeneration } from "#/rules/generation";
 
 /** O que abrir no painel; cada gatilho passa o valor atual do personagem. */
 export type InfoTarget =
@@ -26,8 +25,11 @@ export type InfoTarget =
   | { kind: "merit"; key: string; tipo: MeritKind; pontos: number }
   /** Perdição e Compulsão do clã `key`; `potencia` define a Gravidade */
   | { kind: "bane" | "comp"; key: string; potencia: number }
-  /** `geracao` do formulário ou da ficha (ex.: "12ª"); vazio = sem Geração */
-  | { kind: "geracao"; geracao: string }
+  /**
+   * Geração e Potência de Sangue: `geracao` do formulário ou da ficha (ex.:
+   * "12ª", vazio = sem Geração) e `potencia` já resolvida por quem abre
+   */
+  | { kind: "geracao" | "potencia"; geracao: string; potencia: number }
   | {
       kind: StateKind;
       /** texto do selo (ex.: "7 / 10") */
@@ -42,6 +44,21 @@ export interface InfoLevel {
   txt: string;
 }
 
+export interface InfoTableRow {
+  cells: string[];
+  current: boolean;
+}
+
+export interface InfoTable {
+  colunas: string[];
+  /** `grid-template-columns` da tabela */
+  grid: string;
+  linhas: InfoTableRow[];
+  /** largura mínima antes de rolar na horizontal */
+  minW: string;
+  titulo: string;
+}
+
 export interface InfoContent {
   atual: string;
   desc: string;
@@ -49,6 +66,7 @@ export interface InfoContent {
   niveis: InfoLevel[];
   nivelTit: string;
   nota: string;
+  tabelas?: InfoTable[];
   titulo: string;
 }
 
@@ -197,28 +215,61 @@ function powerInfo(
   };
 }
 
-function generationInfo(
-  target: Extract<InfoTarget, { kind: "geracao" }>
-): InfoContent {
-  const potencia = potencyFromGeneration(target.geracao);
-  const rows = GENERATIONS.map(
-    (g) =>
-      [
-        g.label,
-        `Potência de Sangue ${g.bloodPotency} · ${generationCategory(Number.parseInt(g.label, 10))}`,
-      ] as const
-  );
+const MEND_SUFFIX = " por Checagem de Sangue";
+
+function bloodPotencyTable(potencia: number): InfoTable {
   return {
-    atual:
-      target.geracao && potencia !== null
-        ? `${target.geracao} · Potência ${potencia}`
-        : "Sem Geração",
-    desc: "A distância entre você e Caim. Cada Abraço dilui o sangue: quanto maior o número da Geração, mais fraco o sangue. A Geração define a Potência de Sangue inicial, que por sua vez define o Surto de Sangue, a cura, o bônus de Disciplinas e a Gravidade da Perdição.",
+    colunas: [
+      "Potência",
+      "Surto de Sangue",
+      "Dano recuperado (por Checagem de Sangue)",
+      "Bônus de poder de Disciplina",
+      "Rerrolagem de Checagem para Disciplinas",
+      "Gravidade da Perdição",
+      "Penalidade de alimentação",
+    ],
+    grid: "64px repeat(5, minmax(88px,1fr)) minmax(180px,2fr)",
+    linhas: BLOOD_POTENCY.map((b) => ({
+      cells: [
+        String(b.level),
+        b.bloodSurge,
+        b.mendAmount.replace(MEND_SUFFIX, ""),
+        b.powerBonus,
+        b.rouseReroll,
+        String(b.baneSeverity),
+        b.feedingList.join("\n"),
+      ],
+      current: b.level === potencia,
+    })),
+    minW: "700px",
+    titulo: "Potência de Sangue",
+  };
+}
+
+function bloodInfo(
+  target: Extract<InfoTarget, { kind: "geracao" | "potencia" }>
+): InfoContent {
+  const { geracao, potencia } = target;
+  const known = potencyFromGeneration(geracao) !== null;
+  const inicial = known
+    ? `a ${geracao} começa com Potência ${potencia}.`
+    : "escolha a Geração para ver a sua.";
+  const desc =
+    target.kind === "geracao"
+      ? `A distância entre você e Caim. Você é sempre uma Geração acima do seu senhor, e cada Abraço dilui o sangue. A Geração define a Potência de Sangue inicial: ${inicial}`
+      : "A força da vitae. Não se escolhe na criação: vem da Geração.";
+  const selo = geracao ? `${geracao} Geração · ` : "";
+  return {
+    atual: `${selo}Potência ${potencia}`,
+    desc,
     kicker: "Sangue",
-    niveis: levels(rows, target.geracao),
-    nivelTit: "Geração e Potência de Sangue",
-    nota: "Personagens iniciantes normalmente são da 12ª ou 13ª Geração. Gerações mais baixas só com permissão do Narrador.",
-    titulo: "Geração",
+    niveis: [],
+    nivelTit: "",
+    nota: known
+      ? `Linha destacada: Potência ${potencia}, a inicial da ${geracao} Geração.`
+      : "Escolha a Geração no passo 1 para destacar a sua Potência inicial.",
+    tabelas: [bloodPotencyTable(potencia)],
+    titulo: target.kind === "geracao" ? "Geração" : "Potência de Sangue",
   };
 }
 
@@ -315,7 +366,8 @@ export function buildInfo(target: InfoTarget): InfoContent {
     case "comp":
       return clanRuleInfo(target);
     case "geracao":
-      return generationInfo(target);
+    case "potencia":
+      return bloodInfo(target);
     default:
       return stateInfo(target);
   }

@@ -5,11 +5,7 @@ import type { DamageMark, Merit, Power, Sheet } from "#/lib/types";
 import { bloodSurgeNote, healAggravated, rouseCheck, sleep } from "./actions";
 import { nextDotValue } from "./dots";
 import { FEEDING_SOURCES, feed, feedingYield } from "./feeding";
-import {
-  generationCategory,
-  potencyFromGeneration,
-  potencyNote,
-} from "./generation";
+import { potencyFromGeneration, potencyNote, sireNote } from "./generation";
 import { adjustHumanity, stains, toggleStain } from "./humanity";
 import { hungerAlertFor } from "./hunger";
 import { addDamage, cycleBox, trackBoxes, vitalityMax } from "./tracks";
@@ -96,7 +92,7 @@ describe("Rouse Check", () => {
   });
   it("surto usa o bônus da Potência", () => {
     expect(bloodSurgeNote(sheet({ geracao: "12ª" }))).toBe(
-      "Surto de Sangue: +2 dados no teste."
+      "Surto de Sangue: adicione 2 dados ao teste."
     );
   });
 });
@@ -171,9 +167,12 @@ describe("alerta de Fome", () => {
 describe("geração", () => {
   it("mapeia a tabela e os extremos", () => {
     expect(potencyFromGeneration("12ª")).toBe(1);
-    expect(potencyFromGeneration("8ª")).toBe(3);
+    expect(potencyFromGeneration("4ª")).toBe(5);
+    expect(potencyFromGeneration("8ª")).toBe(2);
+    expect(potencyFromGeneration("9ª")).toBe(2);
+    expect(potencyFromGeneration("14ª")).toBe(0);
     expect(potencyFromGeneration("20")).toBe(0);
-    expect(potencyFromGeneration("3ª")).toBe(7);
+    expect(potencyFromGeneration("3ª")).toBe(5);
     expect(potencyFromGeneration("")).toBeNull();
   });
 });
@@ -439,22 +438,20 @@ describe("poderes por ponto", () => {
   });
 });
 
-describe("categoria da geração", () => {
-  it("faixas da tabela", () => {
-    expect(generationCategory(16)).toBe("Sangue-ralo");
-    expect(generationCategory(12)).toBe("Neófito");
-    expect(generationCategory(10)).toBe("Ancilla");
-    expect(generationCategory(8)).toBe("Ancião");
-    expect(generationCategory(6)).toBe("Ancião poderoso");
-    expect(generationCategory(4)).toBe("Matusalém");
+describe("notas da geração", () => {
+  it("nota da Potência", () => {
+    expect(potencyNote({ geracao: "9ª", potencia: 0 })).toBe(
+      "Geração 9ª — Potência de Sangue 2."
+    );
+    expect(potencyNote({ geracao: "", potencia: 0 })).toBe(
+      "Escolha a Geração para definir a Potência de Sangue."
+    );
   });
 
-  it("nota curta no assistente", () => {
-    expect(potencyNote({ geracao: "12ª", potencia: 0 }, true)).toBe(
-      "Potência de Sangue 1."
+  it("geração do senhor", () => {
+    expect(sireNote("9ª")).toBe(
+      "Seu senhor é da 8ª Geração (você é sempre uma Geração acima do senhor)."
     );
-    expect(potencyNote({ geracao: "12ª", potencia: 0 })).toBe(
-      "Geração 12ª — Potência de Sangue 1."
-    );
+    expect(sireNote("")).toBe("Você é sempre uma Geração acima do seu senhor.");
   });
 });

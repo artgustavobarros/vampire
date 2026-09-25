@@ -105,7 +105,11 @@ export function RegistrosTab() {
           <h3 className="m-0 font-label font-semibold text-white/60 text-xs uppercase leading-none tracking-[.12em]">
             <InfoTrigger
               onDark
-              target={{ atual: `Nível ${bp.level}`, kind: "potencia" }}
+              target={{
+                geracao: sheet.geracao ?? "",
+                kind: "potencia",
+                potencia: potency,
+              }}
             >
               Potência de Sangue
             </InfoTrigger>

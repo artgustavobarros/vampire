@@ -6,8 +6,7 @@ export type StateKind =
   | "humanidade"
   | "vitalidade"
   | "vontade"
-  | "ressonancia"
-  | "potencia";
+  | "ressonancia";
 
 /** [kicker, título, descrição, níveis [marcador, texto], nota] */
 export type TraitInfo = readonly [
@@ -289,13 +288,6 @@ export const TRAIT_INFO: Readonly<Record<StateKind, TraitInfo>> = {
       ["10", "Santo. Quase ninguém chega aqui."],
     ],
     "Manchas vêm de violar seus Princípios. No fim da sessão, cada mancha pode custar um ponto.",
-  ],
-  potencia: [
-    "Sangue",
-    "Potência de Sangue",
-    "A força da vitae, definida pela Geração. Aumenta o surto de sangue, a cura e os poderes, mas deixa presas fracas menos satisfatórias.",
-    [],
-    "Não se compra com pontos na criação: decorre da Geração.",
   ],
   ressonancia: [
     "Sangue",

@@ -114,21 +114,53 @@ describe("buildInfo", () => {
   });
 
   it("Geração 12ª destacada", () => {
-    const info = buildInfo({ geracao: "12ª", kind: "geracao" });
+    const info = buildInfo({ geracao: "12ª", kind: "geracao", potencia: 1 });
     expect(info.kicker).toBe("Sangue");
-    expect(info.atual).toBe("12ª · Potência 1");
-    expect(info.niveis).toHaveLength(13);
-    expect(current(info.niveis)).toEqual(["12ª"]);
-    expect(info.niveis.find((l) => l.n === "12ª")?.txt).toBe(
-      "Potência de Sangue 1 · Neófito"
+    expect(info.titulo).toBe("Geração");
+    expect(info.atual).toBe("12ª Geração · Potência 1");
+    expect(info.desc).toContain("a 12ª começa com Potência 1.");
+    expect(info.niveis).toEqual([]);
+    const [table] = info.tabelas ?? [];
+    expect(table.linhas).toHaveLength(11);
+    expect(table.colunas).toHaveLength(7);
+    expect(
+      table.linhas.filter((r) => r.current).map((r) => r.cells[0])
+    ).toEqual(["1"]);
+    expect(info.nota).toBe(
+      "Linha destacada: Potência 1, a inicial da 12ª Geração."
     );
-    expect(info.niveis.at(-1)?.txt).toBe("Potência de Sangue 6 · Matusalém");
   });
 
   it("sem Geração", () => {
-    const info = buildInfo({ geracao: "", kind: "geracao" });
-    expect(info.atual).toBe("Sem Geração");
-    expect(current(info.niveis)).toEqual([]);
+    const info = buildInfo({ geracao: "", kind: "geracao", potencia: 0 });
+    expect(info.atual).toBe("Potência 0");
+    expect(info.desc).toContain("escolha a Geração para ver a sua.");
+    expect(info.nota).toBe(
+      "Escolha a Geração no passo 1 para destacar a sua Potência inicial."
+    );
+    expect(info.tabelas?.[0].linhas[0].current).toBe(true);
+  });
+
+  it("tabela de Potência de Sangue da 9ª Geração", () => {
+    const info = buildInfo({ geracao: "9ª", kind: "potencia", potencia: 2 });
+    expect(info.titulo).toBe("Potência de Sangue");
+    expect(info.desc).toBe(
+      "A força da vitae. Não se escolhe na criação: vem da Geração."
+    );
+    const linhas = info.tabelas?.[0].linhas ?? [];
+    const atual = linhas.find((r) => r.current);
+    expect(atual?.cells).toEqual([
+      "2",
+      "Adicione 2 dados",
+      "2 pontos de dano Superficial",
+      "Adicione 1 dado",
+      "Nível 1",
+      "2",
+      "Sangue animal ou ensacado sacia meia Fome",
+    ]);
+    expect(linhas[4].cells[6]).toBe(
+      "Sangue animal ou ensacado não sacia nenhuma Fome\nSacia 1 a menos de Fome por humano"
+    );
   });
 
   it("poder fora do catálogo usa a descrição registrada", () => {
