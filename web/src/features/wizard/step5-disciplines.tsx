@@ -6,28 +6,20 @@ import {
   FieldSet,
 } from "#/components/ui/field";
 import { NativeSelect } from "#/components/vtm/fields";
-import { InfoTrigger } from "#/components/vtm/info-trigger";
+import { PowerCard } from "#/components/vtm/power-card";
 import { POWERS, type PowerTemplate } from "#/data/disciplines";
 import { notify } from "#/lib/toast";
-import type { Power } from "#/lib/types";
 import { cn } from "#/lib/utils";
 import {
+  addPower,
   clanDisciplineOptions,
   disciplineDistribution,
   powerLimitHint,
   powerToggleBlock,
+  toPower,
   trimPowers,
 } from "#/rules/wizard";
 import { useWizardForm } from "./form-fields";
-
-const toPower = (p: PowerTemplate): Power => ({
-  custo: p.cost,
-  desc: p.description,
-  duracao: p.duration,
-  nivel: p.level,
-  nome: p.name,
-  rouse: p.rouse,
-});
 
 export function Step5Disciplines() {
   const { control } = useWizardForm();
@@ -153,9 +145,7 @@ function DisciplineRow({
                 notify(block.msg, { titulo: block.titulo, tom: "info" });
                 return;
               }
-              const powers = [...field.value, toPower(p)];
-              powers.sort((x, y) => (x.nivel || 1) - (y.nivel || 1));
-              field.onChange(powers);
+              field.onChange(addPower(field.value, toPower(p)));
             };
             return (
               <Field data-invalid={fieldState.invalid}>
@@ -217,49 +207,5 @@ function LevelButtons({
         </button>
       ))}
     </fieldset>
-  );
-}
-
-/** Cartão de poder: o cartão todo alterna a escolha; o nome abre o painel do poder. */
-function PowerCard({
-  disc,
-  power,
-  selected,
-  onToggle,
-}: {
-  disc: string;
-  power: PowerTemplate;
-  selected: boolean;
-  onToggle: () => void;
-}) {
-  return (
-    <div
-      className={cn(
-        "relative min-h-12 max-w-70 border p-3",
-        selected
-          ? "border-ink bg-ink text-white"
-          : "border-line bg-transparent text-ink"
-      )}
-    >
-      <InfoTrigger
-        className="relative z-10 inline-block font-label font-semibold text-xs leading-tight"
-        onDark={selected}
-        target={{ disc, key: power.name, kind: "poder", nivel: power.level }}
-      >
-        {power.name}
-      </InfoTrigger>
-      {/* camada que estende o clique ao cartão todo, abaixo do nome */}
-      <button
-        aria-label={`${selected ? "Remover" : "Incluir"} ${power.name}`}
-        aria-pressed={selected}
-        className="block cursor-pointer text-left outline-none after:absolute after:inset-0 after:content-[''] focus-visible:after:outline-2 focus-visible:after:outline-ink focus-visible:after:outline-offset-2"
-        onClick={onToggle}
-        type="button"
-      >
-        <span className="mt-0.5 block text-sm leading-snug opacity-70">
-          Nível {power.level} · {power.cost}
-        </span>
-      </button>
-    </div>
   );
 }

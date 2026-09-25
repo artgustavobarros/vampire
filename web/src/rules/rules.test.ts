@@ -17,7 +17,9 @@ import { hungerAlertFor } from "./hunger";
 import {
   applyPredator,
   predatorChoiceStatus,
+  predatorDiscipline,
   predatorMerits,
+  predatorPower,
   removePredator,
 } from "./predator";
 import { confirmPredatorSpecialty, specialtiesBySkill } from "./specialties";
@@ -719,6 +721,106 @@ describe("Predador", () => {
       expect(back.meritos).toEqual(base.meritos);
       expect(back.predBonus).toBeUndefined();
     }
+  });
+
+  describe("predatorDiscipline", () => {
+    const names = (ctx: ReturnType<typeof predatorDiscipline>) =>
+      ctx.elegiveis.map((p) => `${p.level}:${p.name}`);
+    const compelir: Power = { nivel: 1, nome: "Compelir" };
+    const ventrue = [
+      { nivel: 2, nome: "Domínio", powers: [compelir] },
+      { nivel: 1, nome: "Presença", powers: [] },
+    ];
+
+    it("do clã com pontos vai ao próximo nível sem repetir poderes", () => {
+      const ctx = predatorDiscipline("Ventrue", ventrue, "Domínio");
+      expect(ctx).toMatchObject({ atual: 2, doCla: true, novo: 3 });
+      expect(ctx.elegiveis.every((p) => p.level <= 3)).toBe(true);
+      expect(ctx.elegiveis.some((p) => p.level === 3)).toBe(true);
+      expect(names(ctx)).not.toContain("1:Compelir");
+      const levels = ctx.elegiveis.map((p) => p.level);
+      expect(levels).toEqual([...levels].sort());
+    });
+
+    it("fora do clã entra no nível 1", () => {
+      const ctx = predatorDiscipline("Ventrue", ventrue, "Potência");
+      expect(ctx).toMatchObject({ atual: 0, doCla: false, novo: 1 });
+      expect(names(ctx)).toEqual(
+        expect.arrayContaining(["1:Toque Letal", "1:Força Prodigiosa"])
+      );
+      expect(ctx.elegiveis.every((p) => p.level === 1)).toBe(true);
+    });
+
+    it("do clã sem pontos no passo 5", () => {
+      const ctx = predatorDiscipline("Brujah", ventrue, "Potência");
+      expect(ctx).toMatchObject({ atual: 0, doCla: true, novo: 1 });
+    });
+
+    it("Caitiff: do clã só se escolhida no passo 5", () => {
+      const disc = [{ nivel: 2, nome: "Potência", powers: [] }];
+      expect(predatorDiscipline("Caitiff", disc, "Potência").doCla).toBe(true);
+      expect(predatorDiscipline("Caitiff", disc, "Domínio").doCla).toBe(false);
+    });
+
+    it("sem catálogo não tem elegíveis", () => {
+      expect(
+        predatorDiscipline("Ventrue", ventrue, "Fascinação").elegiveis
+      ).toEqual([]);
+    });
+
+    it("poder escolhido só vale se for elegível", () => {
+      const ctx = predatorDiscipline("Ventrue", ventrue, "Potência");
+      expect(predatorPower(ctx, "Toque Letal")?.name).toBe("Toque Letal");
+      expect(predatorPower(ctx, "Compelir")).toBeUndefined();
+      expect(predatorPower(ctx, "")).toBeUndefined();
+    });
+  });
+
+  it("poder do Predador entra com o ponto e sai ao remover", () => {
+    const base = brujah({
+      predador: "Gato de Rua",
+      predDisc: "Potência",
+      predPoder: "Força Prodigiosa",
+    });
+    const s = applyPredator(base);
+    expect(s.disc[0].nivel).toBe(3);
+    expect(s.disc[0].powers.map((p) => p.nome)).toEqual(["Força Prodigiosa"]);
+    expect(s.predBonus?.poder).toBe("Força Prodigiosa");
+    expect(removePredator(s).disc).toEqual(base.disc);
+  });
+
+  it("poder numa Disciplina nova", () => {
+    const s = applyPredator(
+      brujah({
+        cla: "Ventrue",
+        predador: "Extorsionário",
+        predDisc: "Domínio",
+        predPoder: "Compelir",
+      })
+    );
+    expect(s.disc.at(-1)).toMatchObject({
+      nivel: 1,
+      nome: "Domínio",
+      powers: [{ nivel: 1, nome: "Compelir" }],
+    });
+  });
+
+  it("remover tira uma só cópia do poder", () => {
+    const applied = applyPredator(
+      brujah({
+        predador: "Gato de Rua",
+        predDisc: "Potência",
+        predPoder: "Força Prodigiosa",
+      })
+    );
+    const copy = { nivel: 1, nome: "Força Prodigiosa" };
+    const manual = {
+      ...applied,
+      disc: applied.disc.map((d, i) =>
+        i === 0 ? { ...d, powers: [...d.powers, copy] } : d
+      ),
+    };
+    expect(removePredator(manual).disc[0].powers).toEqual([copy]);
   });
 
   it("linhas do Predador fora da cota 7/2", () => {

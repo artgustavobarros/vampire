@@ -1,4 +1,4 @@
-import { useId, useState } from "react";
+import { useState } from "react";
 import { Button } from "#/components/ui/button";
 import { Dialog, DialogContent, DialogTitle } from "#/components/ui/dialog";
 import { Input } from "#/components/ui/input";
@@ -7,12 +7,11 @@ import { DotRating } from "#/components/vtm/dot-rating";
 import { NativeSelect } from "#/components/vtm/fields";
 import { InfoButton, InfoTrigger } from "#/components/vtm/info-trigger";
 import { Chip } from "#/components/vtm/selectable";
-import { EmptyState, FieldLabel } from "#/components/vtm/text";
+import { EmptyState } from "#/components/vtm/text";
 import { findClan } from "#/data/clans";
 import { DISCIPLINES } from "#/data/disciplines";
 import { notify } from "#/lib/toast";
 import type { Discipline, Power } from "#/lib/types";
-import { cn } from "#/lib/utils";
 import {
   patchSheet,
   useCharacterStore,
@@ -20,8 +19,6 @@ import {
 } from "#/stores/character-store";
 
 const LEVELS = [1, 2, 3, 4, 5];
-const ACTION =
-  "cursor-pointer font-label font-semibold text-xs uppercase leading-none tracking-widest";
 
 function updateDiscipline(index: number, change: Partial<Discipline>) {
   const disc = useCharacterStore
@@ -32,19 +29,12 @@ function updateDiscipline(index: number, change: Partial<Discipline>) {
 
 export function DisciplinasTab() {
   const sheet = useSheet();
-  const [open, setOpen] = useState<string>("");
   const [adding, setAdding] = useState(false);
 
   return (
     <>
       {sheet.disc.map((d, i) => (
-        <DisciplineCard
-          discipline={d}
-          index={i}
-          key={i}
-          onToggle={(key) => setOpen(open === key ? "" : key)}
-          openKey={open}
-        />
+        <DisciplineCard discipline={d} index={i} key={i} />
       ))}
       {sheet.disc.length === 0 && (
         <EmptyState title="Nenhuma disciplina registrada">
@@ -63,17 +53,11 @@ export function DisciplinasTab() {
 function DisciplineCard({
   discipline: d,
   index,
-  openKey,
-  onToggle,
 }: {
   discipline: Discipline;
   index: number;
-  openKey: string;
-  onToggle: (key: string) => void;
 }) {
   const setPowers = (powers: Power[]) => updateDiscipline(index, { powers });
-  const setPower = (j: number, change: Partial<Power>) =>
-    setPowers(d.powers.map((p, k) => (k === j ? { ...p, ...change } : p)));
   const label = d.nome || "Disciplina";
 
   return (
@@ -112,133 +96,47 @@ function DisciplineCard({
         </button>
       </div>
       {d.powers.map((p, j) => {
-        const key = `${index}:${j}`;
-        const isOpen = openKey === key;
         const desc = (p.desc ?? "").replace(/\s+/g, " ").trim();
         let summary = "sem descrição";
         if (desc) {
           summary = desc.length > 90 ? `${desc.slice(0, 90)}…` : desc;
         }
+        const nome = p.nome || "Poder sem nome";
         return (
-          <div className="border-line-soft border-b" key={j}>
-            <button
-              aria-expanded={isOpen}
-              className={cn(
-                "flex min-h-12 w-full cursor-pointer items-center gap-3 px-4 py-3 text-left focus-visible:outline-2 focus-visible:outline-ink focus-visible:-outline-offset-2",
-                isOpen ? "bg-field" : "bg-transparent"
-              )}
-              onClick={() => onToggle(key)}
-              type="button"
+          <div className="flex items-stretch border-line-soft border-b" key={j}>
+            <InfoTrigger
+              className="flex min-h-12 min-w-0 flex-1 items-center gap-3 px-4 py-3 focus-visible:outline-ink focus-visible:-outline-offset-2"
+              target={{
+                desc: p.desc,
+                disc: d.nome,
+                key: p.nome,
+                kind: "poder",
+                nivel: p.nivel || 1,
+              }}
             >
               <span className="grid size-6 flex-none place-items-center border border-line font-label font-semibold text-ink text-xs leading-none">
                 {p.nivel || 1}
               </span>
               <span className="min-w-0 flex-1">
                 <span className="block font-semibold text-xl leading-tight">
-                  {p.nome || "Poder sem nome"}
+                  {nome}
                 </span>
                 <span className="mt-1 block text-base text-ink-soft">
                   {summary}
                 </span>
               </span>
-              <span className="flex-none text-2xl text-ink-faint leading-none">
-                {isOpen ? "▴" : "▾"}
-              </span>
+            </InfoTrigger>
+            <button
+              aria-label={`Remover ${nome}`}
+              className="grid w-12 flex-none cursor-pointer place-items-center text-2xl text-ink-faint leading-none hover:text-blood focus-visible:outline-2 focus-visible:outline-ink focus-visible:-outline-offset-2"
+              onClick={() => setPowers(d.powers.filter((_, k) => k !== j))}
+              type="button"
+            >
+              ×
             </button>
-            {isOpen && (
-              <PowerEditor
-                disc={d.nome}
-                onChange={(change) => setPower(j, change)}
-                onRemove={() => {
-                  setPowers(d.powers.filter((_, k) => k !== j));
-                  onToggle(key);
-                }}
-                power={p}
-              />
-            )}
           </div>
         );
       })}
-    </div>
-  );
-}
-
-function PowerEditor({
-  disc,
-  power,
-  onChange,
-  onRemove,
-}: {
-  disc: string;
-  power: Power;
-  onChange: (change: Partial<Power>) => void;
-  onRemove: () => void;
-}) {
-  const id = useId();
-  return (
-    <div className="flex flex-col gap-3 bg-field px-4 pb-4">
-      <div className="flex flex-wrap items-end gap-3">
-        <span className="min-w-40 flex-1">
-          <FieldLabel htmlFor={`${id}-nome`}>Nome</FieldLabel>
-          <Input
-            id={`${id}-nome`}
-            onChange={(e) => onChange({ nome: e.target.value })}
-            placeholder="Nome do poder"
-            value={power.nome}
-          />
-        </span>
-        <span className="flex-none">
-          <FieldLabel htmlFor={`${id}-nivel`}>Nível</FieldLabel>
-          <NativeSelect
-            id={`${id}-nivel`}
-            onChange={(e) =>
-              onChange({ nivel: Number.parseInt(e.target.value, 10) || 1 })
-            }
-            value={String(power.nivel || 1)}
-          >
-            {LEVELS.map((n) => (
-              <option key={n} value={n}>
-                {n}
-              </option>
-            ))}
-          </NativeSelect>
-        </span>
-        <Chip
-          className="min-h-12 flex-none"
-          onClick={() => onChange({ rouse: !power.rouse })}
-          selected={!!power.rouse}
-        >
-          Custa Rouse
-        </Chip>
-      </div>
-      <Textarea
-        aria-label="Descrição do poder"
-        onChange={(e) => onChange({ desc: e.target.value })}
-        placeholder="Custo, teste e efeito"
-        rows={3}
-        value={power.desc ?? ""}
-      />
-      <div className="flex flex-wrap gap-6">
-        <InfoTrigger
-          className={cn(ACTION, "py-2 text-ink")}
-          target={{
-            desc: power.desc,
-            disc,
-            key: power.nome,
-            kind: "poder",
-            nivel: power.nivel || 1,
-          }}
-        >
-          Sobre este poder
-        </InfoTrigger>
-        <button
-          className={cn(ACTION, "py-2 text-ink")}
-          onClick={onRemove}
-          type="button"
-        >
-          Remover poder
-        </button>
-      </div>
     </div>
   );
 }

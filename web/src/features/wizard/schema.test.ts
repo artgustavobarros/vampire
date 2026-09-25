@@ -177,11 +177,40 @@ describe("schemas do assistente", () => {
     expect(issues(6, values({ predador: "" }))).toHaveProperty("predador");
   });
 
+  it("passo 6: poder do Predador obrigatório e elegível", () => {
+    expect(issues(6, values({ predPoder: "" }))).toEqual({
+      predPoder: "Escolha um poder de Potência",
+    });
+    // Potência 2 → 3 aceita nível 3; com 1 ponto, só até 2
+    const disc = [
+      { nivel: 1, nome: "Potência", powers: [] },
+      { nivel: 2, nome: "Celeridade", powers: [] },
+    ];
+    const nivel3 = "Golpe Brutal";
+    expect(issues(6, values({ predPoder: nivel3 }))).toEqual({});
+    expect(issues(6, values({ disc, predPoder: nivel3 }))).toEqual({
+      predPoder: "Escolha um poder de Potência",
+    });
+    // sem catálogo, o poder não é exigido
+    expect(
+      issues(
+        6,
+        values({
+          predador: "Sereia",
+          predDisc: "Fascinação",
+          predEspec: "Persuasão (Seduzir)",
+          predPoder: "",
+        })
+      )
+    ).toEqual({});
+  });
+
   it("passo 6: escolhas do Predador completas", () => {
     const osiris = {
       predador: "Osíris",
       predDisc: "Domínio",
       predEspec: "Ocultismo (culto escolhido)",
+      predPoder: "Compelir",
     };
     expect(
       issues(
@@ -335,6 +364,13 @@ describe("mapeamento ficha ↔ formulário", () => {
     expect(v.meritos).toEqual(base.meritos);
   });
 
+  it("lê a ficha sem o poder do Predador", () => {
+    const base = completeSheet();
+    const v = sheetToWizard(applyPredator(base));
+    expect(v.disc).toEqual(base.disc);
+    expect(v.predPoder).toBe("Força Prodigiosa");
+  });
+
   it("ida e volta preserva os valores", () => {
     const sheet = completeSheet({
       ambicao: "a",
@@ -374,6 +410,7 @@ describe("mapeamento ficha ↔ formulário", () => {
       predDisc: "",
       predEscolhas: {},
       predEspec: "",
+      predPoder: "",
     });
     expect(
       wizardToPatch(v, STEP_FIELDS[4], sheet).disc?.map((d) => d.nome)

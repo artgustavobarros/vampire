@@ -1,11 +1,19 @@
+import { findClan } from "#/data/clans";
+import { POWERS, type PowerTemplate } from "#/data/disciplines";
 import {
   findPredator,
   type MeritOption,
   type Predator,
   type PredatorAdjustment,
 } from "#/data/predators";
-import type { Discipline, Merit, Sheet } from "#/lib/types";
-import { isThinBlood } from "./wizard";
+import type {
+  Discipline,
+  Merit,
+  Power,
+  PredatorBonus,
+  Sheet,
+} from "#/lib/types";
+import { addPower, isThinBlood, toPower } from "./wizard";
 
 type Choice = Extract<PredatorAdjustment, { kind: "escolha" }>;
 export type PredatorChoices = Record<string, Record<string, number>>;
@@ -90,6 +98,48 @@ export function predatorMerits(
   return out;
 }
 
+export interface PredatorDiscipline {
+  /** pontos da Disciplina nas duas posições do assistente */
+  atual: number;
+  doCla: boolean;
+  /** poderes do catálogo que o ponto do Predador pode comprar */
+  elegiveis: PowerTemplate[];
+  /** nível depois do ponto do Predador */
+  novo: number;
+}
+
+/**
+ * Contexto do ponto de Disciplina do Predador: se ela é do clã (para Caitiff,
+ * se foi escolhida no passo 5), o nível antes e depois, e os poderes do
+ * catálogo até o novo nível que ainda não foram escolhidos.
+ */
+export function predatorDiscipline(
+  cla: string | undefined,
+  disc: readonly Discipline[],
+  predDisc: string
+): PredatorDiscipline {
+  const own = disc.slice(0, 2).find((d) => d.nome === predDisc);
+  const atual = own?.nivel || 0;
+  const clan = findClan(cla);
+  const doCla = clan?.disciplines.includes("Livre escolha")
+    ? Boolean(own)
+    : (clan?.disciplines.includes(predDisc) ?? false);
+  const novo = Math.min(5, atual + 1);
+  const taken = new Set(own?.powers.map((p) => p.nome));
+  const elegiveis = (POWERS[predDisc] ?? [])
+    .filter((p) => p.level <= novo && !taken.has(p.name))
+    .sort((x, y) => x.level - y.level);
+  return { atual, doCla, elegiveis, novo };
+}
+
+/** Poder do Predador escolhido, se ainda for elegível. */
+export function predatorPower(
+  ctx: PredatorDiscipline,
+  predPoder: string | undefined
+): PowerTemplate | undefined {
+  return ctx.elegiveis.find((p) => p.name === predPoder);
+}
+
 const isPredatorMerit = (m: Merit) => m.origem === "predador";
 
 /**
@@ -109,14 +159,27 @@ export function applyPredator(sheet: Sheet): Sheet {
   const next: Sheet = { ...sheet };
   const disciplina = sheet.predDisc?.trim() ?? "";
   let novaDisciplina = false;
+  const template = (POWERS[disciplina] ?? []).find(
+    (p) => p.name === sheet.predPoder
+  );
+  const poder = template ? toPower(template) : undefined;
   if (disciplina) {
     const has = sheet.disc.some((d) => d.nome === disciplina);
     novaDisciplina = !has;
     next.disc = has
       ? sheet.disc.map((d) =>
-          d.nome === disciplina ? { ...d, nivel: Math.min(5, d.nivel + 1) } : d
+          d.nome === disciplina
+            ? {
+                ...d,
+                nivel: Math.min(5, d.nivel + 1),
+                powers: poder ? addPower(d.powers, poder) : d.powers,
+              }
+            : d
         )
-      : [...sheet.disc, { nivel: 1, nome: disciplina, powers: [] }];
+      : [
+          ...sheet.disc,
+          { nivel: 1, nome: disciplina, powers: poder ? [poder] : [] },
+        ];
   }
   const before = sheet.humanidade || 0;
   next.humanidade = clamp(before + sumOf(predator, "humanidade"), 0, 10);
@@ -128,15 +191,21 @@ export function applyPredator(sheet: Sheet): Sheet {
     disciplina,
     humanidade: next.humanidade - before,
     novaDisciplina,
+    poder: poder?.nome,
     potencia: sumOf(predator, "potencia"),
   };
   return next;
 }
 
+/** Tira a primeira ocorrência do poder: uma cópia manual sobrevive. */
+function withoutPower(powers: Power[], nome: string | undefined): Power[] {
+  const i = nome ? powers.findIndex((p) => p.nome === nome) : -1;
+  return i < 0 ? powers : powers.filter((_, j) => j !== i);
+}
+
 function withoutDisciplineBonus(
   disc: Discipline[],
-  nome: string,
-  nova: boolean
+  { disciplina: nome, novaDisciplina: nova, poder }: PredatorBonus
 ): Discipline[] {
   if (!nome) {
     return disc;
@@ -145,7 +214,13 @@ function withoutDisciplineBonus(
     return disc.filter((d) => d.nome !== nome);
   }
   return disc.map((d) =>
-    d.nome === nome ? { ...d, nivel: Math.max(0, d.nivel - 1) } : d
+    d.nome === nome
+      ? {
+          ...d,
+          nivel: Math.max(0, d.nivel - 1),
+          powers: withoutPower(d.powers, poder),
+        }
+      : d
   );
 }
 
@@ -161,11 +236,7 @@ export function removePredator(sheet: Sheet): Sheet {
     next.meritos = (sheet.meritos ?? []).filter((m) => !isPredatorMerit(m));
   }
   if (bonus) {
-    next.disc = withoutDisciplineBonus(
-      sheet.disc,
-      bonus.disciplina,
-      bonus.novaDisciplina
-    );
+    next.disc = withoutDisciplineBonus(sheet.disc, bonus);
     next.humanidade = clamp((sheet.humanidade || 0) - bonus.humanidade, 0, 10);
   }
   return next;

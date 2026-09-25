@@ -72,6 +72,12 @@ const SALTO = /Salto Prodigioso/;
 const SANGUESSUGA = /^Sanguessuga/;
 const OSIRIS = /^Osíris/;
 const CONSENSUALISTA = /^Consensualista/;
+const FORTITUDE = /^Fortitude/;
+const SEREIA = /^Sereia/;
+const FASCINACAO = /^Fascinação/;
+const EXTORSIONARIO = /^Extorsionário/;
+const DOMINIO = /^Domínio/;
+const POTENCIA = /^Potência/;
 
 const stored = () => useCharacterStore.getState().sheet;
 const click = (target: string | RegExp | HTMLElement) =>
@@ -728,6 +734,124 @@ describe("Predador aplicado na ficha", () => {
     );
   });
 
+  describe("poder do Predador", () => {
+    const ventrue = () =>
+      completeSheet({
+        cla: "Ventrue",
+        disc: [
+          {
+            nivel: 2,
+            nome: "Domínio",
+            powers: [{ nivel: 1, nome: "Compelir" }],
+          },
+          { nivel: 1, nome: "Presença", powers: [] },
+        ],
+        predador: "",
+        predDisc: "",
+        predEspec: "",
+        predPoder: "",
+      });
+    const open = async () => {
+      renderWizard(ventrue(), "/criar?passo=6");
+      click(await screen.findByRole("button", { name: EXTORSIONARIO }));
+      click("Intimidação (Chantagem)");
+    };
+
+    it("cartões mostram o contexto do clã", async () => {
+      await open();
+      expect(screen.getByRole("button", { name: DOMINIO })).toHaveTextContent(
+        "do clã · 2 → 3"
+      );
+      expect(screen.getByRole("button", { name: POTENCIA })).toHaveTextContent(
+        "fora do clã · nível 1"
+      );
+    });
+
+    it("fora do clã: selo, slot de nível 1 e só poderes de nível 1", async () => {
+      await open();
+      click(POTENCIA);
+      expect(screen.getByText("Fora do clã")).toBeInTheDocument();
+      expect(screen.getByText("1 poder sem escolha")).toBeInTheDocument();
+      expect(screen.getByText("Nível 1 · Potência")).toBeInTheDocument();
+      expect(
+        screen.getByText(
+          "Potência não é Disciplina do clã Ventrue. Entra com 1 ponto e 1 poder de nível 1. Subir depois custa mais XP."
+        )
+      ).toBeInTheDocument();
+      expect(
+        screen.queryByRole("button", { name: "Incluir Golpe Brutal" })
+      ).toBeNull();
+    });
+
+    it("do clã: até o novo nível, sem repetir o passo 5", async () => {
+      await open();
+      click(DOMINIO);
+      expect(screen.getByText("Do clã")).toBeInTheDocument();
+      expect(
+        screen.getByText("Nível 3 ou inferior · Domínio")
+      ).toBeInTheDocument();
+      expect(
+        screen.getByText(
+          "Você já tem 2 pontos em Domínio pelo clã. O Predador soma +1 e ela vai a 3. Escolha 1 poder novo de nível 3 ou inferior."
+        )
+      ).toBeInTheDocument();
+      expect(
+        screen.queryByRole("button", { name: "Incluir Compelir" })
+      ).toBeNull();
+    });
+
+    it("escolher, trocar e exigir o poder", async () => {
+      await open();
+      click(POTENCIA);
+      click("Continuar");
+      expect(await stepToast()).toHaveTextContent(
+        "Escolha um poder de Potência"
+      );
+      click("Incluir Toque Letal");
+      click("Incluir Força Prodigiosa");
+      expect(screen.getByText("Poder escolhido")).toBeInTheDocument();
+      expect(pressed("Remover Força Prodigiosa")).toBe("true");
+      expect(pressed("Incluir Toque Letal")).toBe("false");
+    });
+
+    it("nome do poder abre o painel sem escolher", async () => {
+      await open();
+      click(POTENCIA);
+      click("Toque Letal");
+      expect(
+        await screen.findByRole("dialog", { name: "Toque Letal" })
+      ).toBeInTheDocument();
+      expect(
+        screen
+          .getByRole("button", { hidden: true, name: "Incluir Toque Letal" })
+          .getAttribute("aria-pressed")
+      ).toBe("false");
+    });
+
+    it("trocar a Disciplina limpa o poder", async () => {
+      await open();
+      click(POTENCIA);
+      click("Incluir Toque Letal");
+      click(DOMINIO);
+      click(POTENCIA);
+      expect(screen.getByText("1 poder sem escolha")).toBeInTheDocument();
+    });
+
+    it("Disciplina sem catálogo não exige poder", async () => {
+      renderWizard(completeSheet(), "/criar?passo=6");
+      click(await screen.findByRole("button", { name: SEREIA }));
+      click("Persuasão (Seduzir)");
+      click(FASCINACAO);
+      expect(
+        screen.getByText(
+          "Sem poderes catalogados para Fascinação. Registre o poder na aba Disciplinas depois."
+        )
+      ).toBeInTheDocument();
+      click("Continuar");
+      expect(await screen.findByText("Passo 7 de 8")).toBeInTheDocument();
+    });
+  });
+
   it("Concluir aplica Disciplina, Humanidade e méritos", async () => {
     renderWizard(completeSheet(), "/criar?passo=8");
     click(await screen.findByText("Concluir"));
@@ -736,8 +860,24 @@ describe("Predador aplicado na ficha", () => {
       ["Potência", 3],
       ["Celeridade", 1],
     ]);
+    expect(stored().disc[0].powers.map((p) => p.nome)).toEqual([
+      "Força Prodigiosa",
+    ]);
     expect(stored().humanidade).toBe(6);
     expect(predatorMerits()).toEqual(["Contatos (criminosos)"]);
+  });
+
+  it("concluir o refazer não duplica o poder", async () => {
+    renderWizard(
+      applyPredator(completeSheet({ criada: true })),
+      "/criar?passo=8&refazer=true"
+    );
+    click(await screen.findByText("Concluir"));
+    expect(await screen.findByText("Página da ficha")).toBeInTheDocument();
+    expect(levels()[0]).toEqual(["Potência", 3]);
+    expect(stored().disc[0].powers.map((p) => p.nome)).toEqual([
+      "Força Prodigiosa",
+    ]);
   });
 
   it("refazer mostra o passo 5 com os pontos originais", async () => {
@@ -769,7 +909,8 @@ describe("Predador aplicado na ficha", () => {
     renderWizard(sereia(), "/criar?passo=6&refazer=true");
     click(await screen.findByRole("button", { name: CONSENSUALISTA }));
     click("Medicina (Flebotomia)");
-    click("Fortitude");
+    click(FORTITUDE);
+    click("Incluir Resiliência");
     click("Continuar");
     click(await screen.findByText("Passo 7 de 8").then(() => "Continuar"));
     click(await screen.findByText("Concluir"));
@@ -779,6 +920,7 @@ describe("Predador aplicado na ficha", () => {
       ["Celeridade", 1],
       ["Fortitude", 1],
     ]);
+    expect(stored().disc[2].powers.map((p) => p.nome)).toEqual(["Resiliência"]);
     expect(stored().humanidade).toBe(8);
     expect(predatorMerits()).toEqual(["Segredo Obscuro (violação da Máscara)"]);
   });

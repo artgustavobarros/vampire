@@ -37,6 +37,8 @@ export interface PredatorBonus {
   humanidade: number;
   /** a Disciplina não existia e foi acrescentada com 1 ponto */
   novaDisciplina: boolean;
+  /** nome do poder acrescentado junto com o ponto */
+  poder?: string;
   potencia: number;
 }
 
@@ -89,6 +91,8 @@ export type Sheet = Partial<Record<TextFieldKey, string>> & {
   /** nome confirmado da especialidade do Predador; sem ele, ela está pendente */
   predEspecNome?: string;
   predDisc?: string;
+  /** nome do poder que o ponto de Disciplina do Predador dá */
+  predPoder?: string;
   /** escolhas dos ajustes do Predador: id do ajuste → pontos por opção */
   predEscolhas?: Record<string, Record<string, number>>;
   predBonus?: PredatorBonus;

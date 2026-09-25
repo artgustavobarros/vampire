@@ -1,5 +1,5 @@
 import { findClan } from "#/data/clans";
-import { DISCIPLINES } from "#/data/disciplines";
+import { DISCIPLINES, type PowerTemplate } from "#/data/disciplines";
 import {
   DEFAULT_DISTRIBUTION,
   SKILL_DISTRIBUTIONS,
@@ -252,11 +252,27 @@ export function powerLimitHint(nivel: number, chosen: number): string {
     : "Marque os pontos primeiro: cada ponto dá direito a um poder. Toque no nome para ver a descrição.";
 }
 
+/** Poder do catálogo no formato gravado na ficha. */
+export const toPower = (p: PowerTemplate): Power => ({
+  custo: p.cost,
+  desc: p.description,
+  duracao: p.duration,
+  nivel: p.level,
+  nome: p.name,
+  rouse: p.rouse,
+});
+
+const byLevel = (x: Power, y: Power) => (x.nivel || 1) - (y.nivel || 1);
+
+/** Acrescenta um poder mantendo a ordem por nível. */
+export const addPower = (powers: readonly Power[], power: Power): Power[] =>
+  [...powers, power].sort(byLevel);
+
 /** Poderes que cabem num slot de nível `nivel`: até o nível e no máximo um por ponto. */
 export function trimPowers(powers: readonly Power[], nivel: number): Power[] {
   return powers
     .filter((p) => (p.nivel || 1) <= nivel)
-    .sort((x, y) => (x.nivel || 1) - (y.nivel || 1))
+    .sort(byLevel)
     .slice(0, nivel);
 }
 

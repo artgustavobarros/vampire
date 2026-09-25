@@ -6,7 +6,12 @@ import { findPredator } from "#/data/predators";
 import { ATTRIBUTES, REQUIRED_SPECIALTY_SKILLS } from "#/data/traits";
 import type { Discipline, Merit, Sheet } from "#/lib/types";
 import { potencyFromGeneration } from "#/rules/generation";
-import { predatorChoiceStatus, removePredator } from "#/rules/predator";
+import {
+  predatorChoiceStatus,
+  predatorDiscipline,
+  predatorPower,
+  removePredator,
+} from "#/rules/predator";
 import {
   attributeQuotas,
   clanDisciplineOptions,
@@ -46,6 +51,8 @@ export interface WizardValues {
   /** id do ajuste com escolha → pontos por opção */
   predEscolhas: Record<string, Record<string, number>>;
   predEspec: string;
+  /** nome do poder que o ponto de Disciplina do Predador dá */
+  predPoder: string;
   senhor: string;
   skills: Record<string, number>;
 }
@@ -82,6 +89,7 @@ export function sheetToWizard(applied: Sheet): WizardValues {
     predDisc: sheet.predDisc ?? "",
     predEscolhas: structuredClone(sheet.predEscolhas ?? {}),
     predEspec: sheet.predEspec ?? "",
+    predPoder: sheet.predPoder ?? "",
     senhor: sheet.senhor ?? "",
     skills: { ...sheet.skills },
   };
@@ -132,6 +140,7 @@ export function wizardToPatch(
     patch.predEspec = "";
     patch.predDisc = "";
     patch.predEscolhas = {};
+    patch.predPoder = "";
   }
   if ("predEspec" in patch && patch.predEspec !== (sheet.predEspec ?? "")) {
     // outra especialidade do Predador volta a ficar pendente
@@ -291,12 +300,16 @@ const step5 = z
 const step6 = z
   .object({
     cla: z.string(),
+    /** contexto: pontos e poderes do passo 5 decidem o poder do Predador */
+    disc: z.array(discipline),
     predador: z.string(),
     predDisc: z.string(),
     predEscolhas: z.record(z.string(), z.record(z.string(), z.number())),
     predEspec: z.string(),
+    predPoder: z.string(),
   })
-  .superRefine(({ cla, predador, predEspec, predDisc, predEscolhas }, ctx) => {
+  .superRefine((values, ctx) => {
+    const { cla, disc, predador, predEspec, predDisc, predEscolhas } = values;
     if (isThinBlood(cla)) {
       return;
     }
@@ -316,7 +329,19 @@ const step6 = z
         path: ["predEspec"],
       });
     }
-    if (!p.disciplines.includes(predDisc)) {
+    if (p.disciplines.includes(predDisc)) {
+      const disciplina = predatorDiscipline(cla, disc, predDisc);
+      if (
+        disciplina.elegiveis.length &&
+        !predatorPower(disciplina, values.predPoder)
+      ) {
+        ctx.addIssue({
+          code: "custom",
+          message: `Escolha um poder de ${predDisc}`,
+          path: ["predPoder"],
+        });
+      }
+    } else {
       ctx.addIssue({
         code: "custom",
         message: "Escolha uma disciplina",
@@ -378,7 +403,7 @@ export const STEP_SCHEMAS = [
 const CONTEXT_FIELDS: Partial<Record<number, readonly WizardKey[]>> = {
   4: ["skills"],
   5: ["cla"],
-  6: ["cla"],
+  6: ["cla", "disc"],
   7: ["cla"],
 };
 
