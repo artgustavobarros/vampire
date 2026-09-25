@@ -310,8 +310,8 @@ export const TRAIT_INFO: Readonly<Record<StateKind, TraitInfo>> = {
     "Vitalidade",
     "Quanto dano o corpo aguenta antes de cair. Máximo: Vigor + 3.",
     [
-      ["/", "Superficial. Cura com sangue ao despertar ou com Rouse Check."],
-      ["✕", "Agravado. Vem de fogo, sol e presas; demora muito mais a curar."],
+      ["/", "Superficial. Mortais podem remover uma quantidade máxima de níveis de dano Superficial da sua trilha de Vitalidade igual ao seu Vigor. \n Os vampiros podem, a cada turno, remover uma quantidade de níveis de dano Superficial da sua trilha de Vitalidade ao Inflamarem o Sangue."],
+      ["✕", "Agravado. Para mortais, um personagem com Mediciona pode converter dano Agravado na sua Trilha de Vitalidade para dano Superficial. Ele deve obter sucesso em um teste simples de Inteligência + Medicina; a Dificuldade é igual ao dano Agravado total do paciente. Tentativas de um personagem curar-se a si próprio somam + 1 à Dificuldade. \n A quantidade máxima de pontos de dano Agravado que um personagem pode remover é igual à metade do seu valor na Habilidade Medicina, arredondado para cima.\n Vampiros normalmente podem curar 1 nível de dano Agravado à Vitalidade por noite Inflamando o Sangue."],
     ],
     "Quando todas as caixas estão marcadas, você cai em torpor.",
   ],
@@ -320,8 +320,8 @@ export const TRAIT_INFO: Readonly<Record<StateKind, TraitInfo>> = {
     "Força de Vontade",
     "Reserva de determinação. Máximo: Autocontrole + Determinação.",
     [
-      ["/", "Superficial. Volta com descanso e ao cumprir Desejos."],
-      ["✕", "Agravado. Vem de trauma e de agir contra si mesmo."],
+      ["/", "Superficial. No  início de uma sessão, tanto vampiros quanto mortais podem remover uma quantidade máxima de níveis de dano Superficial da sua trilha de Força de Vontade igual ao seu valor de Autocontrole ou Determinação (o que for maior)."],
+      ["✕", "Agravado. No início da sessão, um personagem qeu tenha agido de acordo com sua Ambição pode curar 1 nível de dano Agravado à Força de Vontade.\nNo entanto, as consequências podem continuar."],
     ],
     "Gaste um ponto para rerrolar até três dados comuns.",
   ],
