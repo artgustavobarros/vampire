@@ -28,6 +28,7 @@ import {
   disciplineDistribution,
   effectiveMeritKind,
   initialAttributes,
+  keepClanDisciplines,
   meritKinds,
   meritStatus,
   meritTotals,
@@ -377,6 +378,33 @@ describe("assistente", () => {
       expect(clanDisciplineOptions("").kind).toBe("none");
     });
   });
+  describe("keepClanDisciplines", () => {
+    const d = (nome: string, nivel: number) => ({
+      nivel,
+      nome,
+      powers: [{ nivel: 1, nome: "x" }] as Power[],
+    });
+    const empty = { nivel: 0, nome: "", powers: [] };
+
+    it("Brujah → Ventrue limpa as duas", () => {
+      expect(
+        keepClanDisciplines([d("Potência", 2), d("Celeridade", 1)], "Ventrue")
+      ).toEqual([empty, empty]);
+    });
+
+    it("mantém a Disciplina compartilhada com o novo clã", () => {
+      const presenca = d("Presença", 2);
+      expect(
+        keepClanDisciplines([presenca, d("Potência", 1)], "Toreador")
+      ).toEqual([presenca, empty]);
+    });
+
+    it("Caitiff mantém tudo e slots vazios seguem vazios", () => {
+      const disc = [d("Potência", 2), empty];
+      expect(keepClanDisciplines(disc, "Caitiff")).toEqual(disc);
+    });
+  });
+
   describe("disciplineDistribution", () => {
     it("2 e 1 completa", () => {
       const r = disciplineDistribution(

@@ -200,6 +200,17 @@ export function clanDisciplineOptions(cla: string | undefined): {
   };
 }
 
+/** Ao trocar de clã, esvazia os slots cuja Disciplina não pertence ao novo clã. */
+export function keepClanDisciplines(
+  disc: readonly Discipline[],
+  cla: string | undefined
+): Discipline[] {
+  const { options } = clanDisciplineOptions(cla);
+  return disc.map((d) =>
+    !d.nome || options.includes(d.nome) ? d : { nivel: 0, nome: "", powers: [] }
+  );
+}
+
 /** Status da distribuição 2 + 1 das duas Disciplinas do assistente. */
 export function disciplineDistribution(
   disc: readonly Pick<Discipline, "nome" | "nivel">[],

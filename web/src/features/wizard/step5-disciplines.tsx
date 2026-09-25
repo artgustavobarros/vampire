@@ -5,7 +5,6 @@ import {
   FieldLegend,
   FieldSet,
 } from "#/components/ui/field";
-import { DotRating } from "#/components/vtm/dot-rating";
 import { NativeSelect } from "#/components/vtm/fields";
 import { InfoTrigger } from "#/components/vtm/info-trigger";
 import { POWERS, type PowerTemplate } from "#/data/disciplines";
@@ -71,14 +70,12 @@ function DisciplineRow({
     name: [`disc.${index}.nome`, `disc.${index}.nivel`, `disc.${other}.nome`],
   });
   const level = nivel || 0;
-  const catalog = POWERS[nome.trim()] ?? [];
+  const choices = options.filter((o) => o !== otherName);
+  // uma disciplina gravada de fora do clã aparece como slot vazio
+  const shown = choices.includes(nome) ? nome : "";
+  const catalog = POWERS[shown] ?? [];
   const cap = Math.max(level, 1);
   const label = index === 0 ? "Primeira Disciplina" : "Segunda Disciplina";
-  const choices = options.filter((o) => o !== otherName);
-  // uma disciplina gravada de fora do clã continua visível até ser trocada
-  if (nome && !choices.includes(nome)) {
-    choices.push(nome);
-  }
 
   return (
     <FieldSet className="mt-4 border-line border-b py-4">
@@ -101,6 +98,7 @@ function DisciplineRow({
                   // poderes são do catálogo da disciplina anterior
                   setValue(`disc.${index}.powers`, []);
                 }}
+                value={shown}
               >
                 <option value="">— escolher disciplina —</option>
                 {choices.map((o) => (
@@ -117,12 +115,10 @@ function DisciplineRow({
           name={`disc.${index}.nivel`}
           render={({ field, fieldState }) => (
             <Field className="w-auto" data-invalid={fieldState.invalid}>
-              <DotRating
-                count={2}
-                label={`Nível ${label}`}
-                onChange={(v) => {
+              <LevelButtons
+                label={label}
+                onPick={(mine) => {
                   // distribuição 2 + 1: o outro slot fica com o complemento
-                  const mine = v >= 2 ? 2 : 1;
                   field.onChange(mine);
                   setValue(`disc.${other}.nivel`, 3 - mine);
                   // cada ponto dá direito a um poder: corta o que não cabe mais
@@ -141,7 +137,7 @@ function DisciplineRow({
           )}
         />
       </div>
-      {nome && catalog.length > 0 && (
+      {shown && catalog.length > 0 && (
         <Controller
           control={control}
           name={`disc.${index}.powers`}
@@ -152,7 +148,7 @@ function DisciplineRow({
                 field.onChange(field.value.filter((x) => x.nome !== p.name));
                 return;
               }
-              const block = powerToggleBlock(nome, level, field.value.length);
+              const block = powerToggleBlock(shown, level, field.value.length);
               if (block) {
                 notify(block.msg, { titulo: block.titulo, tom: "info" });
                 return;
@@ -171,7 +167,7 @@ function DisciplineRow({
                     .filter((p) => p.level <= cap || chosen.has(p.name))
                     .map((p) => (
                       <PowerCard
-                        disc={nome}
+                        disc={shown}
                         key={p.name}
                         onToggle={() => toggle(p)}
                         power={p}
@@ -185,6 +181,42 @@ function DisciplineRow({
         />
       )}
     </FieldSet>
+  );
+}
+
+/** "+2" ou "+1": o botão escolhido define o nível do slot; clicar no ativo não muda nada. */
+function LevelButtons({
+  label,
+  value,
+  onPick,
+}: {
+  label: string;
+  value: number;
+  onPick: (level: 1 | 2) => void;
+}) {
+  return (
+    <fieldset
+      aria-label={`Nível ${label}`}
+      className="m-0 flex gap-2 border-0 p-0"
+    >
+      {([2, 1] as const).map((n) => (
+        <button
+          aria-label={`${label} +${n}`}
+          aria-pressed={value === n}
+          className={cn(
+            "cursor-pointer border px-3 py-2 text-base leading-tight focus-visible:outline-2 focus-visible:outline-ink",
+            value === n
+              ? "border-moss bg-field"
+              : "border-ink/20 bg-transparent"
+          )}
+          key={n}
+          onClick={() => value !== n && onPick(n)}
+          type="button"
+        >
+          +{n}
+        </button>
+      ))}
+    </fieldset>
   );
 }
 

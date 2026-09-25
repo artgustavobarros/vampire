@@ -13,10 +13,11 @@ import { CLANS, findClan } from "#/data/clans";
 import { GENERATIONS } from "#/data/generations";
 import type { InfoTarget } from "#/features/info/build-info";
 import { bloodPotency, potencyNote, sireNote } from "#/rules/generation";
+import { keepClanDisciplines } from "#/rules/wizard";
 import { useWizardForm, WizardTextField } from "./form-fields";
 
 export function Step1Clan() {
-  const { control } = useWizardForm();
+  const { control, getValues, setValue } = useWizardForm();
   const [cla, geracao] = useWatch({ control, name: ["cla", "geracao"] });
   const clan = findClan(cla);
   // a ficha só recebe a potência ao salvar o passo; usa a geração do formulário
@@ -39,7 +40,17 @@ export function Step1Clan() {
                 <SelectableCard
                   filled
                   key={c.name}
-                  onClick={() => field.onChange(c.name)}
+                  onClick={() => {
+                    if (c.name === field.value) {
+                      return;
+                    }
+                    field.onChange(c.name);
+                    // Disciplinas do clã anterior deixam de valer
+                    setValue(
+                      "disc",
+                      keepClanDisciplines(getValues("disc"), c.name)
+                    );
+                  }}
                   selected={field.value === c.name}
                 >
                   <span className="block font-label font-semibold text-xs leading-none tracking-[.02em]">

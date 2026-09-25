@@ -338,15 +338,112 @@ describe("regras do clã nos passos 5 a 7", () => {
     ).toBeInTheDocument();
   });
 
-  it("marcar 2 num slot põe 1 no outro", async () => {
+  it("+2 num slot põe 1 no outro", async () => {
     renderWizard(completeSheet(), "/criar?passo=5");
-    click(await screen.findByLabelText("Nível Segunda Disciplina 2"));
+    click(await screen.findByLabelText("Segunda Disciplina +2"));
+    expect(screen.getByLabelText("Primeira Disciplina +2")).toHaveAttribute(
+      "aria-pressed",
+      "false"
+    );
+    expect(screen.getByLabelText("Primeira Disciplina +1")).toHaveAttribute(
+      "aria-pressed",
+      "true"
+    );
+    expect(screen.getByLabelText("Segunda Disciplina +2")).toHaveAttribute(
+      "aria-pressed",
+      "true"
+    );
+  });
+
+  it("clicar no botão ativo não muda os níveis", async () => {
+    renderWizard(completeSheet(), "/criar?passo=5");
+    click(await screen.findByLabelText("Primeira Disciplina +2"));
+    expect(screen.getByLabelText("Primeira Disciplina +2")).toHaveAttribute(
+      "aria-pressed",
+      "true"
+    );
+    expect(screen.getByLabelText("Segunda Disciplina +1")).toHaveAttribute(
+      "aria-pressed",
+      "true"
+    );
+  });
+
+  it("sem nível, nenhum botão fica ativo", async () => {
+    renderWizard(
+      completeSheet({
+        disc: [
+          { nivel: 0, nome: "Potência", powers: [] },
+          { nivel: 0, nome: "Celeridade", powers: [] },
+        ],
+      }),
+      "/criar?passo=5"
+    );
+    await screen.findByText("Passo 5 de 8");
+    for (const name of [
+      "Primeira Disciplina +2",
+      "Primeira Disciplina +1",
+      "Segunda Disciplina +2",
+      "Segunda Disciplina +1",
+    ]) {
+      expect(screen.getByLabelText(name)).toHaveAttribute(
+        "aria-pressed",
+        "false"
+      );
+    }
+  });
+
+  it("Disciplina gravada de outro clã não aparece no slot", async () => {
+    renderWizard(
+      completeSheet({
+        disc: [
+          { nivel: 2, nome: "Domínio", powers: [] },
+          { nivel: 1, nome: "Celeridade", powers: [] },
+        ],
+      }),
+      "/criar?passo=5"
+    );
+    await screen.findByText("Passo 5 de 8");
+    expect(optionsOf("Primeira Disciplina")).toEqual(["Potência", "Presença"]);
     expect(
-      screen.getByLabelText("Nível Primeira Disciplina 2")
-    ).toHaveAttribute("aria-pressed", "false");
+      screen.getByRole("combobox", { name: "Primeira Disciplina" })
+    ).toHaveValue("");
+  });
+
+  it("trocar de clã limpa as Disciplinas de fora do novo clã", async () => {
+    renderWizard(
+      completeSheet({
+        disc: [
+          { nivel: 2, nome: "Presença", powers: [] },
+          { nivel: 1, nome: "Potência", powers: [] },
+        ],
+      }),
+      "/criar?passo=1"
+    );
+    click(await screen.findByRole("button", { name: TOREADOR }));
+    click("Continuar");
+    await screen.findByText("Passo 2 de 8");
+    click("Continuar");
+    await screen.findByText("Passo 3 de 8");
+    click("Continuar");
+    await screen.findByText("Passo 4 de 8");
+    click("Continuar");
+    await screen.findByText("Passo 5 de 8");
     expect(
-      screen.getByLabelText("Nível Primeira Disciplina 1")
-    ).toHaveAttribute("aria-pressed", "true");
+      screen.getByRole("combobox", { name: "Primeira Disciplina" })
+    ).toHaveValue("Presença");
+    expect(
+      screen.getByRole("combobox", { name: "Segunda Disciplina" })
+    ).toHaveValue("");
+    expect(screen.getByLabelText("Primeira Disciplina +2")).toHaveAttribute(
+      "aria-pressed",
+      "true"
+    );
+    for (const name of ["Segunda Disciplina +2", "Segunda Disciplina +1"]) {
+      expect(screen.getByLabelText(name)).toHaveAttribute(
+        "aria-pressed",
+        "false"
+      );
+    }
   });
 
   it("Sangue Fraco passa pelos passos 5 e 6 sem escolhas", async () => {
@@ -472,7 +569,7 @@ describe("regras do clã nos passos 5 a 7", () => {
       }),
       "/criar?passo=5"
     );
-    click(await screen.findByLabelText("Nível Segunda Disciplina 2"));
+    click(await screen.findByLabelText("Segunda Disciplina +2"));
     expect(
       screen.getByRole("button", { name: "Remover Toque Letal" })
     ).toBeInTheDocument();
