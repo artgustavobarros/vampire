@@ -6,6 +6,7 @@ import { Panel } from "#/components/vtm/text";
 import { autoFit } from "#/components/vtm/trait-grid";
 import { bloodPotencyRow } from "#/data/blood-potency";
 import { BIO_FIELDS, LONG_FIELDS } from "#/data/fields";
+import { MeritsPanel } from "#/features/sheet/merits-panel";
 import { bloodPotency, potencyNote } from "#/rules/generation";
 import { patchSheet, useSheet } from "#/stores/character-store";
 
@@ -60,6 +61,8 @@ export function RegistrosTab() {
           </Panel>
         ))}
       </div>
+
+      <MeritsPanel />
 
       <Panel className="mb-6">
         <SheetTextArea

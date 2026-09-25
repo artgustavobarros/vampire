@@ -17,12 +17,13 @@ export type TraitInfo = readonly [
   string,
 ];
 
-/** [prefixo do nome em minúsculas, tipo, nome canônico, descrição] */
+/** [prefixo do nome em minúsculas, tipo, nome canônico, descrição, texto de cada ponto (1 a 5)] */
 export type MeritInfo = readonly [
   string,
   "vantagem" | "defeito",
   string,
   string,
+  readonly string[],
 ];
 
 export const ATTR_INFO: Readonly<
@@ -324,120 +325,308 @@ export const TRAIT_INFO: Readonly<Record<StateKind, TraitInfo>> = {
   ],
 };
 
+const NAO_EXISTE = "Não existe neste nível.";
+
+const REFUGIO: readonly string[] = [
+  "Um quarto seguro ou apartamento pequeno, pouco protegido.",
+  "Casa ou apartamento discreto, com trancas e janelas vedadas.",
+  "Imóvel amplo e seguro, difícil de achar ou invadir.",
+  "Fortaleza urbana: vários cômodos, saídas escondidas, vigilância.",
+  "Domínio quase inviolável, protegido e ignorado pelos mortais.",
+];
+
+const LACAIOS: readonly string[] = [
+  "Um servo fraco ou pouco confiável.",
+  "Um servo competente para tarefas do dia a dia.",
+  "Um servo capaz e leal, ou dois comuns.",
+  "Servo excepcional, ou um pequeno grupo bem treinado.",
+  "Um séquito leal que cumpre qualquer ordem.",
+];
+
+const MASCARA: readonly string[] = [
+  "Documentos básicos que passam numa olhada rápida.",
+  "Identidade sólida com histórico simples: conta, endereço, emprego.",
+  "Identidade que resiste a uma investigação policial comum.",
+  "Vida inteira forjada, com registros oficiais e testemunhas.",
+  "Passado impecável, resistente até a agências de inteligência.",
+];
+
 export const MERIT_INFO: readonly MeritInfo[] = [
   [
     "aliad",
     "vantagem",
     "Aliados",
     "Mortais que ajudam você por lealdade, não por dinheiro.",
+    [
+      "Um aliado fraco ou de pouca disposição.",
+      "Um aliado comum, disposto a arriscar pouco.",
+      "Um aliado capaz, que corre riscos por você.",
+      "Um aliado poderoso ou um grupo pequeno e unido.",
+      "Aliados influentes que mudam o jogo quando chamados.",
+    ],
   ],
   [
     "contat",
     "vantagem",
     "Contatos",
     "Pessoas que passam informação ou prestam pequenos serviços.",
+    [
+      "Um contato num único meio, com fofoca de rua.",
+      "Contato bem posicionado que consegue dados pontuais.",
+      "Rede em alguns meios; informação confiável em dias.",
+      "Fontes em lugares sensíveis: polícia, imprensa, empresas.",
+      "Rede ampla que descobre quase tudo em pouco tempo.",
+    ],
   ],
   [
     "fama",
     "vantagem",
     "Fama",
     "Reconhecimento público entre mortais. Abre portas e atrapalha a Máscara.",
+    [
+      "Conhecido num nicho ou numa cena local.",
+      "Reconhecido na cidade por quem acompanha a sua área.",
+      "Celebridade regional; estranhos pedem foto.",
+      "Famoso no país; a imprensa segue seus passos.",
+      "Ícone internacional; impossível passar despercebido.",
+    ],
   ],
   [
     "influ",
     "vantagem",
     "Influência",
     "Peso dentro de uma instituição ou comunidade.",
+    [
+      "Voz num bairro ou num grupo pequeno.",
+      "Respeitado numa comunidade ou repartição.",
+      "Influente numa instituição da cidade.",
+      "Peso político na cidade; move decisões importantes.",
+      "Controla uma instituição ou fala pela cidade inteira.",
+    ],
   ],
   [
     "rebanh",
     "vantagem",
     "Rebanho",
     "Mortais de quem você se alimenta com segurança.",
+    [
+      "Poucos mortais; reduz a Fome em 1 por semana, com cuidado.",
+      "Um grupo pequeno; alimentação fácil algumas noites.",
+      "Rebanho estável; quase nunca precisa caçar.",
+      "Rebanho grande e variado; escolha de Ressonância.",
+      "Um culto ou comunidade inteira à sua disposição.",
+    ],
   ],
-  ["recurs", "vantagem", "Recursos", "Dinheiro, bens e renda."],
+  [
+    "recurs",
+    "vantagem",
+    "Recursos",
+    "Dinheiro, bens e renda.",
+    [
+      "Renda modesta; paga as contas sem sobras.",
+      "Classe média confortável; alguns luxos.",
+      "Rico; propriedades e dinheiro para gastar sem pensar.",
+      "Muito rico; empresas, imóveis e investimentos.",
+      "Fortuna imensa; poucos mortais têm tanto.",
+    ],
+  ],
   [
     "refúg",
     "vantagem",
     "Refúgio",
     "Onde você dorme de dia. Os pontos medem segurança, tamanho e segredo.",
+    REFUGIO,
   ],
   [
     "refug",
     "vantagem",
     "Refúgio",
     "Onde você dorme de dia. Os pontos medem segurança, tamanho e segredo.",
+    REFUGIO,
   ],
   [
     "lacai",
     "vantagem",
     "Lacaios",
     "Servos leais que cumprem ordens sem perguntar.",
+    LACAIOS,
   ],
   [
     "escrav",
     "vantagem",
     "Lacaios",
     "Servos leais que cumprem ordens sem perguntar.",
+    LACAIOS,
   ],
-  ["másc", "vantagem", "Máscara", "Identidade mortal falsa e documentada."],
-  ["masc", "vantagem", "Máscara", "Identidade mortal falsa e documentada."],
+  [
+    "másc",
+    "vantagem",
+    "Máscara",
+    "Identidade mortal falsa e documentada.",
+    MASCARA,
+  ],
+  [
+    "masc",
+    "vantagem",
+    "Máscara",
+    "Identidade mortal falsa e documentada.",
+    MASCARA,
+  ],
   [
     "mawla",
     "vantagem",
     "Mawla",
     "Um Membro mais velho que aconselha e protege você.",
+    [
+      "Um ancilla que responde perguntas de vez em quando.",
+      "Mentor com alguma posição; ajuda quando é conveniente.",
+      "Membro respeitado que intercede por você na corte.",
+      "Ancião influente que protege você de rivais.",
+      "Uma figura de poder na cidade te trata como protegido.",
+    ],
   ],
   [
     "status",
     "vantagem",
     "Status",
     "Posição reconhecida na sociedade vampírica da cidade.",
+    [
+      "Conhecido e aceito; não é mais um neófito qualquer.",
+      "Respeitado; sua palavra conta em disputas menores.",
+      "Figura de destaque, com cargo ou favor reconhecido.",
+      "Autoridade: Primógeno, Harpia ou equivalente.",
+      "O topo da cidade: Príncipe, Barão ou braço direito.",
+    ],
   ],
   [
     "linguís",
     "vantagem",
     "Linguística",
     "Idiomas além do nativo, um por ponto.",
+    [
+      "Um idioma extra.",
+      "Dois idiomas extras.",
+      "Três idiomas extras.",
+      "Quatro idiomas extras.",
+      "Cinco idiomas extras.",
+    ],
   ],
   [
     "belíss",
     "vantagem",
     "Belíssimo",
     "Aparência marcante que ajuda em testes sociais.",
+    [
+      NAO_EXISTE,
+      "Bonito: +1 dado em testes sociais em que a aparência conta.",
+      NAO_EXISTE,
+      "Deslumbrante: +2 dados em testes sociais em que a aparência conta; difícil passar despercebido.",
+      NAO_EXISTE,
+    ],
   ],
   [
     "estômago",
     "vantagem",
     "Estômago de Ferro",
     "Tolera sangue de bolsa, velho ou de má qualidade.",
+    [
+      NAO_EXISTE,
+      NAO_EXISTE,
+      "Sangue de bolsa, frio ou velho sacia como se fosse fresco.",
+      NAO_EXISTE,
+      NAO_EXISTE,
+    ],
   ],
-  ["inimig", "defeito", "Inimigo", "Alguém trabalha ativamente contra você."],
+  [
+    "inimig",
+    "defeito",
+    "Inimigo",
+    "Alguém trabalha ativamente contra você.",
+    [
+      "Um mortal comum que atrapalha quando pode.",
+      "Inimigo com recursos ou contatos; ameaça real.",
+      "Rival poderoso, mortal ou Membro, que planeja sua queda.",
+      "Inimigo influente na cidade; quer você destruído.",
+      "Um ancião ou organização inteira caça você.",
+    ],
+  ],
   [
     "segredo",
     "defeito",
     "Segredo Obscuro",
     "Algo que, se revelado, destrói sua reputação ou pior.",
+    [
+      "Um deslize vergonhoso que custaria respeito.",
+      "Algo que custaria aliados e posição.",
+      "Um crime contra a Camarilla, a Anarquia ou o clã.",
+      "Algo que renderia uma caçada de sangue.",
+      "Revelado, garante a Morte Final.",
+    ],
   ],
-  ["persegu", "defeito", "Perseguido", "Algo ou alguém caça você."],
+  [
+    "persegu",
+    "defeito",
+    "Perseguido",
+    "Algo ou alguém caça você.",
+    [
+      "Um curioso que aparece nas horas erradas.",
+      "Um investigador persistente segue seu rastro.",
+      "Caçadores sabem da sua existência e procuram você.",
+      "Uma organização organizada está na sua cola.",
+      "A Segunda Inquisição tem seu nome.",
+    ],
+  ],
   [
     "evitad",
     "defeito",
     "Evitado",
     "Outros Membros evitam ser vistos com você.",
+    [
+      "Um grupo pequeno te trata com desprezo.",
+      "Metade da corte evita você em público.",
+      "Pária no clã ou na seita; ninguém faz favores.",
+      "Ser visto com você é risco social para qualquer um.",
+      "A cidade inteira te trata como leproso.",
+    ],
   ],
-  ["vegan", "defeito", "Vegano", "Sangue humano não sacia como deveria."],
+  [
+    "vegan",
+    "defeito",
+    "Vegano",
+    "Sangue humano não sacia como deveria.",
+    [
+      NAO_EXISTE,
+      "Só se alimenta de animais ou bolsas; tomar de humano custa Força de Vontade.",
+      NAO_EXISTE,
+      NAO_EXISTE,
+      NAO_EXISTE,
+    ],
+  ],
   [
     "presa",
     "defeito",
     "Presa Excluída",
     "Um tipo de presa que você não pode ou não quer usar.",
+    [
+      "Exclui um grupo pequeno de presas; alimentar-se dele custa Força de Vontade.",
+      NAO_EXISTE,
+      NAO_EXISTE,
+      NAO_EXISTE,
+      NAO_EXISTE,
+    ],
   ],
   [
     "assomb",
     "defeito",
     "Assombrado",
     "Uma presença sobrenatural acompanha você.",
+    [
+      "Sussurros e objetos fora do lugar.",
+      "Aparições que assustam mortais por perto.",
+      "Um espírito hostil que atrapalha em momentos críticos.",
+      "Assombração violenta, capaz de ferir.",
+      "Uma entidade poderosa quer algo de você.",
+    ],
   ],
 ];
 

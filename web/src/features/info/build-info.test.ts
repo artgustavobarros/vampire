@@ -1,4 +1,5 @@
 import { describe, expect, it } from "vitest";
+import { MERIT_SCALE_V } from "#/data/trait-info";
 import { buildInfo } from "./build-info";
 
 const CAITIFF_BANE = /^Sem clã nem Perdição fixa/;
@@ -57,7 +58,39 @@ describe("buildInfo", () => {
       tipo: "vantagem",
     });
     expect(info.kicker).toBe("Defeito");
-    expect(info.niveis[0].txt).toBe("Incômodo menor.");
+    expect(info.niveis[0].txt).toBe(
+      "Um mortal comum que atrapalha quando pode."
+    );
+  });
+
+  it("mérito do catálogo mostra o texto próprio de cada ponto", () => {
+    const info = buildInfo({
+      key: "Recursos",
+      kind: "merit",
+      pontos: 3,
+      tipo: "vantagem",
+    });
+    expect(info.atual).toBe("3 pontos");
+    expect(info.niveis).toHaveLength(5);
+    expect(info.niveis[2].txt).toBe(
+      "Rico; propriedades e dinheiro para gastar sem pensar."
+    );
+    expect(info.niveis.map((l) => l.txt)).not.toEqual(MERIT_SCALE_V);
+    expect(current(info.niveis)).toEqual(["•••"]);
+  });
+
+  it("mérito fora do catálogo usa a escala genérica", () => {
+    const info = buildInfo({
+      key: "Arsenal",
+      kind: "merit",
+      pontos: 2,
+      tipo: "vantagem",
+    });
+    expect(info.desc).toBe(
+      "Vantagem fora do catálogo. Combine o efeito com o Narrador."
+    );
+    expect(info.niveis.map((l) => l.txt)).toEqual(MERIT_SCALE_V);
+    expect(current(info.niveis)).toEqual(["••"]);
   });
 
   it("poder do catálogo com Rouse", () => {
@@ -222,6 +255,9 @@ describe("buildInfo", () => {
       tipo: "defeito-sr",
     });
     expect(info.kicker).toBe("Defeito");
+    expect(info.niveis[4].txt).toBe(
+      "Um ancião ou organização inteira caça você."
+    );
     const sr = buildInfo({
       key: "Olfato apurado",
       kind: "merit",

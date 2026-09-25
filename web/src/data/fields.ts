@@ -17,7 +17,6 @@ export type TextFieldKey =
   | "geracao"
   | "principios"
   | "perdicao"
-  | "vantagens"
   | "idadeReal"
   | "idadeAparente"
   | "nascimento"
@@ -42,7 +41,6 @@ export const IDENTITY_FIELDS: readonly TextFieldDef[] = [
 export const LONG_FIELDS: readonly TextFieldDef[] = [
   { key: "principios", label: "Princípios da Crônica" },
   { key: "perdicao", label: "Perdição do Clã" },
-  { key: "vantagens", label: "Vantagens & Defeitos" },
 ];
 
 export const BIO_FIELDS: readonly TextFieldDef[] = [

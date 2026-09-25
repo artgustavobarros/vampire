@@ -286,7 +286,10 @@ function meritInfo(
       hit?.[3] ??
       `${defeito ? "Defeito" : "Vantagem"} fora do catálogo. Combine o efeito com o Narrador.`,
     kicker: defeito ? "Defeito" : "Vantagem",
-    niveis: dotLevels(defeito ? MERIT_SCALE_D : MERIT_SCALE_V, target.pontos),
+    niveis: dotLevels(
+      hit?.[4] ?? (defeito ? MERIT_SCALE_D : MERIT_SCALE_V),
+      target.pontos
+    ),
     nivelTit: "O que cada ponto significa",
     nota: defeito
       ? "Defeitos devolvem pontos para gastar em vantagens."
