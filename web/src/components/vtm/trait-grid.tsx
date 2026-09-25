@@ -11,6 +11,8 @@ interface TraitGridProps {
   /** largura mínima da coluna (auto-fit) */
   minColumn: number;
   onChange: (name: string, value: number) => void;
+  /** especialidades por traço, em selos abaixo do nome */
+  specialties?: Record<string, readonly string[]>;
   /** cor do título do grupo: tinta (assistente) ou suave (ficha) */
   strongLabels?: boolean;
   values: Record<string, number>;
@@ -23,6 +25,7 @@ export function TraitGrid({
   values,
   onChange,
   minColumn,
+  specialties,
   strongLabels,
   className,
 }: TraitGridProps) {
@@ -43,29 +46,52 @@ export function TraitGrid({
           >
             {g.label}
           </div>
-          {g.traits.map((name) => (
-            <div
-              className="flex items-center gap-3 border-line-soft border-b py-2"
-              key={name}
-            >
-              <span className="flex-1 text-lg">
-                <InfoTrigger
-                  target={{
-                    key: name,
-                    kind: infoKind,
-                    nivel: values[name] || 0,
-                  }}
-                >
-                  {name}
-                </InfoTrigger>
-              </span>
-              <DotRating
-                label={name}
-                onChange={(v) => onChange(name, v)}
-                value={values[name] || 0}
-              />
-            </div>
-          ))}
+          {g.traits.map((name) => {
+            const specs = specialties?.[name] ?? [];
+            return (
+              <div
+                className={cn(
+                  "flex flex-col gap-3 border-line-soft border-b py-2 w-full",
+
+                )}
+                key={name}
+              >
+                <div className="flex flex-1 gap-1 justify-between">
+                  <span className="text-lg">
+                    <InfoTrigger
+                      target={{
+                        key: name,
+                        kind: infoKind,
+                        nivel: values[name] || 0,
+                      }}
+                    >
+                      {name}
+                    </InfoTrigger>
+                  </span>
+                  <DotRating
+                    label={name}
+                    onChange={(v) => onChange(name, v)}
+                    value={values[name] || 0}
+                  />
+                </div>
+                {specs.length > 0 && (
+                  <ul
+                    aria-label={`Especialidades de ${name}`}
+                    className="m-0 flex list-none flex-wrap gap-1 p-0"
+                  >
+                    {specs.map((s) => (
+                      <li
+                        className="border border-ink bg-white px-1.5 py-1 font-label font-semibold text-ink text-xs leading-none"
+                        key={s}
+                      >
+                        {s}
+                      </li>
+                    ))}
+                  </ul>
+                )}
+              </div>
+            );
+          })}
         </div>
       ))}
     </div>

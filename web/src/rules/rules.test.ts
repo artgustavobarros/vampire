@@ -8,6 +8,7 @@ import { FEEDING_SOURCES, feed, feedingYield } from "./feeding";
 import { potencyFromGeneration, potencyNote, sireNote } from "./generation";
 import { adjustHumanity, stains, toggleStain } from "./humanity";
 import { hungerAlertFor } from "./hunger";
+import { specialtiesBySkill } from "./specialties";
 import { addDamage, cycleBox, trackBoxes, vitalityMax } from "./tracks";
 import {
   attributeQuotas,
@@ -453,5 +454,38 @@ describe("notas da geração", () => {
       "Seu senhor é da 8ª Geração (você é sempre uma Geração acima do senhor)."
     );
     expect(sireNote("")).toBe("Você é sempre uma Geração acima do seu senhor.");
+  });
+});
+
+describe("especialidades", () => {
+  it("junta as do assistente sem vazios", () => {
+    expect(
+      specialtiesBySkill(
+        sheet({
+          espec: { Briga: [" "], Persuasão: ["Negociação", "", "Sedução"] },
+        })
+      )
+    ).toEqual({ Persuasão: ["Negociação", "Sedução"] });
+  });
+
+  it("acrescenta a do Predador", () => {
+    expect(
+      specialtiesBySkill(sheet({ predEspec: "Intimidação (Chantagem)" }))
+    ).toEqual({ Intimidação: ["Chantagem"] });
+  });
+
+  it("não repete a do Predador", () => {
+    expect(
+      specialtiesBySkill(
+        sheet({
+          espec: { Persuasão: ["Seduzir"] },
+          predEspec: "Persuasão (Seduzir)",
+        })
+      )
+    ).toEqual({ Persuasão: ["Seduzir"] });
+  });
+
+  it("ignora Predador fora do formato", () => {
+    expect(specialtiesBySkill(sheet({ predEspec: "Chantagem" }))).toEqual({});
   });
 });

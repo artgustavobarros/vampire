@@ -1,11 +1,13 @@
 import { fireEvent, render, screen } from "@testing-library/react";
 import { useState } from "react";
 import { describe, expect, it } from "vitest";
+import { InfoProvider } from "#/features/info/info-sheet";
 import type { DamageMark } from "#/lib/types";
 import { cycleBox } from "#/rules/tracks";
 import { DotRating } from "./dot-rating";
 import { SelectableCard } from "./selectable";
 import { DamageTrack, HumanityTrack } from "./tracks";
+import { TraitGrid } from "./trait-grid";
 
 function Dots({ start }: { start: number }) {
   const [v, setV] = useState(start);
@@ -82,5 +84,30 @@ describe("SelectableCard", () => {
     const card = screen.getByRole("button", { name: "Brujah" });
     expect(card).toHaveClass("bg-ink", "text-white", "border-ink");
     expect(card).toHaveAttribute("aria-pressed", "true");
+  });
+});
+
+describe("TraitGrid", () => {
+  it("mostra as especialidades abaixo do nome", () => {
+    render(
+      <InfoProvider>
+        <TraitGrid
+          groups={[{ label: "Sociais", traits: ["Persuasão", "Briga"] }]}
+          infoKind="skill"
+          minColumn={200}
+          onChange={() => undefined}
+          specialties={{ Persuasão: ["Negociação", "Sedução"] }}
+          values={{ Persuasão: 4 }}
+        />
+      </InfoProvider>
+    );
+    const list = screen.getByRole("list", {
+      name: "Especialidades de Persuasão",
+    });
+    expect(list).toHaveTextContent("Negociação");
+    expect(list).toHaveTextContent("Sedução");
+    expect(
+      screen.queryByRole("list", { name: "Especialidades de Briga" })
+    ).toBeNull();
   });
 });

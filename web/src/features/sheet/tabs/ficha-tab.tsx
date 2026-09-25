@@ -12,6 +12,7 @@ import {
 } from "#/data/fields";
 import { ATTRIBUTE_GROUPS, SKILL_GROUPS } from "#/data/traits";
 import { adjustHumanity, stains, toggleStain } from "#/rules/humanity";
+import { specialtiesBySkill } from "#/rules/specialties";
 import { patchSheet, useSheet } from "#/stores/character-store";
 import { CYCLE_HINT, TrackPanel } from "../track-panels";
 
@@ -59,6 +60,7 @@ export function FichaTab() {
         onChange={(name, v) =>
           patchSheet({ skills: { ...sheet.skills, [name]: v } })
         }
+        specialties={specialtiesBySkill(sheet)}
         values={sheet.skills}
       />
 
