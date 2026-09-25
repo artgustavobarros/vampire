@@ -852,6 +852,62 @@ describe("Predador aplicado na ficha", () => {
     });
   });
 
+  describe("nome da especialidade do Predador", () => {
+    const open = async () => {
+      renderWizard(
+        completeSheet({ predador: "", predDisc: "", predEspec: "" }),
+        "/criar?passo=6"
+      );
+      click(await screen.findByRole("button", { name: EXTORSIONARIO }));
+      click("Ofícios (Armadilhas)");
+    };
+
+    it("escolher a especialidade preenche a sugestão", async () => {
+      await open();
+      expect(screen.getByLabelText("Especialidade em Ofícios")).toHaveValue(
+        "Armadilhas"
+      );
+      expect(
+        screen.getByText(
+          "Sugestão do Predador: Armadilhas. Renomeie se quiser; na ficha ela fica fixa."
+        )
+      ).toBeInTheDocument();
+    });
+
+    it("trocar de especialidade repõe a sugestão; repetir não apaga", async () => {
+      await open();
+      fireEvent.change(screen.getByLabelText("Especialidade em Ofícios"), {
+        target: { value: "Laços e arapucas" },
+      });
+      click("Ofícios (Armadilhas)");
+      expect(screen.getByLabelText("Especialidade em Ofícios")).toHaveValue(
+        "Laços e arapucas"
+      );
+      click("Intimidação (Chantagem)");
+      expect(screen.getByLabelText("Especialidade em Intimidação")).toHaveValue(
+        "Chantagem"
+      );
+    });
+
+    it("nome vazio bloqueia; renomeado é gravado", async () => {
+      await open();
+      click(POTENCIA);
+      click("Incluir Toque Letal");
+      click("Pontos em Recursos 2");
+      const field = screen.getByLabelText("Especialidade em Ofícios");
+      fireEvent.change(field, { target: { value: " " } });
+      click("Continuar");
+      expect(await stepToast()).toHaveTextContent(
+        "Informe o nome da especialidade do Predador"
+      );
+      fireEvent.change(field, { target: { value: " Laços e arapucas " } });
+      click("Continuar");
+      expect(await screen.findByText("Passo 7 de 8")).toBeInTheDocument();
+      expect(stored().predEspec).toBe("Ofícios (Armadilhas)");
+      expect(stored().predEspecNome).toBe("Laços e arapucas");
+    });
+  });
+
   it("Concluir aplica Disciplina, Humanidade e méritos", async () => {
     renderWizard(completeSheet(), "/criar?passo=8");
     click(await screen.findByText("Concluir"));

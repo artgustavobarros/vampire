@@ -1,5 +1,7 @@
+import { useId } from "react";
 import { Controller, useWatch } from "react-hook-form";
 import { FieldLegend, FieldSet } from "#/components/ui/field";
+import { Input } from "#/components/ui/input";
 import { DotRating } from "#/components/vtm/dot-rating";
 import { PowerCard } from "#/components/vtm/power-card";
 import { SelectableCard } from "#/components/vtm/selectable";
@@ -18,6 +20,7 @@ import {
   predatorDiscipline,
   predatorPower,
 } from "#/rules/predator";
+import { splitPredatorSpecialty } from "#/rules/specialties";
 import { isThinBlood } from "#/rules/wizard";
 import { useWizardForm } from "./form-fields";
 
@@ -42,9 +45,9 @@ const LABEL =
 
 export function Step6Predator() {
   const { control, setValue } = useWizardForm();
-  const [cla, predador, predEspec, predDisc, predPoder] = useWatch({
+  const [cla, predador, predEspecNome, predDisc, predPoder] = useWatch({
     control,
-    name: ["cla", "predador", "predEspec", "predDisc", "predPoder"],
+    name: ["cla", "predador", "predEspecNome", "predDisc", "predPoder"],
   });
   if (isThinBlood(cla)) {
     return (
@@ -74,6 +77,7 @@ export function Step6Predator() {
                   onClick={() => {
                     if (p.name !== field.value) {
                       setValue("predEspec", "");
+                      setValue("predEspecNome", "");
                       setValue("predDisc", "");
                       setValue("predPoder", "");
                       setValue("predEscolhas", {});
@@ -114,8 +118,8 @@ export function Step6Predator() {
             ))}
           </div>
           <div className="text-sm opacity-70">
-            {predEspec && predDisc
-              ? `Predador definido: ${predator.name} · ${predEspec} · +1 ${predDisc}${predPoder ? ` (${predPoder})` : ""}`
+            {predEspecNome.trim() && predDisc
+              ? `Predador definido: ${predator.name} · ${predEspecNome.trim()} · +1 ${predDisc}${predPoder ? ` (${predPoder})` : ""}`
               : "Escolha uma especialidade e uma Disciplina para completar o Predador."}
           </div>
         </div>
@@ -128,7 +132,7 @@ const TOGGLE =
   "cursor-pointer border px-3 py-2 text-base leading-tight focus-visible:outline-2 focus-visible:outline-ink";
 
 function SpecialtyGroup({ options }: { options: readonly string[] }) {
-  const { control } = useWizardForm();
+  const { control, setValue } = useWizardForm();
   return (
     <Controller
       control={control}
@@ -154,15 +158,77 @@ function SpecialtyGroup({ options }: { options: readonly string[] }) {
                     : "border-ink/20 bg-transparent"
                 )}
                 key={o}
-                onClick={() => field.onChange(o)}
+                onClick={() => {
+                  if (o !== field.value) {
+                    setValue(
+                      "predEspecNome",
+                      splitPredatorSpecialty(o)?.nome ?? ""
+                    );
+                  }
+                  field.onChange(o);
+                }}
                 type="button"
               >
                 {o}
               </button>
             ))}
           </div>
+          {options.includes(field.value) && (
+            <SpecialtyNamePanel predEspec={field.value} />
+          )}
         </FieldSet>
       )}
+    />
+  );
+}
+
+/** Nome da especialidade do Predador: começa com o sugerido e pode ser renomeado. */
+function SpecialtyNamePanel({ predEspec }: { predEspec: string }) {
+  const { control } = useWizardForm();
+  const id = useId();
+  const pred = splitPredatorSpecialty(predEspec);
+  if (!pred) {
+    return null;
+  }
+  return (
+    <Controller
+      control={control}
+      name="predEspecNome"
+      render={({ field, fieldState }) => {
+        const filled = Boolean(field.value.trim());
+        return (
+          <div className="mt-3 flex items-center gap-4 border border-ink bg-white p-4">
+            <span
+              aria-hidden="true"
+              className={cn(
+                "grid size-10 flex-none place-items-center border font-label font-semibold text-lg text-white",
+                filled ? "border-ink bg-ink" : "border-blood border-dashed"
+              )}
+            >
+              {filled ? "✓" : ""}
+            </span>
+            <div className="min-w-0 flex-1">
+              <label className={cn(LABEL, "mb-3 block")} htmlFor={id}>
+                Especialidade em {pred.skill}
+              </label>
+              <Input
+                aria-invalid={fieldState.invalid}
+                className="text-2xl"
+                id={id}
+                name={field.name}
+                onBlur={field.onBlur}
+                onChange={field.onChange}
+                ref={field.ref}
+                value={field.value}
+              />
+              <p className="mt-2 mb-0 text-ink-soft text-sm">
+                Sugestão do Predador: {pred.nome}. Renomeie se quiser; na ficha
+                ela fica fixa.
+              </p>
+            </div>
+          </div>
+        );
+      }}
     />
   );
 }

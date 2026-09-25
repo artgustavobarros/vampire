@@ -41,20 +41,6 @@ describe("buildInfo", () => {
     );
     expect(info.niveis).toEqual([]);
     expect(info.nota).toBe("");
-    expect(info.renomear).toBe(false);
-  });
-
-  it("especialidade pendente do Predador", () => {
-    const info = buildInfo({
-      key: "Chantagem",
-      kind: "espec",
-      nivel: 3,
-      predador: "Extorsionário",
-      skill: "Intimidação",
-    });
-    expect(info.atual).toBe("Intimidação 3");
-    expect(info.nota).toContain("Tipo de Predador (Extorsionário)");
-    expect(info.renomear).toBe(true);
   });
 
   it("disciplina fora do catálogo", () => {

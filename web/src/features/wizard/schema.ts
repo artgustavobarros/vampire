@@ -12,6 +12,7 @@ import {
   predatorPower,
   removePredator,
 } from "#/rules/predator";
+import { splitPredatorSpecialty } from "#/rules/specialties";
 import {
   attributeQuotas,
   clanDisciplineOptions,
@@ -51,6 +52,8 @@ export interface WizardValues {
   /** id do ajuste com escolha → pontos por opção */
   predEscolhas: Record<string, Record<string, number>>;
   predEspec: string;
+  /** nome da especialidade do Predador; começa com o sugerido pela lista */
+  predEspecNome: string;
   /** nome do poder que o ponto de Disciplina do Predador dá */
   predPoder: string;
   senhor: string;
@@ -89,6 +92,10 @@ export function sheetToWizard(applied: Sheet): WizardValues {
     predDisc: sheet.predDisc ?? "",
     predEscolhas: structuredClone(sheet.predEscolhas ?? {}),
     predEspec: sheet.predEspec ?? "",
+    predEspecNome:
+      sheet.predEspecNome ??
+      splitPredatorSpecialty(sheet.predEspec)?.nome ??
+      "",
     predPoder: sheet.predPoder ?? "",
     senhor: sheet.senhor ?? "",
     skills: { ...sheet.skills },
@@ -116,7 +123,7 @@ function cleanSpecialties(
 export function wizardToPatch(
   values: WizardValues,
   fields: readonly WizardKey[],
-  sheet: Pick<Sheet, "disc" | "predEspec">
+  sheet: Pick<Sheet, "disc">
 ): Partial<Sheet> {
   const patch: Partial<Sheet> = {};
   const target = patch as Record<string, unknown>;
@@ -138,13 +145,13 @@ export function wizardToPatch(
   if (fields.includes("predador") && thin) {
     patch.predador = "";
     patch.predEspec = "";
+    patch.predEspecNome = "";
     patch.predDisc = "";
     patch.predEscolhas = {};
     patch.predPoder = "";
   }
-  if ("predEspec" in patch && patch.predEspec !== (sheet.predEspec ?? "")) {
-    // outra especialidade do Predador volta a ficar pendente
-    patch.predEspecNome = undefined;
+  if (typeof patch.predEspecNome === "string") {
+    patch.predEspecNome = patch.predEspecNome.trim();
   }
   return patch;
 }
@@ -306,6 +313,7 @@ const step6 = z
     predDisc: z.string(),
     predEscolhas: z.record(z.string(), z.record(z.string(), z.number())),
     predEspec: z.string(),
+    predEspecNome: z.string(),
     predPoder: z.string(),
   })
   .superRefine((values, ctx) => {
@@ -327,6 +335,12 @@ const step6 = z
         code: "custom",
         message: "Escolha uma especialidade",
         path: ["predEspec"],
+      });
+    } else if (!values.predEspecNome.trim()) {
+      ctx.addIssue({
+        code: "custom",
+        message: "Informe o nome da especialidade do Predador",
+        path: ["predEspecNome"],
       });
     }
     if (p.disciplines.includes(predDisc)) {

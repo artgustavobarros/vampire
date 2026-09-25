@@ -60,7 +60,6 @@ export function FichaTab() {
         onChange={(name, v) =>
           patchSheet({ skills: { ...sheet.skills, [name]: v } })
         }
-        predador={sheet.predador}
         specialties={specialtiesBySkill(sheet)}
         values={sheet.skills}
       />

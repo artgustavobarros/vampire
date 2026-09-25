@@ -177,6 +177,13 @@ describe("schemas do assistente", () => {
     expect(issues(6, values({ predador: "" }))).toHaveProperty("predador");
   });
 
+  it("passo 6: nome da especialidade do Predador obrigatório", () => {
+    expect(issues(6, values({ predEspecNome: "  " }))).toEqual({
+      predEspecNome: "Informe o nome da especialidade do Predador",
+    });
+    expect(issues(6, values({ predEspecNome: "Mata-leão" }))).toEqual({});
+  });
+
   it("passo 6: poder do Predador obrigatório e elegível", () => {
     expect(issues(6, values({ predPoder: "" }))).toEqual({
       predPoder: "Escolha um poder de Potência",
@@ -410,6 +417,7 @@ describe("mapeamento ficha ↔ formulário", () => {
       predDisc: "",
       predEscolhas: {},
       predEspec: "",
+      predEspecNome: "",
       predPoder: "",
     });
     expect(
@@ -417,17 +425,22 @@ describe("mapeamento ficha ↔ formulário", () => {
     ).toEqual(["", "", "Presença"]);
   });
 
-  it("outra especialidade do Predador volta a ficar pendente", () => {
-    const sheet = completeSheet({
+  it("grava o nome da especialidade do Predador aparado", () => {
+    const sheet = completeSheet({ predEspec: "Briga (Agarrar)" });
+    const v = values({ predEspecNome: "  Mata-leão " });
+    expect(wizardToPatch(v, STEP_FIELDS[5], sheet).predEspecNome).toBe(
+      "Mata-leão"
+    );
+  });
+
+  it("ficha antiga abre com o nome sugerido da especialidade do Predador", () => {
+    const sheet = completeSheet({ predEspec: "Briga (Agarrar)" });
+    expect(sheetToWizard(sheet).predEspecNome).toBe("Agarrar");
+    const named = completeSheet({
       predEspec: "Briga (Agarrar)",
       predEspecNome: "Mata-leão",
     });
-    const same = wizardToPatch(sheetToWizard(sheet), STEP_FIELDS[5], sheet);
-    expect("predEspecNome" in same).toBe(false);
-    const v = values({ predEspec: "Furtividade (Emboscada)" });
-    const other = wizardToPatch(v, STEP_FIELDS[5], sheet);
-    expect("predEspecNome" in other).toBe(true);
-    expect(other.predEspecNome).toBeUndefined();
+    expect(sheetToWizard(named).predEspecNome).toBe("Mata-leão");
   });
 
   it("preserva disciplinas além das duas do assistente", () => {

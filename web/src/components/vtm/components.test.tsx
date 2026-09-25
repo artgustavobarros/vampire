@@ -1,8 +1,7 @@
-import { fireEvent, render, screen, waitFor } from "@testing-library/react";
+import { fireEvent, render, screen } from "@testing-library/react";
 import { useState } from "react";
 import { beforeEach, describe, expect, it, vi } from "vitest";
 import { InfoProvider } from "#/features/info/info-sheet";
-import { notify } from "#/lib/toast";
 import type { DamageMark } from "#/lib/types";
 import { specialtiesBySkill } from "#/rules/specialties";
 import { cycleBox } from "#/rules/tracks";
@@ -11,8 +10,6 @@ import { DotRating } from "./dot-rating";
 import { SelectableCard } from "./selectable";
 import { DamageTrack, HumanityTrack } from "./tracks";
 import { TraitGrid } from "./trait-grid";
-
-vi.mock("#/lib/toast", () => ({ notify: vi.fn() }));
 
 function Dots({ start }: { start: number }) {
   const [v, setV] = useState(start);
@@ -102,10 +99,7 @@ describe("TraitGrid", () => {
           minColumn={200}
           onChange={() => undefined}
           specialties={{
-            Persuasão: [
-              { nome: "Negociação", pendente: false },
-              { nome: "Sedução", pendente: false },
-            ],
+            Persuasão: [{ nome: "Negociação" }, { nome: "Sedução" }],
           }}
           values={{ Persuasão: 4 }}
         />
@@ -130,7 +124,7 @@ describe("TraitGrid", () => {
           infoKind="skill"
           minColumn={200}
           onChange={onChange}
-          specialties={{ Erudição: [{ nome: "Direito", pendente: false }] }}
+          specialties={{ Erudição: [{ nome: "Direito" }] }}
           values={{ Erudição: 1 }}
         />
       </InfoProvider>
@@ -155,7 +149,6 @@ function SkillsFromStore() {
         infoKind="skill"
         minColumn={200}
         onChange={() => undefined}
-        predador={sheet.predador}
         specialties={specialtiesBySkill(sheet)}
         values={sheet.skills}
       />
@@ -165,51 +158,24 @@ function SkillsFromStore() {
 
 describe("especialidade do Predador", () => {
   beforeEach(() => {
-    vi.mocked(notify).mockClear();
     useCharacterStore.getState().clear();
     useCharacterStore.getState().patch({
       predador: "Extorsionário",
       predEspec: "Intimidação (Chantagem)",
+      predEspecNome: "Extorsão",
       skills: { Intimidação: 3 },
     });
   });
 
-  it("pendente em Blood; renomear grava, avisa e vira comum", async () => {
+  it("é um selo comum, com o nome do passo 6 e sem formulário", async () => {
     render(<SkillsFromStore />);
-    const badge = screen.getByRole("button", { name: "Chantagem" });
-    expect(badge).toHaveClass("border-blood", "text-blood");
+    const badge = screen.getByRole("button", { name: "Extorsão" });
+    expect(badge).toHaveClass("border-ink", "text-ink");
     fireEvent.click(badge);
 
-    await screen.findByRole("dialog", { name: "Chantagem" });
-    fireEvent.change(screen.getByLabelText("Nome da especialidade"), {
-      target: { value: "Extorsão" },
-    });
-    fireEvent.click(screen.getByRole("button", { name: "Confirmar nome" }));
-
-    expect(useCharacterStore.getState().sheet.predEspecNome).toBe("Extorsão");
-    expect(notify).toHaveBeenCalledWith(
-      "Especialidade Extorsão fixada em Intimidação.",
-      { titulo: "Especialidade", tom: "ok" }
-    );
-    await waitFor(() => expect(screen.queryByRole("dialog")).toBeNull());
-    const renamed = screen.getByRole("button", { name: "Extorsão" });
-    expect(renamed).toHaveClass("border-ink");
-
-    fireEvent.click(renamed);
-    await screen.findByRole("dialog", { name: "Extorsão" });
+    const dialog = await screen.findByRole("dialog", { name: "Extorsão" });
+    expect(dialog).toHaveTextContent("Intimidação 3");
+    expect(dialog).not.toHaveTextContent("Tipo de Predador");
     expect(screen.queryByLabelText("Nome da especialidade")).toBeNull();
-  });
-
-  it("manter atual grava o nome da lista", async () => {
-    render(<SkillsFromStore />);
-    fireEvent.click(screen.getByRole("button", { name: "Chantagem" }));
-    await screen.findByRole("dialog", { name: "Chantagem" });
-    fireEvent.click(screen.getByRole("button", { name: "Manter atual" }));
-
-    expect(useCharacterStore.getState().sheet.predEspecNome).toBe("Chantagem");
-    expect(notify).toHaveBeenCalledWith(
-      "Especialidade Chantagem fixada em Intimidação.",
-      { titulo: "Especialidade", tom: "ok" }
-    );
   });
 });
