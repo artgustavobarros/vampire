@@ -92,7 +92,7 @@ export function Step7Merits() {
                 <button
                   className={cn(
                     ACTION,
-                    "mt-2 cursor-pointer whitespace-nowrap px-2 py-1 text-white",
+                    "mt-2 min-w-28 cursor-pointer whitespace-nowrap px-2 py-1 text-white",
                     KIND_BG[tipo]
                   )}
                   onClick={() =>
@@ -113,7 +113,7 @@ export function Step7Merits() {
             name={`meritos.${i}.nome`}
             render={({ field, fieldState }) => (
               <Field
-                className="min-w-[140px] flex-1"
+                className="min-w-35 flex-1"
                 data-invalid={fieldState.invalid}
               >
                 <Input

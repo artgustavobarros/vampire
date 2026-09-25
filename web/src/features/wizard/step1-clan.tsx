@@ -80,7 +80,7 @@ export function Step1Clan() {
               <Field data-invalid={fieldState.invalid}>
                 {/* rótulo abre o painel; o select é nomeado por aria-label */}
                 <InfoTrigger
-                  className="mb-2 block font-label font-semibold text-ink-soft text-xs uppercase leading-none tracking-[.12em]"
+                  className="block font-label font-semibold text-ink-soft text-xs uppercase leading-none tracking-[.12em]"
                   target={{ geracao: field.value, kind: "geracao" }}
                 >
                   Geração

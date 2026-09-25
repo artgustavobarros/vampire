@@ -12,14 +12,8 @@ import { POWERS, type PowerTemplate } from "#/data/disciplines";
 import { notify } from "#/lib/toast";
 import type { Power } from "#/lib/types";
 import { cn } from "#/lib/utils";
-import { bloodPotency, potencyNote } from "#/rules/generation";
-import {
-  clanDisciplineOptions,
-  disciplineDistribution,
-  powerLimitHint,
-  powerToggleBlock,
-  trimPowers,
-} from "#/rules/wizard";
+
+import { powerLimitHint, powerToggleBlock, trimPowers } from "#/rules/wizard";
 import { useWizardForm } from "./form-fields";
 
 const toPower = (p: PowerTemplate): Power => ({
@@ -31,61 +25,7 @@ const toPower = (p: PowerTemplate): Power => ({
   rouse: p.rouse,
 });
 
-export function Step5Disciplines() {
-  const { control } = useWizardForm();
-  const [cla, geracao, disc] = useWatch({
-    control,
-    name: ["cla", "geracao", "disc"],
-  });
-  const { aviso, kind, options } = clanDisciplineOptions(cla);
-  const status = disciplineDistribution(disc, cla);
-  const potency = { geracao, potencia: 0 };
-  const bp = bloodPotency(potency);
-  return (
-    <>
-      <div className="mb-2 text-base text-ink-soft">{aviso}</div>
-      {kind !== "thin" && (
-        <>
-          {[0, 1].map((i) => (
-            <DisciplineRow index={i} key={i} options={options} />
-          ))}
-          <div
-            className={cn(
-              "mt-4 font-label font-semibold text-xs uppercase leading-snug tracking-widest",
-              status.ok ? "text-moss" : "text-ink-soft"
-            )}
-          >
-            {status.message}
-          </div>
-        </>
-      )}
-      <div className="mt-6 border border-line bg-wash p-3">
-        <div className="font-label font-semibold text-ink-soft text-xs uppercase leading-none tracking-[.12em]">
-          <InfoTrigger target={{ atual: `Nível ${bp}`, kind: "potencia" }}>
-            Potência de Sangue
-          </InfoTrigger>
-        </div>
-        <DotRating
-          className="mt-3 flex-wrap gap-2"
-          count={10}
-          label="Potência de Sangue"
-          value={bp}
-        />
-        <div className="mt-3 flex flex-wrap items-baseline gap-2 text-sm leading-snug">
-          <InfoTrigger
-            className="font-label font-semibold text-xs uppercase leading-none tracking-widest"
-            target={{ geracao, kind: "geracao" }}
-          >
-            {geracao ? `Geração ${geracao}` : "Geração"}
-          </InfoTrigger>
-          <span className="opacity-70">{potencyNote(potency, true)}</span>
-        </div>
-      </div>
-    </>
-  );
-}
-
-function DisciplineRow({
+export function DisciplineRow({
   index,
   options,
 }: {
@@ -111,7 +51,7 @@ function DisciplineRow({
   return (
     <FieldSet className="mt-4 border-line border-b py-4">
       <FieldLegend>{label}</FieldLegend>
-      <div className="flex flex-wrap items-start gap-3">
+      <div className="flex flex-wrap items-center gap-3">
         <Controller
           control={control}
           name={`disc.${index}.nome`}

@@ -134,7 +134,7 @@ function OptionGroup({
           ref={field.ref}
           tabIndex={-1}
         >
-          <FieldLegend className="mb-0">{label}</FieldLegend>
+          <FieldLegend className="mb-4">{label}</FieldLegend>
           <div className="flex flex-wrap gap-2">
             {options.map((o) => (
               <button
