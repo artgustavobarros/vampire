@@ -56,4 +56,35 @@ describe("painel de descrição", () => {
       "w-[400px]"
     );
   });
+
+  it("formata negrito, itálico e parágrafos da descrição", async () => {
+    render(
+      <InfoProvider>
+        <InfoTrigger
+          target={{
+            desc: "Exige um **Rouse Check**.\n\nA *Besta* acorda.",
+            disc: "Serpentis",
+            key: "Olhar da Serpente",
+            kind: "poder",
+            nivel: 1,
+          }}
+        >
+          Olhar da Serpente
+        </InfoTrigger>
+      </InfoProvider>
+    );
+    fireEvent.click(screen.getByRole("button", { name: "Olhar da Serpente" }));
+
+    const dialog = await screen.findByRole("dialog", {
+      name: "Olhar da Serpente",
+    });
+    expect(dialog.querySelector("strong")).toHaveTextContent("Rouse Check");
+    expect(dialog.querySelector("em")).toHaveTextContent("Besta");
+    expect(dialog.textContent).not.toContain("*");
+    expect(dialog).toHaveAccessibleDescription(
+      "Exige um Rouse Check. A Besta acorda."
+    );
+    const desc = dialog.querySelector('[data-slot="sheet-description"]');
+    expect(desc?.querySelectorAll("p")).toHaveLength(2);
+  });
 });

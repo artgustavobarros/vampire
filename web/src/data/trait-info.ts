@@ -1,5 +1,7 @@
 // Descrições próprias, não do livro. Revisar com a mesa.
 // Portado de "Mudanças desde o último standalone" (painel lateral de descrição).
+// Formatação no painel: **negrito**, *itálico*, \n quebra a linha e \n\n abre parágrafo.
+// Não marque a frase de rolagem ("Atributo + Disciplina") das descrições de poder: ela é extraída por regex.
 
 export type StateKind =
   | "fome"
@@ -30,13 +32,17 @@ export const ATTR_INFO: Readonly<
   Record<string, readonly [string, readonly string[]]>
 > = {
   Autocontrole: [
-    "O Autocontrole permite qeu você permaneça calmo, controle suas emoções e tranquilize os outros. Também representa sua capacidade de manter a calma em tudo, de tiroteios a encontros íntimos. Autocontrole + Determinação resultam na sua Força de Vontade.",
+    "O Autocontrole permite qeu você permaneça calmo, controle suas emoções e tranquilize os outros. Também representa sua capacidade de manter a calma em tudo, de tiroteios a encontros íntimos. \n\nAutocontrole + Determinação resultam na sua Força de Vontade.",
     [
-     "O menor insulto ou confronto pode levá-lo ao frenesi.","Você pode subjugar seus instintos predatórios na maioria das situações não hostis.","Outros procuram sua orientação quando o sangue atinge o ventilador.","Você pode blefar sem esforço nas cartas e administrar sua Besta até certo ponto.","A Besta é seu animal de estimação."
+      "O menor insulto ou confronto pode levá-lo ao frenesi.",
+      "Você pode subjugar seus instintos predatórios na maioria das situações não hostis.",
+      "Outros procuram sua orientação quando o sangue atinge o ventilador.",
+      "Você pode blefar sem esforço nas cartas e administrar sua Besta até certo ponto.",
+      "A Besta é seu animal de estimação.",
     ],
   ],
   Carisma: [
-    "O Carisma mede seu charme natural, graça e sex appeal. Quando você tem este Atributo, ele atrai as pessoas para você, facilitando muito sua alimentação. O Carisma não depende de boa aparência, que é a sua própria Qualidade.",
+    "O Carisma mede seu charme natural, graça e *sex appeal*. Quando você tem este Atributo, ele atrai as pessoas para você, facilitando muito sua alimentação. \n\nO Carisma não depende de boa aparência, que é a sua própria Qualidade.",
     [
       "Você pode falar claramente, embora pocucas pesoas tendam a ouvir.",
       "Geralmente agradável, apesar de sua natureza não viva, você pode até fazer amigos.",
@@ -48,13 +54,21 @@ export const ATTR_INFO: Readonly<
   Destreza: [
     "A Destreza governa sua agilidade e elegância, a rapidez com que você se esquiva de uma estaca que mira seu coração e quanto controle motor fino você possui quando está contra o relógio",
     [
-      "Você pode correr, mas se equilibrar e se esquivar são um desafio.","Sua arrancada é sólida e, às vezes, você parece gracioso em seus movimentos.","Sua agilidade é impressionante e sua coordenação é tao boa quanot a de qualquer amador treinado","Você pode se destacar em acrobacias e se mover de uma mneira que poucos humanos conseguem.","Seus movimentos são fluidos e hipnóticos - quase sobre-humanos."
+      "Você pode correr, mas se equilibrar e se esquivar são um desafio.",
+      "Sua arrancada é sólida e, às vezes, você parece gracioso em seus movimentos.",
+      "Sua agilidade é impressionante e sua coordenação é tao boa quanot a de qualquer amador treinado",
+      "Você pode se destacar em acrobacias e se mover de uma mneira que poucos humanos conseguem.",
+      "Seus movimentos são fluidos e hipnóticos - quase sobre-humanos.",
     ],
   ],
   Determinação: [
-    "A Determinação fornece foco e propósito. Ela mede sua concentração e fortitude mental. A Determinação impele vigílias que varam a noite e bloqueiam distrações. Sua Força de Vontade é igual ao seu Autocontrole + Determinação.",
+    "A Determinação fornece foco e propósito. Ela mede sua concentração e fortitude mental. A Determinação impele vigílias que varam a noite e bloqueiam distrações. \n\nSua Força de Vontade é igual ao seu Autocontrole + Determinação.",
     [
-    "Você só presta atenção nas coisas mais urgentes.","Você consegue se concentrar por um long período, contanto que não seja muito longo.","Distraí-lo exige mais esforço do que a maioria das pessoas está disposta a fazer.","Voc~e pode superar obstáculos e chegar a uma dedução empregando nada mais do que força-bruta mental.","Você consegue pensar em meio a um tiroteio ou vigiar a porta de uma orgia de sangue e depois limpar cada gota ou projétil derramado."
+      "Você só presta atenção nas coisas mais urgentes.",
+      "Você consegue se concentrar por um long período, contanto que não seja muito longo.",
+      "Distraí-lo exige mais esforço do que a maioria das pessoas está disposta a fazer.",
+      "Voc~e pode superar obstáculos e chegar a uma dedução empregando nada mais do que força-bruta mental.",
+      "Você consegue pensar em meio a um tiroteio ou vigiar a porta de uma orgia de sangue e depois limpar cada gota ou projétil derramado.",
     ],
   ],
   Força: [
@@ -70,7 +84,11 @@ export const ATTR_INFO: Readonly<
   Inteligência: [
     "A Inteligência mede sua capacidade de pensar, pesquisar e aplicar a lógica. Você pode lembrar e analisar informações de livros ou de seus sentidos. Nenhum enimga ou mistério pode iludir os verdadeiramente inteligentes.",
     [
-      "Você pode ler escrever com competência, embora alguns termos o confundam.","Você é inteligente o suficiente para perceber suas limitações.","Você é brilhante, capaz de juntar pistas sem dificuldade.","Você provavelmente é consultado por membro do Clã Tremere por sua sabedoria.",'O termo "gênio" não abarca as profundezas e o alcance de seu intelecto.'
+      "Você pode ler escrever com competência, embora alguns termos o confundam.",
+      "Você é inteligente o suficiente para perceber suas limitações.",
+      "Você é brilhante, capaz de juntar pistas sem dificuldade.",
+      "Você provavelmente é consultado por membro do Clã Tremere por sua sabedoria.",
+      'O termo "gênio" não abarca as profundezas e o alcance de seu intelecto.',
     ],
   ],
   Manipulação: [
@@ -86,17 +104,21 @@ export const ATTR_INFO: Readonly<
   Raciocínio: [
     'O Raciocínio é usado para pensar com rapidez e reagir corretamente com base em pouca informação. "Você ouve um som" é Raciocínio; "Você ouve dois guardas chegando" é Inteligência. O Raciocínio permite qeu você perceba uma emboscada ou responda de bate-pronto à Harpia no tribunal, em vez de pensar na melhor responsta apenas na noite seguinte.',
     [
-      "Você acaba entendendo, mas precisa de explicação.","Voc~e pode apostar a sorte no póquer ou pisar nos freios a tempo. Quase sempre.", "Você pode analisar uma situação e descobrir rapidamente a melhor rota de fuga.","Voc~e nunac é pego desprevenido e sempre tem uma resposta inteligente na ponta da língua.","Você poensa e responde mais rapidamente do que a maioria das pessoas pode compreender."
+      "Você acaba entendendo, mas precisa de explicação.",
+      "Voc~e pode apostar a sorte no póquer ou pisar nos freios a tempo. Quase sempre.",
+      "Você pode analisar uma situação e descobrir rapidamente a melhor rota de fuga.",
+      "Voc~e nunac é pego desprevenido e sempre tem uma resposta inteligente na ponta da língua.",
+      "Você poensa e responde mais rapidamente do que a maioria das pessoas pode compreender.",
     ],
   ],
   Vigor: [
-    "Sua resistência física. Vigor absorve danos físicos, como uma bala em alta velocidade ou a lâmina de um caçador, além de permitir que você não ce a esforço árduo. Seu Vigor + 3 resulta no seu valor de Vitalidade",
+    "Sua resistência física. Vigor absorve danos físicos, como uma bala em alta velocidade ou a lâmina de um caçador, além de permitir que você não ce a esforço árduo. \n\nSeu Vigor + 3 resulta no seu valor de Vitalidade",
     [
-        "Mesmo esforços menores o deixam sem fôlego.",
-        "Você pode levar uma surra, mas considera fazer as pazes.",
-        "Alguns dias da caminhada difícil com uma mochila pesada não são problema para você",
-        "Você pode vencer uma maratona ou aguentar grandes quantidades de dor, ao menos fisicamente.",
-        "Mesmo se fosse um mortal, você nunca derramaria uma gota de suor."
+      "Mesmo esforços menores o deixam sem fôlego.",
+      "Você pode levar uma surra, mas considera fazer as pazes.",
+      "Alguns dias da caminhada difícil com uma mochila pesada não são problema para você",
+      "Você pode vencer uma maratona ou aguentar grandes quantidades de dor, ao menos fisicamente.",
+      "Mesmo se fosse um mortal, você nunca derramaria uma gota de suor.",
     ],
   ],
 };

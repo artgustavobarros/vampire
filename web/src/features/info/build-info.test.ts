@@ -1,6 +1,6 @@
 import { describe, expect, it } from "vitest";
 import { MERIT_SCALE_V } from "#/data/trait-info";
-import { buildInfo } from "./build-info";
+import { buildInfo, splitRoll } from "./build-info";
 
 const CAITIFF_BANE = /^Sem clã nem Perdição fixa/;
 
@@ -282,5 +282,17 @@ describe("buildInfo", () => {
       tipo: "defeito-sr",
     });
     expect(sr.kicker).toBe("Defeito");
+  });
+
+  it("extrai a rolagem de descrição com marcação", () => {
+    expect(
+      splitRoll(
+        "Comunica-se com *animais*. Manipulação + Animalismo vs. resistência do animal.",
+        "Uma cena"
+      )
+    ).toEqual({
+      desc: "Comunica-se com *animais*.",
+      roll: "Manipulação + Animalismo vs. resistência do animal",
+    });
   });
 });
