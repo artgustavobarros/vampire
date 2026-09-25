@@ -1,8 +1,9 @@
 import { describe, expect, it } from "vitest";
-import { MERIT_SCALE_V } from "#/data/trait-info";
+import { MERIT_SCALE_V, SKILL_INFO } from "#/data/trait-info";
+import { SKILLS } from "#/data/traits";
 import { buildInfo, splitRoll } from "./build-info";
 
-const CAITIFF_BANE = /^Sem clã nem Perdição fixa/;
+const CAITIFF_BANE = /^Intocados pelos Antidiluvianos/;
 
 const current = (niveis: { current: boolean; n: string }[]) =>
   niveis.filter((l) => l.current).map((l) => l.n);
@@ -22,8 +23,31 @@ describe("buildInfo", () => {
     expect(info.atual).toBe("Sem treino");
     expect(current(info.niveis)).toEqual([]);
     expect(info.nota).toBe(
-      "Especialidades comuns: Magia, Lendas vampíricas, Fantasmas."
+      `Especialidades comuns: ${SKILL_INFO.Ocultismo?.[1]}.`
     );
+  });
+
+  it("habilidade com 3 pontos usa os textos próprios e destaca •••", () => {
+    const info = buildInfo({ key: "Briga", kind: "skill", nivel: 3 });
+    expect(info.nivelTit).toBe("O que cada ponto significa");
+    expect(info.niveis.map((l) => l.txt)).toEqual(SKILL_INFO.Briga?.[2]);
+    expect(current(info.niveis)).toEqual(["•••"]);
+  });
+
+  it("habilidades diferentes têm textos de nível diferentes", () => {
+    const briga = buildInfo({ key: "Briga", kind: "skill", nivel: 2 });
+    const financas = buildInfo({ key: "Finanças", kind: "skill", nivel: 2 });
+    expect(briga.niveis[1]?.txt).not.toBe(financas.niveis[1]?.txt);
+  });
+
+  it("toda habilidade tem 5 níveis com texto", () => {
+    for (const key of SKILLS) {
+      const info = buildInfo({ key, kind: "skill", nivel: 0 });
+      expect(info.niveis, key).toHaveLength(5);
+      for (const l of info.niveis) {
+        expect(l.txt, key).not.toBe("");
+      }
+    }
   });
 
   it("especialidade comum", () => {
@@ -244,7 +268,7 @@ describe("buildInfo", () => {
     expect(info.atual).toBe("Gravidade 2");
     expect(info.nivelTit).toBe("Regra e rolagem");
     expect(info.niveis.find((l) => l.n === "Rolagem")?.txt).toBe(
-      "Retire 2 dados da parada para resistir (mínimo de 1 dado)."
+      "Retire 2 dados da parada para resistir, você não pode ficar com menos que um dado."
     );
     expect(info.nota).toBe(
       "A Gravidade da Perdição vem da Potência de Sangue (atual: 1)."

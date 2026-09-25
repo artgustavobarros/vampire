@@ -9,7 +9,6 @@ import {
   MERIT_SCALE_D,
   MERIT_SCALE_V,
   SKILL_INFO,
-  SKILL_SCALE,
   type StateKind,
   TRAIT_INFO,
 } from "#/data/trait-info";
@@ -118,12 +117,12 @@ function attrInfo(
 function skillInfo(
   target: Extract<InfoTarget, { kind: "attr" | "skill" }>
 ): InfoContent {
-  const [desc, espec] = SKILL_INFO[target.key] ?? ["", ""];
+  const [desc, espec, rows] = SKILL_INFO[target.key] ?? ["", "", []];
   return {
     atual: points(target.nivel, "Sem treino"),
     desc,
     kicker: `Habilidade ${groupOf(SKILL_GROUPS, target.key)}`,
-    niveis: dotLevels(SKILL_SCALE, target.nivel),
+    niveis: dotLevels(rows, target.nivel),
     nivelTit: "O que cada ponto significa",
     nota: espec ? `Especialidades comuns: ${espec}.` : "",
     titulo: target.key,
