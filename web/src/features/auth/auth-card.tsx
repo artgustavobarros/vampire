@@ -59,8 +59,8 @@ export function AuthCard({ mode }: { mode: "login" | "signup" }) {
           </h1>
           <p className="m-0 text-ink-soft text-lg">
             {signup
-              ? "Cadastro de jogador. Uma ficha por conta."
-              : "Acesso à ficha salva neste dispositivo."}
+              ? "Abraçe um novo personagem"
+              : "Seu não-vivo está pronto para despertar?"}
           </p>
         </div>
 
