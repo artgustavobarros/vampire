@@ -27,7 +27,11 @@ export function completeSheet(over: Partial<Sheet> = {}): Sheet {
     espec: { Briga: ["Agarrar"] },
     especLivre: "Briga",
     geracao: "12ª",
-    meritos: [{ nome: "Recursos", pontos: 2, tipo: "vantagem" }],
+    meritos: [
+      { nome: "Recursos", pontos: 4, tipo: "vantagem" },
+      { nome: "Contatos", pontos: 3, tipo: "vantagem" },
+      { nome: "Inimigo", pontos: 2, tipo: "defeito" },
+    ],
     nome: "Ana Brava",
     predador: "Gato de Rua",
     predDisc: "Potência",

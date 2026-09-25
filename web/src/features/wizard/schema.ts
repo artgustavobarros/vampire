@@ -2,11 +2,18 @@ import { z } from "zod";
 import { CLANS } from "#/data/clans";
 import { SKILL_DISTRIBUTIONS } from "#/data/distributions";
 import { GENERATIONS } from "#/data/generations";
-import { findPredator, PREDATORS } from "#/data/predators";
+import { findPredator } from "#/data/predators";
 import { ATTRIBUTES, REQUIRED_SPECIALTY_SKILLS } from "#/data/traits";
 import type { Discipline, Merit, Sheet } from "#/lib/types";
 import { potencyFromGeneration } from "#/rules/generation";
-import { attributeQuotas, skillDistributionCheck } from "#/rules/wizard";
+import {
+  attributeQuotas,
+  clanDisciplineOptions,
+  disciplineDistribution,
+  isThinBlood,
+  meritStatus,
+  skillDistributionCheck,
+} from "#/rules/wizard";
 
 /** Campos de identidade do passo 8 (clã, senhor, geração e predador têm passo próprio). */
 export const FINAL_KEYS = [
@@ -108,8 +115,16 @@ export function wizardToPatch(
   if (fields.includes("geracao")) {
     patch.potencia = potencyFromGeneration(values.geracao) || 0;
   }
+  const thin = isThinBlood(values.cla);
   if (fields.includes("disc")) {
-    patch.disc = [...values.disc, ...sheet.disc.slice(2)];
+    // sangue-ralo não tem Disciplinas intrínsecas: as duas do assistente ficam vazias
+    const own = thin ? [emptyDiscipline(), emptyDiscipline()] : values.disc;
+    patch.disc = [...own, ...sheet.disc.slice(2)];
+  }
+  if (fields.includes("predador") && thin) {
+    patch.predador = "";
+    patch.predEspec = "";
+    patch.predDisc = "";
   }
   return patch;
 }
@@ -203,26 +218,45 @@ const step4 = z
 const power = z.object({ nivel: z.number(), nome: z.string() });
 
 const discipline = z.object({
-  nivel: z
-    .number()
-    .int()
-    .min(1, "Marque o nível da disciplina")
-    .max(5, "O nível vai até 5"),
-  nome: z.string().min(1, "Escolha uma disciplina"),
+  nivel: z.number().int(),
+  nome: z.string(),
   powers: z.array(power),
 });
 
 const step5 = z
-  .object({ disc: z.array(discipline).length(2) })
-  .superRefine(({ disc }, ctx) => {
-    if (disc.length !== 2) {
+  .object({ cla: z.string(), disc: z.array(discipline).length(2) })
+  .superRefine(({ cla, disc }, ctx) => {
+    if (disc.length !== 2 || isThinBlood(cla)) {
       return;
     }
+    const { kind, options } = clanDisciplineOptions(cla);
+    disc.forEach((d, i) => {
+      if (!d.nome) {
+        ctx.addIssue({
+          code: "custom",
+          message: "Escolha uma disciplina",
+          path: ["disc", i, "nome"],
+        });
+      } else if (kind === "clan" && !options.includes(d.nome)) {
+        ctx.addIssue({
+          code: "custom",
+          message: "Escolha Disciplinas do clã",
+          path: ["disc", i, "nome"],
+        });
+      }
+    });
     if (disc[0].nome && disc[0].nome === disc[1].nome) {
       ctx.addIssue({
         code: "custom",
         message: "Escolha duas disciplinas diferentes",
         path: ["disc", 1, "nome"],
+      });
+    }
+    if (!disciplineDistribution(disc, cla).levelsOk) {
+      ctx.addIssue({
+        code: "custom",
+        message: "Marque 2 pontos em uma Disciplina e 1 na outra",
+        path: ["disc", 0, "nivel"],
       });
     }
     disc.forEach((d, i) => {
@@ -232,22 +266,35 @@ const step5 = z
           message: "Há poderes acima do nível da disciplina",
           path: ["disc", i, "powers"],
         });
+      } else if (d.nivel >= 1 && d.powers.length > d.nivel) {
+        // cada ponto dá direito a um poder
+        ctx.addIssue({
+          code: "custom",
+          message: `Escolha no máximo ${d.nivel} ${d.nivel === 1 ? "poder" : "poderes"} em ${d.nome}`,
+          path: ["disc", i, "powers"],
+        });
       }
     });
   });
 
 const step6 = z
   .object({
-    predador: oneOf(
-      PREDATORS.map((p) => p.name),
-      "Escolha um tipo de predador"
-    ),
-    predDisc: z.string().min(1, "Escolha uma disciplina"),
-    predEspec: z.string().min(1, "Escolha uma especialidade"),
+    cla: z.string(),
+    predador: z.string(),
+    predDisc: z.string(),
+    predEspec: z.string(),
   })
-  .superRefine(({ predador, predEspec, predDisc }, ctx) => {
+  .superRefine(({ cla, predador, predEspec, predDisc }, ctx) => {
+    if (isThinBlood(cla)) {
+      return;
+    }
     const p = findPredator(predador);
     if (!p) {
+      ctx.addIssue({
+        code: "custom",
+        message: "Escolha um tipo de predador",
+        path: ["predador"],
+      });
       return;
     }
     if (!p.specialties.includes(predEspec)) {
@@ -266,19 +313,31 @@ const step6 = z
     }
   });
 
-const step7 = z.object({
-  meritos: z.array(
-    z.object({
-      nome: z.string().trim().min(1, "Informe o nome"),
-      pontos: z
-        .number()
-        .int()
-        .min(1, "Marque de 1 a 5 pontos")
-        .max(5, "Marque de 1 a 5 pontos"),
-      tipo: z.enum(["vantagem", "defeito"]),
-    })
-  ),
-});
+const step7 = z
+  .object({
+    cla: z.string(),
+    meritos: z.array(
+      z.object({
+        nome: z.string().trim().min(1, "Informe o nome"),
+        pontos: z
+          .number()
+          .int()
+          .min(1, "Marque de 1 a 5 pontos")
+          .max(5, "Marque de 1 a 5 pontos"),
+        tipo: z.enum(["vantagem", "defeito", "qualidade-sr", "defeito-sr"]),
+      })
+    ),
+  })
+  .superRefine(({ cla, meritos }, ctx) => {
+    const status = meritStatus(meritos, cla);
+    if (!status.ok) {
+      ctx.addIssue({
+        code: "custom",
+        message: status.message,
+        path: ["meritos"],
+      });
+    }
+  });
 
 const step8 = z.object({
   ambicao: z.string(),
@@ -303,6 +362,9 @@ export const STEP_SCHEMAS = [
 /** Campos que um passo só lê para validar; não são gravados por ele. */
 const CONTEXT_FIELDS: Partial<Record<number, readonly WizardKey[]>> = {
   4: ["skills"],
+  5: ["cla"],
+  6: ["cla"],
+  7: ["cla"],
 };
 
 /** Campos gravados por passo (1-based), tirados dos shapes dos schemas. */

@@ -1,19 +1,32 @@
 import { describe, expect, it } from "vitest";
+import { DISCIPLINES } from "#/data/disciplines";
 import { blankSheet } from "#/lib/sheet";
-import type { DamageMark, Sheet } from "#/lib/types";
+import type { DamageMark, Merit, Power, Sheet } from "#/lib/types";
 import { bloodSurgeNote, healAggravated, rouseCheck, sleep } from "./actions";
 import { nextDotValue } from "./dots";
 import { FEEDING_SOURCES, feed, feedingYield } from "./feeding";
-import { potencyFromGeneration } from "./generation";
+import {
+  generationCategory,
+  potencyFromGeneration,
+  potencyNote,
+} from "./generation";
 import { adjustHumanity, stains, toggleStain } from "./humanity";
 import { hungerAlertFor } from "./hunger";
 import { addDamage, cycleBox, trackBoxes, vitalityMax } from "./tracks";
 import {
   attributeQuotas,
+  clanDisciplineOptions,
+  disciplineDistribution,
+  effectiveMeritKind,
   initialAttributes,
+  meritKinds,
+  meritStatus,
   meritTotals,
+  powerLimitHint,
+  powerToggleBlock,
   skillDistributionCheck,
   skillDistributionProgress,
+  trimPowers,
 } from "./wizard";
 
 const sheet = (over: Partial<Sheet> = {}): Sheet => ({
@@ -249,12 +262,199 @@ describe("assistente", () => {
     });
   });
   it("totais de méritos", () => {
-    const s = sheet({
-      meritos: [
-        { nome: "Recursos", pontos: 3, tipo: "vantagem" },
-        { nome: "Inimigo", pontos: 2, tipo: "defeito" },
-      ],
+    const meritos: Merit[] = [
+      { nome: "Recursos", pontos: 3, tipo: "vantagem" },
+      { nome: "Inimigo", pontos: 2, tipo: "defeito" },
+    ];
+    expect(meritTotals(meritos, "Brujah")).toEqual({
+      defeitos: 2,
+      defeitosSR: 0,
+      qualidadesSR: 0,
+      vantagens: 3,
     });
-    expect(meritTotals(s)).toEqual({ defeitos: 2, vantagens: 3 });
+  });
+  it("tipos SR contam como vantagem/defeito fora do Sangue Fraco", () => {
+    const meritos: Merit[] = [
+      { nome: "Olfato", pontos: 2, tipo: "qualidade-sr" },
+      { nome: "Sem fôlego", pontos: 1, tipo: "defeito-sr" },
+    ];
+    expect(meritTotals(meritos, "Brujah")).toMatchObject({
+      defeitos: 1,
+      vantagens: 2,
+    });
+    expect(meritTotals(meritos, "Sangue Fraco")).toEqual({
+      defeitos: 0,
+      defeitosSR: 1,
+      qualidadesSR: 1,
+      vantagens: 0,
+    });
+    expect(effectiveMeritKind("qualidade-sr", "Brujah")).toBe("vantagem");
+    expect(meritKinds("Sangue Fraco")).toHaveLength(4);
+    expect(meritKinds("Brujah")).toEqual(["vantagem", "defeito"]);
+  });
+  describe("meritStatus", () => {
+    it("aponta o que falta", () => {
+      const r = meritStatus(
+        [
+          { nome: "Recursos", pontos: 3, tipo: "vantagem" },
+          { nome: "Inimigo", pontos: 3, tipo: "defeito" },
+        ],
+        "Brujah"
+      );
+      expect(r.ok).toBe(false);
+      expect(r.message).toBe(
+        "Falta: distribuir 4 pts em vantagens · remover 1 pts de defeitos."
+      );
+    });
+    it("completa com 7 e 2", () => {
+      const r = meritStatus(
+        [
+          { nome: "Recursos", pontos: 4, tipo: "vantagem" },
+          { nome: "Contatos", pontos: 3, tipo: "vantagem" },
+          { nome: "Inimigo", pontos: 2, tipo: "defeito" },
+        ],
+        "Brujah"
+      );
+      expect(r).toMatchObject({ message: "Distribuição completa.", ok: true });
+    });
+    it("Sangue Fraco exige Qualidades e Defeitos SR", () => {
+      const base: Merit[] = [
+        { nome: "Recursos", pontos: 5, tipo: "vantagem" },
+        { nome: "Contatos", pontos: 2, tipo: "vantagem" },
+        { nome: "Inimigo", pontos: 2, tipo: "defeito" },
+      ];
+      expect(meritStatus(base, "Sangue Fraco").message).toBe(
+        "Falta: ter de 1 a 3 Qualidades de Sangue-Ralo."
+      );
+      const one: Merit[] = [
+        ...base,
+        { nome: "Olfato", pontos: 1, tipo: "qualidade-sr" },
+      ];
+      expect(meritStatus(one, "Sangue Fraco").message).toBe(
+        "Falta: igualar Defeitos de Sangue-Ralo às Qualidades."
+      );
+      expect(
+        meritStatus(
+          [...one, { nome: "Sem fôlego", pontos: 1, tipo: "defeito-sr" }],
+          "Sangue Fraco"
+        ).ok
+      ).toBe(true);
+    });
+  });
+  describe("clanDisciplineOptions", () => {
+    it("clã comum lista só as do clã", () => {
+      const r = clanDisciplineOptions("Brujah");
+      expect(r.kind).toBe("clan");
+      expect(r.options).toEqual(["Celeridade", "Potência", "Presença"]);
+      expect(r.aviso).toBe(
+        "Escolha duas Disciplinas do clã Brujah (Celeridade, Potência, Presença). Dois pontos em uma, um ponto na outra."
+      );
+    });
+    it("Caitiff escolhe qualquer uma", () => {
+      const r = clanDisciplineOptions("Caitiff");
+      expect(r.kind).toBe("free");
+      expect(r.options).toEqual(DISCIPLINES);
+    });
+    it("Sangue Fraco não tem", () => {
+      expect(clanDisciplineOptions("Sangue Fraco")).toMatchObject({
+        kind: "thin",
+        options: [],
+      });
+    });
+    it("sem clã pede o passo 1", () => {
+      expect(clanDisciplineOptions("").kind).toBe("none");
+    });
+  });
+  describe("disciplineDistribution", () => {
+    it("2 e 1 completa", () => {
+      const r = disciplineDistribution(
+        [
+          { nivel: 1, nome: "Potência" },
+          { nivel: 2, nome: "Presença" },
+        ],
+        "Brujah"
+      );
+      expect(r).toMatchObject({
+        message: "Distribuição completa: 2 e 1.",
+        ok: true,
+      });
+    });
+    it("lista o que falta", () => {
+      const r = disciplineDistribution(
+        [
+          { nivel: 1, nome: "Potência" },
+          { nivel: 1, nome: "" },
+        ],
+        "Brujah"
+      );
+      expect(r.message).toBe(
+        "Falta: escolher as duas Disciplinas e marcar 2 pontos em uma e 1 na outra."
+      );
+    });
+    it("Sangue Fraco sempre ok", () => {
+      expect(disciplineDistribution([], "Sangue Fraco").ok).toBe(true);
+    });
+  });
+});
+
+describe("poderes por ponto", () => {
+  const pw = (nome: string, nivel: number): Power => ({
+    custo: "",
+    desc: "",
+    duracao: "",
+    nivel,
+    nome,
+    rouse: false,
+  });
+
+  it("dica com contador", () => {
+    expect(powerLimitHint(2, 1)).toBe(
+      "Escolha 2 poderes (um por ponto) · 1/2 escolhidos. Toque no nome para ver a descrição."
+    );
+    expect(powerLimitHint(1, 0)).toContain("Escolha 1 poder (um por ponto)");
+    expect(powerLimitHint(0, 0)).toBe(
+      "Marque os pontos primeiro: cada ponto dá direito a um poder. Toque no nome para ver a descrição."
+    );
+  });
+
+  it("bloqueia sem pontos e acima do limite", () => {
+    expect(powerToggleBlock("Domínio", 0, 0)?.titulo).toBe("Sem pontos");
+    expect(powerToggleBlock("Presença", 1, 1)).toEqual({
+      msg: "Presença tem 1 ponto: só 1 poder. Tire um para trocar.",
+      titulo: "Limite de poderes",
+    });
+    expect(powerToggleBlock("Domínio", 2, 2)?.msg).toBe(
+      "Domínio tem 2 pontos: só 2 poderes. Tire um para trocar."
+    );
+    expect(powerToggleBlock("Domínio", 2, 1)).toBeNull();
+  });
+
+  it("corta poderes ao baixar o nível", () => {
+    const powers = [pw("B", 2), pw("A", 1)];
+    expect(trimPowers(powers, 1).map((p) => p.nome)).toEqual(["A"]);
+    expect(trimPowers(powers, 2).map((p) => p.nome)).toEqual(["A", "B"]);
+    expect(trimPowers([pw("A", 1), pw("C", 1)], 1).map((p) => p.nome)).toEqual([
+      "A",
+    ]);
+  });
+});
+
+describe("categoria da geração", () => {
+  it("faixas da tabela", () => {
+    expect(generationCategory(16)).toBe("Sangue-ralo");
+    expect(generationCategory(12)).toBe("Neófito");
+    expect(generationCategory(10)).toBe("Ancilla");
+    expect(generationCategory(8)).toBe("Ancião");
+    expect(generationCategory(6)).toBe("Ancião poderoso");
+    expect(generationCategory(4)).toBe("Matusalém");
+  });
+
+  it("nota curta no assistente", () => {
+    expect(potencyNote({ geracao: "12ª", potencia: 0 }, true)).toBe(
+      "Potência de Sangue 1."
+    );
+    expect(potencyNote({ geracao: "12ª", potencia: 0 })).toBe(
+      "Geração 12ª — Potência de Sangue 1."
+    );
   });
 });

@@ -1,4 +1,8 @@
+import { bloodPotencyRow } from "#/data/blood-potency";
+import { CLAN_FULL } from "#/data/clan-rules";
+import { findClan } from "#/data/clans";
 import { POWERS } from "#/data/disciplines";
+import { GENERATIONS } from "#/data/generations";
 import {
   ATTR_INFO,
   DISC_INFO,
@@ -12,6 +16,7 @@ import {
 } from "#/data/trait-info";
 import { ATTRIBUTE_GROUPS, SKILL_GROUPS, type TraitGroup } from "#/data/traits";
 import type { MeritKind } from "#/lib/types";
+import { generationCategory, potencyFromGeneration } from "#/rules/generation";
 
 /** O que abrir no painel; cada gatilho passa o valor atual do personagem. */
 export type InfoTarget =
@@ -19,6 +24,10 @@ export type InfoTarget =
   | { kind: "disc"; key: string; nivel: number }
   | { kind: "poder"; key: string; disc: string; nivel: number; desc?: string }
   | { kind: "merit"; key: string; tipo: MeritKind; pontos: number }
+  /** Perdição e Compulsão do clã `key`; `potencia` define a Gravidade */
+  | { kind: "bane" | "comp"; key: string; potencia: number }
+  /** `geracao` do formulário ou da ficha (ex.: "12ª"); vazio = sem Geração */
+  | { kind: "geracao"; geracao: string }
   | {
       kind: StateKind;
       /** texto do selo (ex.: "7 / 10") */
@@ -128,6 +137,33 @@ function discInfo(target: Extract<InfoTarget, { kind: "disc" }>): InfoContent {
   };
 }
 
+// "Manipulação + Animalismo", "Inteligência + Feitiçaria de Sangue", com "vs."/"contra" opcional
+const ROLL =
+  /[A-ZÁ-Ú][a-zà-ú]+ \+ [A-ZÁ-Ú][a-zà-ú]+(?: de [A-ZÁ-Ú][a-zà-ú]+)?(?: (?:vs\.|contra) [^.;]+)?/;
+const TRAILING_DOT = /\s*\.\s*$/;
+
+/** Separa a rolagem citada na descrição do catálogo do resto do texto. */
+export function splitRoll(
+  description: string,
+  duration: string
+): { desc: string; roll: string } {
+  const hit = description.match(ROLL);
+  if (!hit) {
+    return {
+      desc: description,
+      roll:
+        duration === "Passiva"
+          ? "Sem teste: efeito passivo, sempre ativo."
+          : "Sem teste: o efeito acontece ao ativar.",
+    };
+  }
+  const rest = description.replace(hit[0], "").replace(TRAILING_DOT, "").trim();
+  if (!rest) {
+    return { desc: description, roll: hit[0] };
+  }
+  return { desc: rest.endsWith(".") ? rest : `${rest}.`, roll: hit[0] };
+}
+
 function powerInfo(
   target: Extract<InfoTarget, { kind: "poder" }>
 ): InfoContent {
@@ -135,26 +171,54 @@ function powerInfo(
   const hit = (POWERS[target.disc.trim()] ?? []).find(
     (p) => p.name.toLowerCase() === name.toLowerCase()
   );
-  const niveis = hit
-    ? levels(
-        [
-          ["Custo", hit.cost],
-          ["Duração", hit.duration],
-        ],
-        ""
-      )
-    : [];
+  const split = hit ? splitRoll(hit.description, hit.duration) : null;
+  const niveis =
+    hit && split
+      ? levels(
+          [
+            ["Rolagem", split.roll],
+            ["Custo", hit.cost],
+            ["Duração", hit.duration],
+          ],
+          ""
+        )
+      : [];
   return {
     atual: "",
     desc:
-      hit?.description ??
+      split?.desc ??
       (target.desc ||
         "Poder fora do catálogo. A descrição é a que você registrou."),
     kicker: `${target.disc || "Poder"} · nível ${hit?.level ?? target.nivel}`,
     niveis,
-    nivelTit: niveis.length ? "Custo e duração" : "",
+    nivelTit: niveis.length ? "Rolagem, custo e duração" : "",
     nota: hit?.rouse ? "Este poder exige Rouse Check." : "",
     titulo: name || "Poder sem nome",
+  };
+}
+
+function generationInfo(
+  target: Extract<InfoTarget, { kind: "geracao" }>
+): InfoContent {
+  const potencia = potencyFromGeneration(target.geracao);
+  const rows = GENERATIONS.map(
+    (g) =>
+      [
+        g.label,
+        `Potência de Sangue ${g.bloodPotency} · ${generationCategory(Number.parseInt(g.label, 10))}`,
+      ] as const
+  );
+  return {
+    atual:
+      target.geracao && potencia !== null
+        ? `${target.geracao} · Potência ${potencia}`
+        : "Sem Geração",
+    desc: "A distância entre você e Caim. Cada Abraço dilui o sangue: quanto maior o número da Geração, mais fraco o sangue. A Geração define a Potência de Sangue inicial, que por sua vez define o Surto de Sangue, a cura, o bônus de Disciplinas e a Gravidade da Perdição.",
+    kicker: "Sangue",
+    niveis: levels(rows, target.geracao),
+    nivelTit: "Geração e Potência de Sangue",
+    nota: "Personagens iniciantes normalmente são da 12ª ou 13ª Geração. Gerações mais baixas só com permissão do Narrador.",
+    titulo: "Geração",
   };
 }
 
@@ -163,7 +227,8 @@ function meritInfo(
 ): InfoContent {
   const name = target.key.trim().toLowerCase();
   const hit = MERIT_INFO.find(([prefix]) => name.startsWith(prefix));
-  const defeito = (hit?.[1] ?? target.tipo) === "defeito";
+  const tipo = hit?.[1] ?? target.tipo;
+  const defeito = tipo === "defeito" || tipo === "defeito-sr";
   return {
     atual: points(target.pontos, "Sem pontos"),
     desc:
@@ -177,6 +242,43 @@ function meritInfo(
       : "Vantagens custam os pontos marcados.",
     titulo:
       target.key.trim() || (defeito ? "Defeito sem nome" : "Vantagem sem nome"),
+  };
+}
+
+function clanRuleInfo(
+  target: Extract<InfoTarget, { kind: "bane" | "comp" }>
+): InfoContent {
+  const bane = target.kind === "bane";
+  const clan = findClan(target.key);
+  const full = CLAN_FULL[target.key]?.[target.kind];
+  const titulo =
+    (bane ? clan?.bane : clan?.compulsion) || (bane ? "Perdição" : "Compulsão");
+  const kicker = `${bane ? "Perdição" : "Compulsão"} · ${target.key}`;
+  if (!full) {
+    return {
+      atual: "",
+      desc: (bane ? clan?.baneText : clan?.compulsionText) ?? "",
+      kicker,
+      niveis: [],
+      nivelTit: "",
+      nota: "",
+      titulo,
+    };
+  }
+  const gravidade = String(bloodPotencyRow(target.potencia).baneSeverity);
+  const rows = full[1].map(
+    ([label, txt]) => [label, txt.replaceAll("{G}", gravidade)] as const
+  );
+  return {
+    atual: bane ? `Gravidade ${gravidade}` : "",
+    desc: full[0],
+    kicker,
+    niveis: levels(rows, ""),
+    nivelTit: "Regra e rolagem",
+    nota: bane
+      ? `A Gravidade da Perdição vem da Potência de Sangue (atual: ${target.potencia}).`
+      : "Compulsões surgem numa falha bestial (1 em dado de Fome numa falha). Você pode escolher a Compulsão do clã ou rolar na tabela geral.",
+    titulo,
   };
 }
 
@@ -209,6 +311,11 @@ export function buildInfo(target: InfoTarget): InfoContent {
       return powerInfo(target);
     case "merit":
       return meritInfo(target);
+    case "bane":
+    case "comp":
+      return clanRuleInfo(target);
+    case "geracao":
+      return generationInfo(target);
     default:
       return stateInfo(target);
   }

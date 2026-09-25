@@ -61,12 +61,12 @@ const STEPS: { title: string; hint: string; body: () => ReactNode }[] = [
   },
   {
     body: Step6Predator,
-    hint: "Como você caça define perícias e Disciplinas extras.",
+    hint: "Como você caça define perícias e Disciplinas extras. Sangues-ralos não têm.",
     title: "Predador",
   },
   {
     body: Step7Merits,
-    hint: "Sete pontos em vantagens, dois em defeitos.",
+    hint: "Sete pontos em vantagens, dois em defeitos além dos do Predador.",
     title: "Vantagens e defeitos",
   },
   {

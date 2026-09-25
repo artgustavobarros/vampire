@@ -4,12 +4,38 @@ import { Input } from "#/components/ui/input";
 import { DotRating } from "#/components/vtm/dot-rating";
 import { InfoButton } from "#/components/vtm/info-trigger";
 import { EmptyState } from "#/components/vtm/text";
+import type { MeritKind } from "#/lib/types";
 import { cn } from "#/lib/utils";
-import { meritTotals } from "#/rules/wizard";
+import {
+  effectiveMeritKind,
+  isThinBlood,
+  MERIT_TARGETS,
+  meritKinds,
+  meritStatus,
+} from "#/rules/wizard";
 import { useWizardForm } from "./form-fields";
 
 const ACTION =
   "font-label font-semibold text-xs uppercase leading-none tracking-widest";
+
+const KIND_LABEL: Record<MeritKind, string> = {
+  defeito: "Defeito",
+  "defeito-sr": "Defeito SR",
+  "qualidade-sr": "Qualidade SR",
+  vantagem: "Vantagem",
+};
+
+const KIND_BG: Record<MeritKind, string> = {
+  defeito: "bg-blood",
+  "defeito-sr": "bg-blood",
+  "qualidade-sr": "bg-moss",
+  vantagem: "bg-moss",
+};
+
+const RULE =
+  "Distribua 7 pontos em Vantagens e adquira 2 pontos de Defeitos além daqueles obtidos do seu Tipo de Predador.";
+const THIN_RULE =
+  " Sangues-ralos devem adquirir entre uma e três Qualidades de Sangue-Ralo e a mesma quantidade de Defeitos de Sangue-Ralo.";
 
 export function Step7Merits() {
   const { control } = useWizardForm();
@@ -17,14 +43,40 @@ export function Step7Merits() {
     control,
     name: "meritos",
   });
-  const meritos = useWatch({ control, name: "meritos" });
-  const totals = meritTotals({ meritos });
+  const [cla, meritos] = useWatch({ control, name: ["cla", "meritos"] });
+  const thin = isThinBlood(cla);
+  const kinds = meritKinds(cla);
+  const status = meritStatus(meritos, cla);
+  const { totals } = status;
 
   return (
     <>
-      <div className={cn(ACTION, "mb-3 flex gap-4 text-ink-soft")}>
-        <span>{totals.vantagens} pts em vantagens</span>
-        <span>{totals.defeitos} pts em defeitos</span>
+      <div className={cn(ACTION, "mb-3 flex flex-wrap gap-4 text-ink-soft")}>
+        <span>
+          {totals.vantagens}/{MERIT_TARGETS.vantagens} pts em vantagens
+        </span>
+        <span>
+          {totals.defeitos}/{MERIT_TARGETS.defeitos} pts em defeitos
+        </span>
+        {thin && (
+          <span>
+            {totals.qualidadesSR} qualidades · {totals.defeitosSR} defeitos de
+            sangue-ralo
+          </span>
+        )}
+      </div>
+      <div className="mb-2 max-w-[60ch] text-base text-ink-soft">
+        {RULE}
+        {thin && THIN_RULE}
+      </div>
+      <div
+        className={cn(
+          ACTION,
+          "mb-3 leading-snug",
+          status.ok ? "text-moss" : "text-ink-soft"
+        )}
+      >
+        {status.message}
       </div>
       {fields.map((row, i) => (
         <div
@@ -34,26 +86,27 @@ export function Step7Merits() {
           <Controller
             control={control}
             name={`meritos.${i}.tipo`}
-            render={({ field }) => (
-              <button
-                className={cn(
-                  ACTION,
-                  "mt-2 cursor-pointer whitespace-nowrap px-2 py-1",
-                  field.value === "defeito"
-                    ? "bg-blood text-white"
-                    : "bg-ink text-white"
-                )}
-                onClick={() =>
-                  field.onChange(
-                    field.value === "defeito" ? "vantagem" : "defeito"
-                  )
-                }
-                title="Alternar vantagem/defeito"
-                type="button"
-              >
-                {field.value === "defeito" ? "Defeito" : "Vantagem"}
-              </button>
-            )}
+            render={({ field }) => {
+              const tipo = effectiveMeritKind(field.value, cla);
+              return (
+                <button
+                  className={cn(
+                    ACTION,
+                    "mt-2 cursor-pointer whitespace-nowrap px-2 py-1 text-white",
+                    KIND_BG[tipo]
+                  )}
+                  onClick={() =>
+                    field.onChange(
+                      kinds[(kinds.indexOf(tipo) + 1) % kinds.length]
+                    )
+                  }
+                  title="Alternar tipo"
+                  type="button"
+                >
+                  {KIND_LABEL[tipo]}
+                </button>
+              );
+            }}
           />
           <Controller
             control={control}
@@ -93,7 +146,7 @@ export function Step7Merits() {
               key: meritos[i]?.nome ?? "",
               kind: "merit",
               pontos: meritos[i]?.pontos ?? 0,
-              tipo: meritos[i]?.tipo ?? "vantagem",
+              tipo: effectiveMeritKind(meritos[i]?.tipo ?? "vantagem", cla),
             }}
           />
           <button

@@ -2,21 +2,25 @@ import { Controller, useWatch } from "react-hook-form";
 import {
   Field,
   FieldDescription,
-  FieldLabel,
   FieldLegend,
   FieldSet,
 } from "#/components/ui/field";
 import { NativeSelect } from "#/components/vtm/fields";
+import { InfoTrigger } from "#/components/vtm/info-trigger";
 import { SelectableCard } from "#/components/vtm/selectable";
 import { autoFit } from "#/components/vtm/trait-grid";
 import { CLANS, findClan } from "#/data/clans";
 import { GENERATIONS } from "#/data/generations";
-import { potencyNote } from "#/rules/generation";
+import type { InfoTarget } from "#/features/info/build-info";
+import { bloodPotency, potencyNote } from "#/rules/generation";
 import { useWizardForm, WizardTextField } from "./form-fields";
 
 export function Step1Clan() {
   const { control } = useWizardForm();
-  const clan = findClan(useWatch({ control, name: "cla" }));
+  const [cla, geracao] = useWatch({ control, name: ["cla", "geracao"] });
+  const clan = findClan(cla);
+  // a ficha só recebe a potência ao salvar o passo; usa a geração do formulário
+  const potencia = bloodPotency({ geracao, potencia: 0 });
   return (
     <>
       <Controller
@@ -54,11 +58,13 @@ export function Step1Clan() {
         <div className="mt-4 grid gap-3" style={autoFit(248)}>
           <ClanTrait
             label="Perdição do clã"
+            target={{ key: clan.name, kind: "bane", potencia }}
             text={clan.baneText}
             title={clan.bane}
           />
           <ClanTrait
             label="Compulsão do clã"
+            target={{ key: clan.name, kind: "comp", potencia }}
             text={clan.compulsionText}
             title={clan.compulsion}
           />
@@ -72,10 +78,17 @@ export function Step1Clan() {
             name="geracao"
             render={({ field, fieldState }) => (
               <Field data-invalid={fieldState.invalid}>
-                <FieldLabel htmlFor="wizard-geracao">Geração</FieldLabel>
+                {/* rótulo abre o painel; o select é nomeado por aria-label */}
+                <InfoTrigger
+                  className="mb-2 block font-label font-semibold text-ink-soft text-xs uppercase leading-none tracking-[.12em]"
+                  target={{ geracao: field.value, kind: "geracao" }}
+                >
+                  Geração
+                </InfoTrigger>
                 <NativeSelect
                   {...field}
                   aria-invalid={fieldState.invalid}
+                  aria-label="Geração"
                   id="wizard-geracao"
                 >
                   <option value="">— escolher geração —</option>
@@ -99,10 +112,12 @@ export function Step1Clan() {
 
 function ClanTrait({
   label,
+  target,
   title,
   text,
 }: {
   label: string;
+  target: InfoTarget;
   title: string;
   text: string;
 }) {
@@ -111,7 +126,12 @@ function ClanTrait({
       <div className="font-label font-semibold text-ink-soft text-xs uppercase leading-none tracking-[.12em]">
         {label}
       </div>
-      <div className="mt-2 font-semibold text-2xl leading-tight">{title}</div>
+      <InfoTrigger
+        className="mt-2 block font-semibold text-2xl leading-tight"
+        target={target}
+      >
+        {title}
+      </InfoTrigger>
       <div className="mt-1 text-base opacity-70">{text}</div>
     </div>
   );

@@ -34,7 +34,10 @@ export function bloodPotency(sheet: PotencySource): number {
 export function potencyNote(sheet: PotencySource, inWizard = false): string {
   const potency = bloodPotency(sheet);
   if (potencyFromGeneration(sheet.geracao) !== null) {
-    return `Geração ${sheet.geracao} — Potência de Sangue ${potency}.`;
+    // no passo 5 a geração já aparece no rótulo ao lado
+    return inWizard
+      ? `Potência de Sangue ${potency}.`
+      : `Geração ${sheet.geracao} — Potência de Sangue ${potency}.`;
   }
   if (sheet.geracao) {
     return `Geração "${sheet.geracao}" não reconhecida — usando Potência de Sangue ${potency}.`;
@@ -42,4 +45,24 @@ export function potencyNote(sheet: PotencySource, inWizard = false): string {
   return inWizard
     ? "Escolha a Geração no passo 1 para definir a Potência de Sangue."
     : "Escolha a Geração para definir a Potência de Sangue.";
+}
+
+/** Faixa de idade/poder de uma geração numérica (16 = 16ª). */
+export function generationCategory(n: number): string {
+  if (n >= 14) {
+    return "Sangue-ralo";
+  }
+  if (n >= 12) {
+    return "Neófito";
+  }
+  if (n >= 10) {
+    return "Ancilla";
+  }
+  if (n >= 8) {
+    return "Ancião";
+  }
+  if (n >= 6) {
+    return "Ancião poderoso";
+  }
+  return "Matusalém";
 }

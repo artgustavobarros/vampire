@@ -4,6 +4,7 @@ import { SelectableCard } from "#/components/vtm/selectable";
 import { autoFit } from "#/components/vtm/trait-grid";
 import { findPredator, PREDATORS } from "#/data/predators";
 import { cn } from "#/lib/utils";
+import { isThinBlood } from "#/rules/wizard";
 import { useWizardForm } from "./form-fields";
 
 const COST = /^−|Defeito|Exige|Perde/;
@@ -25,10 +26,17 @@ const LABEL =
 
 export function Step6Predator() {
   const { control, setValue } = useWizardForm();
-  const [predador, predEspec, predDisc] = useWatch({
+  const [cla, predador, predEspec, predDisc] = useWatch({
     control,
-    name: ["predador", "predEspec", "predDisc"],
+    name: ["cla", "predador", "predEspec", "predDisc"],
   });
+  if (isThinBlood(cla)) {
+    return (
+      <div className="border border-line bg-wash p-4 text-base">
+        Sangues-ralos não têm Tipo de Predador. Siga para o próximo passo.
+      </div>
+    );
+  }
   const predator = findPredator(predador);
   return (
     <>

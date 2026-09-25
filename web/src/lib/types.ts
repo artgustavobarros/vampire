@@ -20,7 +20,8 @@ export interface Discipline {
   powers: Power[];
 }
 
-export type MeritKind = "vantagem" | "defeito";
+/** `qualidade-sr` e `defeito-sr` só existem para Sangue Fraco. */
+export type MeritKind = "vantagem" | "defeito" | "qualidade-sr" | "defeito-sr";
 
 export interface Merit {
   nome: string;

@@ -67,6 +67,8 @@ function renderWizard(sheet: Sheet, url: string) {
   return router;
 }
 
+const SALTO = /Salto Prodigioso/;
+
 const stored = () => useCharacterStore.getState().sheet;
 const click = (target: string | RegExp | HTMLElement) =>
   fireEvent.click(
@@ -312,6 +314,204 @@ describe("assistente com react-hook-form", () => {
     click("Continuar");
     expect(await screen.findByText("Passo 5 de 8")).toBeInTheDocument();
     expect(stored().espec).toEqual({ Atletismo: ["Corrida"] });
+  });
+});
+
+describe("regras do clã nos passos 5 a 7", () => {
+  const optionsOf = (name: string) =>
+    within(screen.getByRole("combobox", { name }))
+      .getAllByRole("option")
+      .map((o) => o.textContent)
+      .filter((t) => !t?.startsWith("—"));
+
+  it("slots listam só Disciplinas do clã, sem a do outro slot", async () => {
+    renderWizard(completeSheet(), "/criar?passo=5");
+    await screen.findByText("Passo 5 de 8");
+    expect(optionsOf("Primeira Disciplina")).toEqual(["Potência", "Presença"]);
+    expect(optionsOf("Segunda Disciplina")).toEqual(["Celeridade", "Presença"]);
+    expect(
+      screen.getByText("Distribuição completa: 2 e 1.")
+    ).toBeInTheDocument();
+  });
+
+  it("marcar 2 num slot põe 1 no outro", async () => {
+    renderWizard(completeSheet(), "/criar?passo=5");
+    click(await screen.findByLabelText("Nível Segunda Disciplina 2"));
+    expect(
+      screen.getByLabelText("Nível Primeira Disciplina 2")
+    ).toHaveAttribute("aria-pressed", "false");
+    expect(
+      screen.getByLabelText("Nível Primeira Disciplina 1")
+    ).toHaveAttribute("aria-pressed", "true");
+  });
+
+  it("Sangue Fraco passa pelos passos 5 e 6 sem escolhas", async () => {
+    renderWizard(completeSheet({ cla: "Sangue Fraco" }), "/criar?passo=5");
+    expect(
+      await screen.findByText(
+        "Sangues-ralos não têm Disciplinas intrínsecas. Siga para o próximo passo."
+      )
+    ).toBeInTheDocument();
+    expect(screen.queryByRole("combobox")).toBeNull();
+    click("Continuar");
+    expect(
+      await screen.findByText(
+        "Sangues-ralos não têm Tipo de Predador. Siga para o próximo passo."
+      )
+    ).toBeInTheDocument();
+    click("Continuar");
+    expect(await screen.findByText("Passo 7 de 8")).toBeInTheDocument();
+    expect(stored()).toMatchObject({
+      predador: "",
+      predDisc: "",
+      predEspec: "",
+    });
+    expect(stored().disc.map((d) => d.nome)).toEqual(["", ""]);
+  });
+
+  it("selo do sangue-ralo cicla até Defeito SR", async () => {
+    renderWizard(completeSheet({ cla: "Sangue Fraco" }), "/criar?passo=7");
+    const [badge] = await screen.findAllByTitle("Alternar tipo");
+    click(badge);
+    click(badge);
+    click(badge);
+    expect(badge).toHaveTextContent("Defeito SR");
+    expect(
+      screen.getByText("0 qualidades · 1 defeitos de sangue-ralo")
+    ).toBeInTheDocument();
+  });
+
+  it("cota 7/2 bloqueia o passo 7", async () => {
+    renderWizard(
+      completeSheet({
+        meritos: [{ nome: "Recursos", pontos: 3, tipo: "vantagem" }],
+      }),
+      "/criar?passo=7"
+    );
+    click(await screen.findByText("Continuar"));
+    expect(await stepToast()).toHaveTextContent(
+      "Falta: distribuir 4 pts em vantagens · adquirir 2 pts em defeitos."
+    );
+  });
+
+  const pw = (nome: string, nivel: number) => ({
+    custo: "",
+    desc: "",
+    duracao: "",
+    nivel,
+    nome,
+    rouse: false,
+  });
+
+  it("limite de um poder por ponto", async () => {
+    renderWizard(completeSheet(), "/criar?passo=5");
+    click(await screen.findByRole("button", { name: "Incluir Graça Felina" }));
+    expect(
+      screen.getByRole("button", { name: "Remover Graça Felina" })
+    ).toHaveAttribute("aria-pressed", "true");
+    click("Incluir Reflexos Rápidos");
+    const alert = await screen.findByRole("alert");
+    expect(alert).toHaveTextContent("Limite de poderes");
+    expect(alert).toHaveTextContent(
+      "Celeridade tem 1 ponto: só 1 poder. Tire um para trocar."
+    );
+    expect(
+      screen.getByRole("button", { name: "Incluir Reflexos Rápidos" })
+    ).toHaveAttribute("aria-pressed", "false");
+  });
+
+  it("sem pontos avisa e não inclui", async () => {
+    renderWizard(
+      completeSheet({
+        disc: [
+          { nivel: 0, nome: "Potência", powers: [] },
+          { nivel: 0, nome: "Celeridade", powers: [] },
+        ],
+      }),
+      "/criar?passo=5"
+    );
+    click(await screen.findByRole("button", { name: "Incluir Toque Letal" }));
+    expect(await screen.findByRole("alert")).toHaveTextContent("Sem pontos");
+    expect(
+      screen.queryByRole("button", { name: "Remover Toque Letal" })
+    ).toBeNull();
+  });
+
+  it("dica conta os poderes escolhidos", async () => {
+    renderWizard(
+      completeSheet({
+        disc: [
+          { nivel: 2, nome: "Potência", powers: [pw("Toque Letal", 1)] },
+          { nivel: 1, nome: "Celeridade", powers: [] },
+        ],
+      }),
+      "/criar?passo=5"
+    );
+    expect(
+      await screen.findByText(
+        "Escolha 2 poderes (um por ponto) · 1/2 escolhidos. Toque no nome para ver a descrição."
+      )
+    ).toBeInTheDocument();
+  });
+
+  it("inverter 2/1 corta os poderes que não cabem", async () => {
+    renderWizard(
+      completeSheet({
+        disc: [
+          {
+            nivel: 2,
+            nome: "Potência",
+            powers: [pw("Toque Letal", 1), pw("Salto Prodigioso", 2)],
+          },
+          { nivel: 1, nome: "Celeridade", powers: [] },
+        ],
+      }),
+      "/criar?passo=5"
+    );
+    click(await screen.findByLabelText("Nível Segunda Disciplina 2"));
+    expect(
+      screen.getByRole("button", { name: "Remover Toque Letal" })
+    ).toBeInTheDocument();
+    expect(screen.queryByRole("button", { name: SALTO })).toBeNull();
+  });
+
+  it("nome do poder abre o painel sem alternar", async () => {
+    renderWizard(completeSheet(), "/criar?passo=5");
+    click(await screen.findByRole("button", { name: "Toque Letal" }));
+    const dialog = await screen.findByRole("dialog", { name: "Toque Letal" });
+    expect(dialog).toHaveTextContent("Rolagem, custo e duração");
+    // o painel é modal: o resto da página fica fora da árvore acessível
+    expect(
+      screen.getByRole("button", { hidden: true, name: "Incluir Toque Letal" })
+    ).toHaveAttribute("aria-pressed", "false");
+  });
+
+  it("Geração abre o painel nos passos 5 e 1", async () => {
+    renderWizard(completeSheet(), "/criar?passo=5");
+    click(await screen.findByRole("button", { name: "Geração 12ª" }));
+    const dialog = await screen.findByRole("dialog", { name: "Geração" });
+    expect(dialog).toHaveTextContent("12ª · Potência 1");
+  });
+
+  it("rótulo Geração do passo 1 abre o painel", async () => {
+    renderWizard(completeSheet(), "/criar?passo=1");
+    click(await screen.findByRole("button", { name: "Geração" }));
+    expect(
+      await screen.findByRole("dialog", { name: "Geração" })
+    ).toHaveTextContent("Potência de Sangue 1 · Neófito");
+    expect(
+      screen.getByRole("combobox", { hidden: true, name: "Geração" })
+    ).toHaveValue("12ª");
+  });
+
+  it("título da Perdição abre o painel", async () => {
+    renderWizard(completeSheet(), "/criar?passo=1");
+    click(await screen.findByText("Temperamento Violento"));
+    const dialog = await screen.findByRole("dialog", {
+      name: "Temperamento Violento",
+    });
+    expect(dialog).toHaveTextContent("Perdição · Brujah");
+    expect(dialog).toHaveTextContent("Gravidade 2");
   });
 });
 

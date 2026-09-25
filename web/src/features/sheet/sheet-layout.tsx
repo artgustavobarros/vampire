@@ -57,7 +57,7 @@ export function SheetLayout() {
           <Drawer onOpenChange={setMenuOpen} open={menuOpen}>
             <DrawerContent
               aria-describedby={undefined}
-              className="w-[280px] max-w-[84vw] gap-1 border-line border-l px-5 py-6 sm:max-w-[280px]"
+              className="w-70 max-w-[84vw] gap-1 border-line border-l px-5 py-6 sm:max-w-70"
               showCloseButton={false}
             >
               <div className="mb-2 font-label font-semibold text-ink-faint text-xs uppercase leading-none tracking-[.12em]">

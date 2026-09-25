@@ -79,13 +79,13 @@ describe("schemas do assistente", () => {
     });
   });
 
-  it("passo 5: duas disciplinas diferentes, com nível e poderes no nível", () => {
+  it("passo 5: duas disciplinas do clã, diferentes, 2 e 1, poderes no nível", () => {
     expect(
       issues(
         5,
         values({
           disc: [
-            { nivel: 1, nome: "Potência", powers: [] },
+            { nivel: 2, nome: "Potência", powers: [] },
             { nivel: 1, nome: "Potência", powers: [] },
           ],
         })
@@ -94,10 +94,33 @@ describe("schemas do assistente", () => {
     expect(
       issues(5, values({ disc: [{ nivel: 0, nome: "", powers: [] }] }))
     ).toEqual({
-      "disc.0.nivel": "Marque o nível da disciplina",
+      "disc.0.nivel": "Marque 2 pontos em uma Disciplina e 1 na outra",
       "disc.0.nome": "Escolha uma disciplina",
-      "disc.1.nivel": "Marque o nível da disciplina",
       "disc.1.nome": "Escolha uma disciplina",
+    });
+    expect(
+      issues(
+        5,
+        values({
+          disc: [
+            { nivel: 2, nome: "Domínio", powers: [] },
+            { nivel: 1, nome: "Celeridade", powers: [] },
+          ],
+        })
+      )
+    ).toEqual({ "disc.0.nome": "Escolha Disciplinas do clã" });
+    expect(
+      issues(
+        5,
+        values({
+          disc: [
+            { nivel: 1, nome: "Potência", powers: [] },
+            { nivel: 1, nome: "Celeridade", powers: [] },
+          ],
+        })
+      )
+    ).toEqual({
+      "disc.0.nivel": "Marque 2 pontos em uma Disciplina e 1 na outra",
     });
     expect(
       issues(
@@ -109,11 +132,38 @@ describe("schemas do assistente", () => {
               nome: "Potência",
               powers: [{ nivel: 2, nome: "Salto" }],
             },
-            { nivel: 1, nome: "Celeridade", powers: [] },
+            { nivel: 2, nome: "Celeridade", powers: [] },
           ],
         })
       )
     ).toEqual({ "disc.0.powers": "Há poderes acima do nível da disciplina" });
+    expect(
+      issues(
+        5,
+        values({
+          disc: [
+            { nivel: 2, nome: "Potência", powers: [] },
+            {
+              nivel: 1,
+              nome: "Celeridade",
+              powers: [
+                { nivel: 1, nome: "Graça Felina" },
+                { nivel: 1, nome: "Reflexos Rápidos" },
+              ],
+            },
+          ],
+        })
+      )
+    ).toEqual({ "disc.1.powers": "Escolha no máximo 1 poder em Celeridade" });
+  });
+
+  it("passo 5: Caitiff escolhe qualquer uma; Sangue Fraco não precisa", () => {
+    const disc = [
+      { nivel: 2, nome: "Domínio", powers: [] },
+      { nivel: 1, nome: "Protean", powers: [] },
+    ];
+    expect(issues(5, values({ cla: "Caitiff", disc }))).toEqual({});
+    expect(issues(5, values({ cla: "Sangue Fraco", disc: [] }))).toEqual({});
   });
 
   it("passo 6: predador completo", () => {
@@ -126,17 +176,61 @@ describe("schemas do assistente", () => {
     expect(issues(6, values({ predador: "" }))).toHaveProperty("predador");
   });
 
-  it("passo 7: méritos com nome e pontos; lista vazia vale", () => {
+  it("passo 6: Sangue Fraco não tem predador", () => {
+    expect(
+      issues(
+        6,
+        values({
+          cla: "Sangue Fraco",
+          predador: "",
+          predDisc: "",
+          predEspec: "",
+        })
+      )
+    ).toEqual({});
+  });
+
+  it("passo 7: méritos com nome, pontos e cota 7/2", () => {
     expect(
       issues(
         7,
-        values({ meritos: [{ nome: " ", pontos: 0, tipo: "vantagem" }] })
+        values({
+          meritos: [
+            { nome: "Recursos", pontos: 5, tipo: "vantagem" },
+            { nome: "Contatos", pontos: 2, tipo: "vantagem" },
+            { nome: "Inimigo", pontos: 2, tipo: "defeito" },
+            { nome: " ", pontos: 0, tipo: "vantagem" },
+          ],
+        })
       )
     ).toEqual({
-      "meritos.0.nome": "Informe o nome",
-      "meritos.0.pontos": "Marque de 1 a 5 pontos",
+      "meritos.3.nome": "Informe o nome",
+      "meritos.3.pontos": "Marque de 1 a 5 pontos",
     });
-    expect(issues(7, values({ meritos: [] }))).toEqual({});
+    expect(issues(7, values({ meritos: [] }))).toEqual({
+      meritos:
+        "Falta: distribuir 7 pts em vantagens · adquirir 2 pts em defeitos.",
+    });
+  });
+
+  it("passo 7: Sangue Fraco exige Qualidades e Defeitos SR", () => {
+    const meritos = completeSheet().meritos ?? [];
+    expect(issues(7, values({ cla: "Sangue Fraco", meritos }))).toEqual({
+      meritos: "Falta: ter de 1 a 3 Qualidades de Sangue-Ralo.",
+    });
+    expect(
+      issues(
+        7,
+        values({
+          cla: "Sangue Fraco",
+          meritos: [
+            ...meritos,
+            { nome: "Olfato", pontos: 1, tipo: "qualidade-sr" },
+            { nome: "Sem fôlego", pontos: 1, tipo: "defeito-sr" },
+          ],
+        })
+      )
+    ).toEqual({});
   });
 
   it("passo 8: nome obrigatório", () => {
@@ -150,6 +244,12 @@ describe("campos por passo", () => {
   it("contexto não é gravado pelo passo 4", () => {
     expect(STEP_FIELDS[3]).toEqual(["espec", "especLivre"]);
     expect(STEP_FIELDS[2]).toContain("skills");
+  });
+
+  it("o clã é só contexto nos passos 5, 6 e 7", () => {
+    expect(STEP_FIELDS[4]).toEqual(["disc"]);
+    expect(STEP_FIELDS[5]).not.toContain("cla");
+    expect(STEP_FIELDS[6]).toEqual(["meritos"]);
   });
 
   it("todos os campos do formulário pertencem a algum passo", () => {
@@ -210,6 +310,20 @@ describe("mapeamento ficha ↔ formulário", () => {
     expect(wizardToPatch(v, ["espec"], completeSheet()).espec).toEqual({
       Esportes: ["Corrida"],
     });
+  });
+
+  it("Sangue Fraco grava predador e disciplinas do assistente vazios", () => {
+    const sheet = completeSheet({ cla: "Sangue Fraco" });
+    sheet.disc.push({ nivel: 1, nome: "Presença", powers: [] });
+    const v = sheetToWizard(sheet);
+    expect(wizardToPatch(v, STEP_FIELDS[5], sheet)).toEqual({
+      predador: "",
+      predDisc: "",
+      predEspec: "",
+    });
+    expect(
+      wizardToPatch(v, STEP_FIELDS[4], sheet).disc?.map((d) => d.nome)
+    ).toEqual(["", "", "Presença"]);
   });
 
   it("preserva disciplinas além das duas do assistente", () => {
