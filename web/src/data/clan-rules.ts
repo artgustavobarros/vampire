@@ -21,7 +21,7 @@ export const CLAN_FULL: Readonly<
       ],
     ],
     comp: [
-      "O vampiro sente o dever de julgar. Alguém que violou as convicções dele precisa ser punido.",
+      "O vampiro sente o dever de julgar. Alguém, amigo ou inimigo, que violou as convicções dele precisa ser punido.",
       [
         [
           "Efeito",
@@ -41,7 +41,7 @@ export const CLAN_FULL: Readonly<
         ["Gatilho", "Testes para resistir a frenesi de fúria."],
         [
           "Rolagem",
-          "Retire {G} dados da parada para resistir (mínimo de 1 dado).",
+          "Retire {G} dados da parada para resistir, você não pode ficar com menos que um dado.",
         ],
         ["Dura", "Sempre ativa."],
       ],
@@ -55,14 +55,14 @@ export const CLAN_FULL: Readonly<
         ],
         [
           "Termina",
-          "Quando ele desafia a autoridade de forma clara ou a cena termina.",
+          "Quando tiver feito a autoridade mudar de ideia",
         ],
       ],
     ],
   },
   Gangrel: {
     bane: [
-      "O frenesi deixa marcas animais no corpo: pelos, garras, olhos de fera, orelhas pontudas. As marcas podem durar além do frenesi.",
+      "Quando em frenesi, os Gangrel ganham um ou mais de um aspecto animalesco: um traço físico, um odor ou um comportamento.",
       [
         ["Gatilho", "Sempre que entra em frenesi."],
         [
@@ -71,7 +71,7 @@ export const CLAN_FULL: Readonly<
         ],
         [
           "Opção",
-          "Pode escolher entrar em frenesi de propósito (cavalgar a onda) e aceitar os traços.",
+          "Pode escolher Curtir a Onda e manifesta apenas um aspecto.",
         ],
       ],
     ],
@@ -85,7 +85,7 @@ export const CLAN_FULL: Readonly<
   },
   Hecata: {
     bane: [
-      "A mordida é agonia. O Beijo nunca dá prazer: a vítima sente só dor e luta para escapar.",
+      "Vítimas apanhadsa desprevinidas irão resistir violentamente, a menos que sejam contidas, e pocas pessoas se submetem de bom grado à tortura que é o Beijo dos Hecata.",
       [
         [
           "Alimentação",
@@ -93,21 +93,21 @@ export const CLAN_FULL: Readonly<
         ],
         [
           "Rolagem",
-          "Paradas para se alimentar sem violência perdem {G} dados.",
+          "Mortais relutantes não contidos ou amarrados tentarão escapar, e mesmo aqueles dispostos, Vigor + Determinação contra {G} + 2 para não recuar.",
         ],
-        ["Efeito", "Cada gole causa dano superficial extra à vítima."],
+        ["Alimentação", "Vítimas vampiras devem fazer teste de frenesi contra dificuldade 3 para evitar cair em frenesi de terror."],
       ],
     ],
     comp: [
-      "A morte ocupa todos os pensamentos. O vampiro precisa estudar, provocar ou testemunhar o fim de algo.",
+      "Os Hecata são possuidores de uma curiosidade peculiar combinada com desapego de compaixão e empatia, provavelmente devido ao seu relacionamento frequente com cadáveres e fantasmas daqueles que morreram tragicamente.",
       [
         [
           "Efeito",
-          "−2 dados em todas as paradas que não envolvam morte ou decadência.",
+          "−3 dados em todas as paradas que não envolvam sinais de doença, fragibilidade ou morte iminente.",
         ],
         [
           "Termina",
-          "Quando algo morre ou se decompõe de forma significativa, ou a cena termina.",
+          "Até que eles tenham predito uma morte sem meios sobrenaturais ou resolvido a causa de uma morte local.",
         ],
       ],
     ],
@@ -117,7 +117,7 @@ export const CLAN_FULL: Readonly<
       "O reflexo é distorcido e a tecnologia rejeita o vampiro. Espelhos, câmeras e microfones captam uma imagem ou voz deformada.",
       [
         ["Gatilho", "Usar tecnologia moderna ou tentar aparecer em gravações."],
-        ["Rolagem", "Retire {G} dados de paradas de Tecnologia."],
+        ["Rolagem", " {G} + 2 a menos em paradas de Tecnologia."],
         ["Aparência", "Reflexos e gravações ficam visivelmente distorcidos."],
       ],
     ],
@@ -184,11 +184,11 @@ export const CLAN_FULL: Readonly<
       "O corpo é deformado e monstruoso. Não há como se passar por humano sem ajuda sobrenatural.",
       [
         [
-          "Gatilho",
-          "Qualquer tentativa de parecer humano ou disfarçar a aparência sem Ofuscação.",
+          "Efeito",
+          "Defeito Repulsivo (-2)",
         ],
-        ["Rolagem", "Retire {G} dados da parada de disfarce."],
-        ["Restrição", "Não pode comprar a Vantagem Aparência (Belíssimo)."],
+          ["Rolagem", "Retire {G} dados da parada de disfarce."],
+        ["Restrição", "Não podem aumentar seu valor na Qualidade Visual."],
       ],
     ],
     comp: [
@@ -256,7 +256,7 @@ export const CLAN_FULL: Readonly<
   },
   Toreador: {
     bane: [
-      "A beleza é necessidade. Ambientes feios, sujos ou sem graça distraem e sufocam o Toreador.",
+      "Eles desejam tão intensamente a beleza que acabam sofrendo em sua ausência.",
       [
         ["Gatilho", "Estar num lugar feio ou sem beleza."],
         ["Rolagem", "Retire {G} dados das paradas de Disciplina."],
@@ -320,7 +320,7 @@ export const CLAN_FULL: Readonly<
       [
         [
           "Identificar",
-          "Raciocínio + Percepção (dificuldade 4 ou mais) para saber se a presa é do tipo certo.",
+          "Determinação + Percepção (dificuldade 4 ou maior) para saber se a presa é do sangue desejado.",
         ],
         [
           "Beber fora do tipo",
