@@ -94,7 +94,7 @@ export function Step1Clan() {
                   className="block font-label font-semibold text-ink-soft text-xs uppercase leading-none tracking-[.12em]"
                   target={{ geracao: field.value, kind: "geracao", potencia }}
                 >
-                  Geração
+                  Sua geração
                 </InfoTrigger>
                 <NativeSelect
                   {...field}
@@ -102,7 +102,7 @@ export function Step1Clan() {
                   aria-label="Geração"
                   id="wizard-geracao"
                 >
-                  <option value="">— escolher geração —</option>
+                  <option value="">— Escolher geração —</option>
                   {GENERATIONS.map((g) => (
                     <option key={g.label} value={g.label}>
                       {g.label}
