@@ -6,6 +6,7 @@ import { findPredator } from "#/data/predators";
 import { ATTRIBUTES, REQUIRED_SPECIALTY_SKILLS } from "#/data/traits";
 import type { Discipline, Merit, Sheet } from "#/lib/types";
 import { potencyFromGeneration } from "#/rules/generation";
+import { predatorChoiceStatus, removePredator } from "#/rules/predator";
 import {
   attributeQuotas,
   clanDisciplineOptions,
@@ -42,6 +43,8 @@ export interface WizardValues {
   nome: string;
   predador: string;
   predDisc: string;
+  /** id do ajuste com escolha → pontos por opção */
+  predEscolhas: Record<string, Record<string, number>>;
   predEspec: string;
   senhor: string;
   skills: Record<string, number>;
@@ -51,7 +54,9 @@ export type WizardKey = keyof WizardValues;
 
 const emptyDiscipline = (): Discipline => ({ nivel: 0, nome: "", powers: [] });
 
-export function sheetToWizard(sheet: Sheet): WizardValues {
+/** Valores do assistente, lidos da ficha sem o Predador aplicado. */
+export function sheetToWizard(applied: Sheet): WizardValues {
+  const sheet = removePredator(applied);
   const disc = sheet.disc.slice(0, 2).map((d) => ({
     ...d,
     powers: d.powers.slice(),
@@ -75,6 +80,7 @@ export function sheetToWizard(sheet: Sheet): WizardValues {
     nome: sheet.nome ?? "",
     predador: sheet.predador ?? "",
     predDisc: sheet.predDisc ?? "",
+    predEscolhas: structuredClone(sheet.predEscolhas ?? {}),
     predEspec: sheet.predEspec ?? "",
     senhor: sheet.senhor ?? "",
     skills: { ...sheet.skills },
@@ -125,6 +131,7 @@ export function wizardToPatch(
     patch.predador = "";
     patch.predEspec = "";
     patch.predDisc = "";
+    patch.predEscolhas = {};
   }
   return patch;
 }
@@ -282,9 +289,10 @@ const step6 = z
     cla: z.string(),
     predador: z.string(),
     predDisc: z.string(),
+    predEscolhas: z.record(z.string(), z.record(z.string(), z.number())),
     predEspec: z.string(),
   })
-  .superRefine(({ cla, predador, predEspec, predDisc }, ctx) => {
+  .superRefine(({ cla, predador, predEspec, predDisc, predEscolhas }, ctx) => {
     if (isThinBlood(cla)) {
       return;
     }
@@ -310,6 +318,9 @@ const step6 = z
         message: "Escolha uma disciplina",
         path: ["predDisc"],
       });
+    }
+    for (const { id, message } of predatorChoiceStatus(p, predEscolhas)) {
+      ctx.addIssue({ code: "custom", message, path: ["predEscolhas", id] });
     }
   });
 

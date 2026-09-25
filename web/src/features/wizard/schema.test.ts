@@ -1,6 +1,7 @@
 import { describe, expect, it } from "vitest";
 import { blankSheet } from "#/lib/sheet";
 import type { Sheet } from "#/lib/types";
+import { applyPredator } from "#/rules/predator";
 import {
   ALL_FIELDS,
   firstIncompleteStep,
@@ -176,6 +177,40 @@ describe("schemas do assistente", () => {
     expect(issues(6, values({ predador: "" }))).toHaveProperty("predador");
   });
 
+  it("passo 6: escolhas do Predador completas", () => {
+    const osiris = {
+      predador: "Osíris",
+      predDisc: "Domínio",
+      predEspec: "Ocultismo (culto escolhido)",
+    };
+    expect(
+      issues(
+        6,
+        values({
+          ...osiris,
+          predEscolhas: {
+            "inimigos-perseguido": { Inimigos: 2 },
+            "rebanho-fama": { Fama: 1, Rebanho: 1 },
+          },
+        })
+      )
+    ).toEqual({
+      "predEscolhas.rebanho-fama": "Distribua 3 pontos entre Rebanho e Fama",
+    });
+    expect(
+      issues(
+        6,
+        values({
+          ...osiris,
+          predEscolhas: {
+            "inimigos-perseguido": { Perseguido: 2 },
+            "rebanho-fama": { Rebanho: 3 },
+          },
+        })
+      )
+    ).toEqual({});
+  });
+
   it("passo 6: Sangue Fraco não tem predador", () => {
     expect(
       issues(
@@ -270,6 +305,10 @@ describe("firstIncompleteStep", () => {
     expect(firstIncompleteStep(completeSheet())).toBe(8);
     expect(isStepValid(8, values())).toBe(true);
   });
+
+  it("ficha com o Predador aplicado vai até o passo 8", () => {
+    expect(firstIncompleteStep(applyPredator(completeSheet()))).toBe(8);
+  });
 });
 
 describe("mapeamento ficha ↔ formulário", () => {
@@ -280,6 +319,20 @@ describe("mapeamento ficha ↔ formulário", () => {
       { nivel: 0, nome: "", powers: [] },
     ]);
     expect(v.nome).toBe("");
+  });
+
+  it("lê a ficha sem o Predador aplicado", () => {
+    const base = completeSheet({
+      predador: "Sereia",
+      predDisc: "Fascinação",
+      predEspec: "Persuasão (Seduzir)",
+    });
+    const v = sheetToWizard(applyPredator(base));
+    expect(v.disc.map((d) => [d.nome, d.nivel])).toEqual([
+      ["Potência", 2],
+      ["Celeridade", 1],
+    ]);
+    expect(v.meritos).toEqual(base.meritos);
   });
 
   it("ida e volta preserva os valores", () => {
@@ -319,6 +372,7 @@ describe("mapeamento ficha ↔ formulário", () => {
     expect(wizardToPatch(v, STEP_FIELDS[5], sheet)).toEqual({
       predador: "",
       predDisc: "",
+      predEscolhas: {},
       predEspec: "",
     });
     expect(

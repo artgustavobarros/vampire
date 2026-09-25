@@ -1,13 +1,25 @@
 import { describe, expect, it } from "vitest";
 import { DISCIPLINES } from "#/data/disciplines";
+import { findPredator, type Predator } from "#/data/predators";
 import { blankSheet } from "#/lib/sheet";
 import type { DamageMark, Merit, Power, Sheet } from "#/lib/types";
 import { bloodSurgeNote, healAggravated, rouseCheck, sleep } from "./actions";
 import { nextDotValue } from "./dots";
 import { FEEDING_SOURCES, feed, feedingYield } from "./feeding";
-import { potencyFromGeneration, potencyNote, sireNote } from "./generation";
+import {
+  bloodPotency,
+  potencyFromGeneration,
+  potencyNote,
+  sireNote,
+} from "./generation";
 import { adjustHumanity, stains, toggleStain } from "./humanity";
 import { hungerAlertFor } from "./hunger";
+import {
+  applyPredator,
+  predatorChoiceStatus,
+  predatorMerits,
+  removePredator,
+} from "./predator";
 import { specialtiesBySkill } from "./specialties";
 import { addDamage, cycleBox, trackBoxes, vitalityMax } from "./tracks";
 import {
@@ -487,5 +499,185 @@ describe("especialidades", () => {
 
   it("ignora Predador fora do formato", () => {
     expect(specialtiesBySkill(sheet({ predEspec: "Chantagem" }))).toEqual({});
+  });
+});
+
+describe("Predador", () => {
+  const pred = (name: string): Predator => {
+    const p = findPredator(name);
+    if (!p) {
+      throw new Error(name);
+    }
+    return p;
+  };
+  const brujah = (over: Partial<Sheet> = {}) =>
+    sheet({
+      cla: "Brujah",
+      disc: [
+        { nivel: 2, nome: "Potência", powers: [] },
+        { nivel: 1, nome: "Celeridade", powers: [] },
+      ],
+      geracao: "12ª",
+      humanidade: 7,
+      meritos: [{ nome: "Recursos", pontos: 3, tipo: "vantagem" }],
+      ...over,
+    });
+
+  it("status das escolhas", () => {
+    expect(predatorChoiceStatus(pred("Sereia"), {})).toEqual([]);
+    expect(predatorChoiceStatus(pred("Sanguessuga"), {})).toEqual([
+      {
+        id: "segredo-evitado",
+        message:
+          "Escolha uma opção: Defeito Segredo Obscuro •• (diabolista) ou Evitado ••",
+      },
+    ]);
+    expect(
+      predatorChoiceStatus(pred("Sanguessuga"), {
+        "segredo-evitado": { Evitado: 2 },
+      })
+    ).toEqual([]);
+    const osiris = pred("Osíris");
+    expect(
+      predatorChoiceStatus(osiris, {
+        "inimigos-perseguido": { Inimigos: 2 },
+        "rebanho-fama": { Fama: 1, Rebanho: 1 },
+      })
+    ).toEqual([
+      {
+        id: "rebanho-fama",
+        message: "Distribua 3 pontos entre Rebanho e Fama",
+      },
+    ]);
+    expect(
+      predatorChoiceStatus(osiris, {
+        "inimigos-perseguido": { Inimigos: 1, Perseguido: 1 },
+        "rebanho-fama": { Fama: 1, Rebanho: 2 },
+      })
+    ).toEqual([]);
+  });
+
+  it("méritos fixos e escolhidos", () => {
+    expect(predatorMerits(pred("Sereia"), {})).toEqual([
+      { nome: "Belíssimo", origem: "predador", pontos: 2, tipo: "vantagem" },
+      {
+        nome: "Inimigo (amante preterido)",
+        origem: "predador",
+        pontos: 1,
+        tipo: "defeito",
+      },
+    ]);
+    expect(
+      predatorMerits(pred("Osíris"), {
+        "inimigos-perseguido": { Inimigos: 2, Perseguido: 0 },
+        "rebanho-fama": { Fama: 1, Rebanho: 2 },
+      })
+    ).toEqual([
+      { nome: "Rebanho", origem: "predador", pontos: 2, tipo: "vantagem" },
+      { nome: "Fama", origem: "predador", pontos: 1, tipo: "vantagem" },
+      { nome: "Inimigos", origem: "predador", pontos: 2, tipo: "defeito" },
+    ]);
+  });
+
+  it("ponto em Disciplina existente e Humanidade", () => {
+    const s = applyPredator(
+      brujah({ predador: "Gato de Rua", predDisc: "Potência" })
+    );
+    expect(s.disc.map((d) => [d.nome, d.nivel])).toEqual([
+      ["Potência", 3],
+      ["Celeridade", 1],
+    ]);
+    expect(s.humanidade).toBe(6);
+    expect(s.meritos?.map((m) => m.nome)).toEqual([
+      "Recursos",
+      "Contatos (criminosos)",
+    ]);
+    expect(s.predBonus).toEqual({
+      disciplina: "Potência",
+      humanidade: -1,
+      novaDisciplina: false,
+      potencia: 0,
+    });
+  });
+
+  it("Disciplina nova entra com 1 ponto", () => {
+    const s = applyPredator(
+      brujah({ predador: "Sereia", predDisc: "Fascinação" })
+    );
+    expect(s.disc.at(-1)).toEqual({ nivel: 1, nome: "Fascinação", powers: [] });
+    expect(s.predBonus?.novaDisciplina).toBe(true);
+  });
+
+  it("Humanidade limitada e delta real", () => {
+    const up = applyPredator(
+      brujah({ humanidade: 10, predador: "Fazendeiro", predDisc: "Animalismo" })
+    );
+    expect(up.humanidade).toBe(10);
+    expect(up.predBonus?.humanidade).toBe(0);
+    expect(removePredator(up).humanidade).toBe(10);
+    expect(
+      applyPredator(brujah({ predador: "Fazendeiro", predDisc: "Animalismo" }))
+        .humanidade
+    ).toBe(8);
+  });
+
+  it("Sanguessuga soma Potência de Sangue", () => {
+    const s = applyPredator(
+      brujah({
+        predador: "Sanguessuga",
+        predDisc: "Celeridade",
+        predEscolhas: { "segredo-evitado": { Evitado: 2 } },
+      })
+    );
+    expect(bloodPotency(s)).toBe(2);
+    expect(potencyNote(s)).toBe(
+      "Geração 12ª — Potência de Sangue 2. (+1 do Predador)"
+    );
+    expect(s.meritos?.map((m) => m.nome)).toContain("Evitado");
+  });
+
+  it("não aplica duas vezes", () => {
+    const once = applyPredator(
+      brujah({ predador: "Gato de Rua", predDisc: "Potência" })
+    );
+    expect(applyPredator(once)).toBe(once);
+  });
+
+  it("Sangue Fraco e ficha sem Predador ficam iguais", () => {
+    const ralo = brujah({
+      cla: "Sangue Fraco",
+      predador: "Sereia",
+      predDisc: "Presença",
+    });
+    expect(applyPredator(ralo)).toBe(ralo);
+    const none = brujah();
+    expect(applyPredator(none)).toBe(none);
+    expect(removePredator(none)).toBe(none);
+  });
+
+  it("remover desfaz o que foi aplicado", () => {
+    for (const [predador, predDisc] of [
+      ["Gato de Rua", "Potência"],
+      ["Sereia", "Fascinação"],
+    ]) {
+      const base = brujah({ predador, predDisc });
+      const back = removePredator(applyPredator(base));
+      expect(back.disc).toEqual(base.disc);
+      expect(back.humanidade).toBe(base.humanidade);
+      expect(back.meritos).toEqual(base.meritos);
+      expect(back.predBonus).toBeUndefined();
+    }
+  });
+
+  it("linhas do Predador fora da cota 7/2", () => {
+    const meritos: Merit[] = [
+      { nome: "Recursos", pontos: 7, tipo: "vantagem" },
+      { nome: "Inimigo", pontos: 2, tipo: "defeito" },
+      { nome: "Belíssimo", origem: "predador", pontos: 2, tipo: "vantagem" },
+    ];
+    expect(meritTotals(meritos, "Brujah")).toMatchObject({
+      defeitos: 2,
+      vantagens: 7,
+    });
   });
 });

@@ -11,7 +11,9 @@ import type { ZodType } from "zod";
 import { Button } from "#/components/ui/button";
 import { logout } from "#/lib/auth";
 import { notify } from "#/lib/toast";
+import type { Sheet } from "#/lib/types";
 import { cn } from "#/lib/utils";
+import { applyPredator, removePredator } from "#/rules/predator";
 import { initialAttributes } from "#/rules/wizard";
 import { patchSheet, useCharacterStore } from "#/stores/character-store";
 import { collectErrorMessages, formatStepErrors } from "./error-messages";
@@ -116,13 +118,20 @@ export function WizardShell({
     reValidateMode: "onChange",
   });
 
-  /** Grava os campos na ficha e zera erros e estado de envio para o próximo passo. */
-  const commit = (fields: readonly WizardKey[], extra: object = {}) => {
+  /**
+   * Grava os campos sobre a ficha sem o Predador aplicado e zera erros e
+   * estado de envio para o próximo passo. `finish` ajusta a ficha gravada.
+   */
+  const commit = (
+    fields: readonly WizardKey[],
+    extra: Partial<Sheet> = {},
+    finish: (sheet: Sheet) => Sheet = (sheet) => sheet
+  ) => {
     const values = form.getValues();
-    patchSheet({
-      ...wizardToPatch(values, fields, useCharacterStore.getState().sheet),
-      ...extra,
-    });
+    const base = removePredator(useCharacterStore.getState().sheet);
+    patchSheet(
+      finish({ ...base, ...wizardToPatch(values, fields, base), ...extra })
+    );
     form.reset(values);
   };
 
@@ -133,7 +142,12 @@ export function WizardShell({
     });
 
   const back = () => {
-    commit(stepFields(step));
+    // sair do refazer devolve a ficha com o Predador aplicado
+    commit(
+      stepFields(step),
+      {},
+      step === 1 && refazer ? applyPredator : undefined
+    );
     if (step > 1) {
       go(step - 1);
     } else if (refazer) {
@@ -146,16 +160,12 @@ export function WizardShell({
 
   const next = (values: WizardValues) => {
     if (step === STEPS.length) {
-      const patch = wizardToPatch(
-        values,
-        ALL_FIELDS,
-        useCharacterStore.getState().sheet
+      commit(ALL_FIELDS, { criada: true }, (sheet) =>
+        applyPredator({
+          ...sheet,
+          disc: sheet.disc.filter((d) => d.nome.trim()),
+        })
       );
-      commit([], {
-        ...patch,
-        criada: true,
-        disc: (patch.disc ?? []).filter((d) => d.nome.trim()),
-      });
       navigate({ params: { aba: "ficha" }, to: "/ficha/$aba" });
       return;
     }

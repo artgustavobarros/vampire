@@ -21,6 +21,7 @@ import { blankSheet } from "#/lib/sheet";
 import { writeSheet } from "#/lib/storage";
 import type { Sheet } from "#/lib/types";
 import { Route as CriarRoute } from "#/routes/criar";
+import { applyPredator } from "#/rules/predator";
 import { useCharacterStore } from "#/stores/character-store";
 import { usePlayerStore } from "#/stores/player-store";
 import { resetStores } from "#/stores/test-utils";
@@ -68,6 +69,9 @@ function renderWizard(sheet: Sheet, url: string) {
 }
 
 const SALTO = /Salto Prodigioso/;
+const SANGUESSUGA = /^Sanguessuga/;
+const OSIRIS = /^Osíris/;
+const CONSENSUALISTA = /^Consensualista/;
 
 const stored = () => useCharacterStore.getState().sheet;
 const click = (target: string | RegExp | HTMLElement) =>
@@ -585,5 +589,115 @@ describe("rota /criar", () => {
       criada: true,
       nome: "Bruno",
     });
+  });
+});
+
+describe("Predador aplicado na ficha", () => {
+  const pressed = (label: string) =>
+    screen.getByRole("button", { name: label }).getAttribute("aria-pressed");
+  const levels = () => stored().disc.map((d) => [d.nome, d.nivel]);
+  const predatorMerits = () =>
+    (stored().meritos ?? [])
+      .filter((m) => m.origem === "predador")
+      .map((m) => m.nome);
+  const sereia = () =>
+    applyPredator(
+      completeSheet({
+        criada: true,
+        predador: "Sereia",
+        predDisc: "Fascinação",
+        predEspec: "Persuasão (Seduzir)",
+      })
+    );
+
+  it("escolha de uma opção seleciona só uma", async () => {
+    renderWizard(completeSheet(), "/criar?passo=6");
+    click(await screen.findByRole("button", { name: SANGUESSUGA }));
+    click("Evitado");
+    expect(pressed("Evitado")).toBe("true");
+    expect(pressed("Segredo Obscuro (diabolista)")).toBe("false");
+  });
+
+  it("dividir limita os pontos ao total e bloqueia incompleto", async () => {
+    renderWizard(completeSheet(), "/criar?passo=6");
+    click(await screen.findByRole("button", { name: OSIRIS }));
+    click("Pontos em Rebanho 2");
+    click("Pontos em Fama 2");
+    expect(pressed("Pontos em Fama 1")).toBe("true");
+    expect(pressed("Pontos em Fama 2")).toBe("false");
+    click("Continuar");
+    expect(await stepToast()).toHaveTextContent(
+      "Distribua 2 pontos entre Inimigos e Perseguido"
+    );
+  });
+
+  it("Concluir aplica Disciplina, Humanidade e méritos", async () => {
+    renderWizard(completeSheet(), "/criar?passo=8");
+    click(await screen.findByText("Concluir"));
+    expect(await screen.findByText("Página da ficha")).toBeInTheDocument();
+    expect(levels()).toEqual([
+      ["Potência", 3],
+      ["Celeridade", 1],
+    ]);
+    expect(stored().humanidade).toBe(6);
+    expect(predatorMerits()).toEqual(["Contatos (criminosos)"]);
+  });
+
+  it("refazer mostra o passo 5 com os pontos originais", async () => {
+    renderWizard(
+      applyPredator(completeSheet({ criada: true })),
+      "/criar?passo=5&refazer=true"
+    );
+    expect(await screen.findByText("Passo 5 de 8")).toBeInTheDocument();
+    expect(
+      screen.getByText("Distribuição completa: 2 e 1.")
+    ).toBeInTheDocument();
+  });
+
+  it("concluir o refazer não duplica", async () => {
+    renderWizard(sereia(), "/criar?passo=8&refazer=true");
+    click(await screen.findByText("Concluir"));
+    expect(await screen.findByText("Página da ficha")).toBeInTheDocument();
+    expect(stored().humanidade).toBe(6);
+    expect(levels().filter(([n]) => n === "Fascinação")).toEqual([
+      ["Fascinação", 1],
+    ]);
+    expect(predatorMerits()).toEqual([
+      "Belíssimo",
+      "Inimigo (amante preterido)",
+    ]);
+  });
+
+  it("trocar de Predador no refazer troca o que foi aplicado", async () => {
+    renderWizard(sereia(), "/criar?passo=6&refazer=true");
+    click(await screen.findByRole("button", { name: CONSENSUALISTA }));
+    click("Medicina (Flebotomia)");
+    click("Fortitude");
+    click("Continuar");
+    click(await screen.findByText("Passo 7 de 8").then(() => "Continuar"));
+    click(await screen.findByText("Concluir"));
+    expect(await screen.findByText("Página da ficha")).toBeInTheDocument();
+    expect(levels()).toEqual([
+      ["Potência", 2],
+      ["Celeridade", 1],
+      ["Fortitude", 1],
+    ]);
+    expect(stored().humanidade).toBe(8);
+    expect(predatorMerits()).toEqual(["Segredo Obscuro (violação da Máscara)"]);
+  });
+
+  it("sair do refazer pelo passo 1 mantém o Predador aplicado", async () => {
+    renderWizard(sereia(), "/criar?passo=2&refazer=true");
+    click(await screen.findByText("Voltar"));
+    await screen.findByText("Passo 1 de 8");
+    expect(stored().predBonus).toBeUndefined();
+    click("Voltar");
+    expect(await screen.findByText("Página da ficha")).toBeInTheDocument();
+    expect(stored().humanidade).toBe(6);
+    expect(levels()).toContainEqual(["Fascinação", 1]);
+    expect(predatorMerits()).toEqual([
+      "Belíssimo",
+      "Inimigo (amante preterido)",
+    ]);
   });
 });

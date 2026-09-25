@@ -29,19 +29,26 @@ export function potencyFromGeneration(
   return null;
 }
 
-type PotencySource = Pick<Sheet, "geracao" | "potencia">;
+type PotencySource = Pick<Sheet, "geracao" | "potencia" | "predBonus">;
 
+/** Potência da Geração (ou o fallback gravado) mais o ponto do Predador. */
 export function bloodPotency(sheet: PotencySource): number {
-  return potencyFromGeneration(sheet.geracao) ?? (sheet.potencia || 0);
+  const base = potencyFromGeneration(sheet.geracao) ?? (sheet.potencia || 0);
+  return Math.min(10, base + (sheet.predBonus?.potencia || 0));
+}
+
+function predatorNote(sheet: PotencySource): string {
+  const n = sheet.predBonus?.potencia || 0;
+  return n ? ` (+${n} do Predador)` : "";
 }
 
 export function potencyNote(sheet: PotencySource): string {
   const potency = bloodPotency(sheet);
   if (potencyFromGeneration(sheet.geracao) !== null) {
-    return `Geração ${sheet.geracao} — Potência de Sangue ${potency}.`;
+    return `Geração ${sheet.geracao} — Potência de Sangue ${potency}.${predatorNote(sheet)}`;
   }
   if (sheet.geracao) {
-    return `Geração "${sheet.geracao}" não reconhecida — usando Potência de Sangue ${potency}.`;
+    return `Geração "${sheet.geracao}" não reconhecida — usando Potência de Sangue ${potency}.${predatorNote(sheet)}`;
   }
   return "Escolha a Geração para definir a Potência de Sangue.";
 }

@@ -312,6 +312,10 @@ export function meritTotals(
     vantagens: 0,
   };
   for (const m of meritos ?? []) {
+    // linhas do Predador ficam fora da cota 7/2
+    if (m.origem === "predador") {
+      continue;
+    }
     const tipo = effectiveMeritKind(m.tipo, cla);
     if (tipo === "vantagem") {
       totals.vantagens += m.pontos || 0;

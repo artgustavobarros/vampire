@@ -1,24 +1,32 @@
 import { Controller, useWatch } from "react-hook-form";
 import { FieldLegend, FieldSet } from "#/components/ui/field";
+import { DotRating } from "#/components/vtm/dot-rating";
 import { SelectableCard } from "#/components/vtm/selectable";
 import { autoFit } from "#/components/vtm/trait-grid";
-import { findPredator, PREDATORS } from "#/data/predators";
+import {
+  findPredator,
+  PREDATORS,
+  type PredatorAdjustment,
+} from "#/data/predators";
 import { cn } from "#/lib/utils";
+import { choiceOptionLabel, choiceTotal } from "#/rules/predator";
 import { isThinBlood } from "#/rules/wizard";
 import { useWizardForm } from "./form-fields";
 
-const COST = /^−|Defeito|Exige|Perde/;
-const GAIN = /^\+|Vantagem|pontos em|Rebanho|Contatos|Fama|Recursos/;
+type Choice = Extract<PredatorAdjustment, { kind: "escolha" }>;
 
 /** Cor da borda de cada ajuste: custo em sangue, ganho em verde. */
-function adjustmentTone(text: string): string {
-  if (COST.test(text)) {
-    return "border-l-blood";
+function adjustmentTone(a: PredatorAdjustment): string {
+  switch (a.kind) {
+    case "humanidade":
+    case "potencia":
+      return a.valor < 0 ? "border-l-blood" : "border-l-moss";
+    case "merito":
+    case "escolha":
+      return a.tipo === "defeito" ? "border-l-blood" : "border-l-moss";
+    default:
+      return "border-l-blood";
   }
-  if (GAIN.test(text)) {
-    return "border-l-moss";
-  }
-  return "border-l-ink/20";
 }
 
 const LABEL =
@@ -59,6 +67,7 @@ export function Step6Predator() {
                     if (p.name !== field.value) {
                       setValue("predEspec", "");
                       setValue("predDisc", "");
+                      setValue("predEscolhas", {});
                     }
                     field.onChange(p.name);
                   }}
@@ -90,16 +99,17 @@ export function Step6Predator() {
           />
           <div className="flex flex-col gap-2">
             <span className={LABEL}>Ajustes obrigatórios</span>
-            {predator.adjustments.map((t) => (
-              <span
+            {predator.adjustments.map((a) => (
+              <div
                 className={cn(
                   "border-l-2 py-1 pl-3 text-base",
-                  adjustmentTone(t)
+                  adjustmentTone(a)
                 )}
-                key={t}
+                key={a.label}
               >
-                {t}
-              </span>
+                {a.label}
+                {a.kind === "escolha" && <ChoicePicker choice={a} />}
+              </div>
             ))}
           </div>
           <div className="text-sm opacity-70">
@@ -155,6 +165,79 @@ function OptionGroup({
           </div>
         </FieldSet>
       )}
+    />
+  );
+}
+
+/** Seletor de um ajuste com escolha: uma opção ou pontos divididos. */
+function ChoicePicker({ choice }: { choice: Choice }) {
+  const { control } = useWizardForm();
+  return (
+    <Controller
+      control={control}
+      defaultValue={{}}
+      name={`predEscolhas.${choice.id}`}
+      render={({ field, fieldState }) => {
+        const picked = field.value ?? {};
+        return (
+          <FieldSet
+            className="mt-2 gap-2 outline-none"
+            data-invalid={fieldState.invalid}
+            ref={field.ref}
+            tabIndex={-1}
+          >
+            <FieldLegend className="sr-only">{choice.label}</FieldLegend>
+            {choice.modo === "uma" ? (
+              <div className="flex flex-wrap gap-2">
+                {choice.opcoes.map((o) => {
+                  const on = (picked[o.nome] || 0) > 0;
+                  return (
+                    <button
+                      aria-pressed={on}
+                      className={cn(
+                        "cursor-pointer border px-3 py-2 text-base leading-tight focus-visible:outline-2 focus-visible:outline-ink",
+                        on
+                          ? "border-moss bg-field"
+                          : "border-ink/20 bg-transparent"
+                      )}
+                      key={o.nome}
+                      onClick={() =>
+                        field.onChange({ [o.nome]: choice.pontos })
+                      }
+                      type="button"
+                    >
+                      {choiceOptionLabel(o)}
+                    </button>
+                  );
+                })}
+              </div>
+            ) : (
+              <div className="flex flex-col gap-2">
+                {choice.opcoes.map((o) => {
+                  const others = choiceTotal(picked) - (picked[o.nome] || 0);
+                  return (
+                    <div className="flex items-center gap-3" key={o.nome}>
+                      <span className="w-32">{choiceOptionLabel(o)}</span>
+                      <DotRating
+                        count={choice.pontos}
+                        label={`Pontos em ${o.nome}`}
+                        onChange={(v) =>
+                          field.onChange({
+                            ...picked,
+                            [o.nome]: Math.min(v, choice.pontos - others),
+                          })
+                        }
+                        size="sm"
+                        value={picked[o.nome] || 0}
+                      />
+                    </div>
+                  );
+                })}
+              </div>
+            )}
+          </FieldSet>
+        );
+      }}
     />
   );
 }

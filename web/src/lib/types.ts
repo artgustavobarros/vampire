@@ -25,8 +25,19 @@ export type MeritKind = "vantagem" | "defeito" | "qualidade-sr" | "defeito-sr";
 
 export interface Merit {
   nome: string;
+  /** linha acrescentada pelo Predador ao concluir o assistente */
+  origem?: "predador";
   pontos: number;
   tipo: MeritKind;
+}
+
+/** O que o Predador somou à ficha ao concluir, para desfazer sem duplicar. */
+export interface PredatorBonus {
+  disciplina: string;
+  humanidade: number;
+  /** a Disciplina não existia e foi acrescentada com 1 ponto */
+  novaDisciplina: boolean;
+  potencia: number;
 }
 
 export interface Conviction {
@@ -76,5 +87,8 @@ export type Sheet = Partial<Record<TextFieldKey, string>> & {
   dist?: string;
   predEspec?: string;
   predDisc?: string;
+  /** escolhas dos ajustes do Predador: id do ajuste → pontos por opção */
+  predEscolhas?: Record<string, Record<string, number>>;
+  predBonus?: PredatorBonus;
   meritos?: Merit[];
 };
