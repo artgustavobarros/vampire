@@ -42,12 +42,18 @@ export function sameDiscipline(
 }
 
 export interface PowerTemplate {
+  amalgam?: string;
   cost: string;
   description: string;
+  dicePool?: string;
   duration: string;
+  ingredients?: string;
   level: number;
   name: string;
+  prerequisite?: string;
+  process?: string;
   rouse: boolean;
+  system?: string;
 }
 
 const ALCHEMY_POWERS: readonly PowerTemplate[] = [
@@ -60,1233 +66,1699 @@ const ALCHEMY_POWERS: readonly PowerTemplate[] = [
     rouse: true,
   },
   {
-    cost: "Um Rouse Check",
+    cost: "Um Teste de Rouse",
     description:
-      "Manipula, ergue, empurra e arremessa objetos ou pessoas com menos de 100 kg a até 10 metros de distância com a mente. Para alvos resistentes: Determinação + Alquimia vs. Força + Atletismo.",
-    duration: "Um turno",
+      "Esta fórmula permite ao alquimista utilizar o poder de sua mente para agarrar, segurar, empurrar e erguer objetos ou pessoas à distância sem tocá-los fisicamente.",
+    dicePool: "Determinação + Alquimia vs. Força + Atletismo",
+    duration: "Uma cena",
+    ingredients:
+      "Sangue do alquimista, sangue humano colérico, fios de náilon derretidos ou ímã de geladeira ralado",
     level: 1,
     name: "Alcance Remoto",
     rouse: true,
+    system:
+      "O alquimista pode levitar ou arremessar objetos de até 100 kg a até 10 metros de distância com a mente. Contra alvos resistentes, dispute Determinação + Alquimia vs. Força + Atletismo.",
   },
   {
-    cost: "Um Rouse Check",
+    cost: "Um Teste de Rouse",
     description:
-      "Cria uma cortina de névoa densa que envolve o alquimista, mascarando sua silhueta e impondo penalidade de dois dados em ataques à distância ou tentativas de identificação.",
+      "O alquimista exala uma cortina densa de vapor que o envolve e o acompanha por onde anda, obscurecendo suas feições e tornando-o um alvo quase impossível de atingir à distância.",
     duration: "Uma cena",
+    ingredients:
+      "Sangue do alquimista, sangue humano fleumático, gelo seco ou fumaça de charuto",
     level: 1,
     name: "Névoa",
     rouse: true,
+    system:
+      "Uma névoa impenetrável envolve o usuário, ocultando sua identidade e impondo uma penalidade de -2 dados em qualquer ataque à distância desferido contra ele.",
   },
   {
-    cost: "Um Rouse Check",
+    cost: "Um Teste de Rouse",
     description:
-      "Aproveita a natureza fluida do sangue-fraco para alterar permanentemente o sexo biológico e traços físicos de gênero do alquimista durante o sono diurno, permitindo criar uma nova identidade.",
+      "Fórmula alquímica lendária de transformação corporal que permite ao alquimista remodelar inteiramente seu sexo biológico, fisionomia e feições anatômicas permanentes.",
     duration: "Permanente",
+    ingredients:
+      "Sangue do alquimista, sangue de cinco doadores humanos que se identifiquem plenamente com o gênero desejado",
     level: 1,
     name: "Hieros Gamos Profano",
     rouse: true,
+    system:
+      "O alquimista remodela seu corpo permanentemente, alterando sexo, formato facial e estrutura óssea, criando uma nova identidade perfeita e indetectável pela Máscara.",
   },
   {
-    cost: "Um Rouse Check",
+    cost: "Um Teste de Rouse",
     description:
-      "Lança uma bruma que cega o alvo com penalidade de três dados de visão. Contra mortais, pode asfixiar a vítima em um teste de Raciocínio + Alquimia vs. Vigor + Sobrevivência.",
-    duration: "Uma cena",
+      "O alquimista projeta uma névoa asfixiante e pegajosa que se agarra ao redor do rosto de uma vítima, cegando-a e provocando sufocamento atroz em mortais.",
+    dicePool: "Raciocínio + Alquimia vs. Vigor + Sobrevivência",
+    duration: "Um turno por ponto de margem",
+    ingredients:
+      "Sangue do alquimista, sangue melancólico e fleumático, clorato de potássio ou gás halon",
     level: 2,
     name: "Envolver",
     rouse: true,
+    system:
+      "Role Raciocínio + Alquimia vs. Vigor + Sobrevivência. Em uma vitória, o alvo fica cego pela névoa espessa e, se for mortal, começa a sufocar sofrendo dano de Vitalidade.",
+  },
+  {
+    cost: "Gratuito",
+    description:
+      "Esta fórmula miraculosa purifica bolsas de sangue hospitalar velhas ou congeladas, restaurando seu frescor original como se acabassem de sair diretamente da veia de um mortal vivo.",
+    duration: "Permanente",
+    ingredients:
+      "Sangue do alquimista, sangue sanguíneo e melancólico, café preto fervente e octanoato de sódio",
+    level: 3,
+    name: "Desfracionar",
+    rouse: false,
+    system:
+      "O alquimista purifica bolsas de sangue frio, permitindo que vampiros sem o mérito Estômago de Ferro consigam saciar Fome com sangue hospitalar normalmente.",
   },
   {
     cost: "Um Rouse Check",
     description:
-      "Elixir homeopático que purifica bolsas de sangue hospitalar fracionado ou estéril, restaurando seu frescor para que qualquer vampiro possa saciar sua Fome com ele.",
-    duration: "Uma noite",
-    level: 3,
-    name: "Desfracionar",
-    rouse: true,
-  },
-  {
-    cost: "Um Rouse Check",
-    description: "Fórmula que imita a vitae de um clã específico.",
-    duration: "Uma noite",
+      "Faz o vampiro parecer e reagir temporariamente como um mortal ou como um vampiro de sangue mais potente, enganando exames e toques espirituais.",
+    duration: "Uma cena",
     level: 3,
     name: "Sangue Falso",
     rouse: true,
   },
   {
-    cost: "Um Rouse Check",
+    cost: "Um Teste de Rouse",
     description:
-      "Concede capacidade de levitar e voar pelos céus em velocidade de corrida, manobrando livremente e podendo carregar até o peso de um corpo humano adulto. Se resistido: Força + Alquimia vs. Força + Atletismo.",
+      "O alquimista sintetiza um elixir que neutraliza as leis da atração gravitacional, concedendo-lhe a capacidade de levitar e voar livremente em qualquer direção.",
+    dicePool: "Força + Alquimia vs. Força + Atletismo (se resistido)",
     duration: "Uma cena",
+    ingredients:
+      "Sangue do alquimista, sangue colérico e sanguíneo, champanhe, sangue de pássaro, gás hélio e extrato de beladona",
     level: 4,
     name: "Ímpeto Aéreo",
     rouse: true,
+    system:
+      "O alquimista ganha a habilidade de voar em velocidade equivalente à sua corrida normal, podendo pairar no ar e manobrar em três dimensões.",
   },
   {
-    cost: "Um Rouse Check",
+    cost: "Três Testes de Rouse",
     description:
-      "Fórmula extraordinária que, misturada a sangue humano fresco, é capaz de despertar um vampiro de qualquer geração do torpor místico de acordo com a potência da destilação.",
-    duration: "Instantânea",
+      "A coroação da arte alquímica: um elixir potentíssimo que, quando misturado a sangue humano fresco, tem a virtude mágica de despertar um vampiro ancião do mais profundo torpor.",
+    duration: "Permanente",
+    ingredients:
+      "Sangue do alquimista, sangue colérico e sanguíneo humano, adrenalina pura, carbonato de amônio, cafeína e melatonina",
     level: 5,
     name: "Despertar o Dormente",
     rouse: true,
+    system:
+      "Quando introduzido nos lábios de um vampiro em torpor, este composto quebra o coma imortal e o desperta instantaneamente para a não-vida, independentemente de sua idade.",
   },
 ];
 
 const ANIMALISM_POWERS: readonly PowerTemplate[] = [
   {
-    cost: "Sem custo de sangue",
+    cost: "Gratuito (exige 3 noites com Teste de Rouse)",
     description:
-      "Permite comunicar-se com animais e convocá-los. Manipulação + Animalismo vs. resistência do animal.",
-    duration: "Uma cena",
+      "Ao criar um Laço de Sangue com um animal, o vampiro pode torná-lo um famulus, formando um elo mental com ele e facilitando o uso de outros poderes de Animalismo. Embora este poder por si só não permita comunicação bidirecional com o animal, ele pode seguir instruções verbais simples como 'fique' e 'venha aqui'. Ele ataca em defesa própria e de seu mestre, mas não pode ser persuadido a lutar contra algo que normalmente não atacaria.",
+    dicePool: "Carisma + Empatia com Animais",
+    duration: "Apenas a morte liberta",
     level: 1,
-    name: "Sussurro Ferino",
+    name: "Famulus Enlaçado",
     rouse: false,
+    system:
+      "Sem o uso de Sussurros Ferais, dar comandos ao animal exige um teste de Carisma + Empatia com Animais (Dificuldade 2); aumente a Dificuldade para ordens mais complexas. Um vampiro pode ter apenas um famulus, mas pode obter um novo se o atual morrer. Um vampiro pode usar Sussurros Ferais (Animalismo 2) e Subjugar o Espírito (Animalismo 4) em seu famulus gratuitamente.",
   },
   {
-    cost: "Sem custo de sangue",
+    cost: "Gratuito (exige 3 noites com Teste de Rouse)",
     description:
-      "Forma um elo mental com um animal alimentado com a sua vitae em três noites, tornando-o um famulus. O animal compreende ordens verbais simples como 'fique' ou 'venha aqui' e defende o mestre. Sem Sussurros Ferais, ordens complexas exigem Carisma + Empatia com Animais. Permite usar Sussurros Ferais e Subjugar o Espírito no famulus sem custo.",
-    duration: "Permanente",
+      "Ao criar um Laço de Sangue com um animal, o vampiro pode torná-lo um famulus, formando um elo mental com ele e facilitando o uso de outros poderes de Animalismo. Embora este poder por si só não permita comunicação bidirecional com o animal, ele pode seguir instruções verbais simples como 'fique' e 'venha aqui'. Ele ataca em defesa própria e de seu mestre, mas não pode ser persuadido a lutar contra algo que normalmente não atacaria.",
+    dicePool: "Carisma + Empatia com Animais",
+    duration: "Apenas a morte liberta",
     level: 1,
     name: "Ligar Famulus",
     rouse: false,
+    system:
+      "Sem o uso de Sussurros Ferais, dar comandos ao animal exige um teste de Carisma + Empatia com Animais (Dificuldade 2); aumente a Dificuldade para ordens mais complexas. Um vampiro pode ter apenas um famulus, mas pode obter um novo se o atual morrer. Um vampiro pode usar Sussurros Ferais (Animalismo 2) e Subjugar o Espírito (Animalismo 4) em seu famulus gratuitamente.",
   },
   {
-    cost: "Sem custo de sangue",
+    cost: "Gratuito",
     description:
-      "Sente a Fera presente em mortais, vampiros e outros seres sobrenaturais, percebendo Fome, hostilidade e agressividade. Resolução + Animalismo vs. Autocontrole + Dissimulação. Vitória revela o nível de agressividade e se o alvo abriga uma Fera sobrenatural (vampiro ou lobisomem). Vitória crítica revela a criatura e seu nível de Fome ou Fúria.",
+      "O vampiro pode sentir a Fera presente em mortais, vampiros e outros seres sobrenaturais, obtendo uma percepção de sua natureza, fome e hostilidade.",
+    dicePool: "Determinação + Animalismo vs. Autocontrole + Subterfúgio",
     duration: "Passiva",
     level: 1,
     name: "Sentir a Fera",
     rouse: false,
+    system:
+      "Role Determinação + Animalismo vs. Autocontrole + Subterfúgio. Uma vitória permite ao usuário sentir o nível de hostilidade em um alvo (se a pessoa está preparada para causar dano ou decidida a causá-lo) e determinar se ela abriga uma Fera sobrenatural, marcando-a como um vampiro ou lobisomem. Em uma vitória crítica, o usuário obtém informações sobre o tipo exato de criatura, bem como seu nível de Fome ou Fúria.",
   },
   {
-    cost: "Um Rouse Check",
+    cost: "Um Teste de Rouse",
     description:
-      "Permite comunicação bidirecional e convocação de animais da área (gratuito no famulus). Conversas simples não exigem testes. Convencer o animal a prestar serviços perigosos exige Manipulação + Animalismo. Convocar animais do tipo escolhido usa Carisma + Animalismo.",
+      "O vampiro pode se comunicar com as feras da natureza e da cidade. Sussurros Ferais permite comunicação bidirecional com animais. Um gato pode não estar interessado em debater filosofia, mas discute alegremente a movimentação ao redor do prédio. O vampiro pode persuadir animais a realizar favores ou convocá-los para um local.",
+    dicePool: "Manipulação + Animalismo ou Carisma + Animalismo",
     duration: "Uma cena",
     level: 2,
     name: "Sussurros Ferais",
     rouse: true,
+    system:
+      "Comunicação simples não requer teste. Persuadir um animal a realizar um serviço exige um teste de Manipulação + Animalismo; a Dificuldade depende da tarefa exigida. Convocar animais usa um teste de Carisma + Animalismo; a Dificuldade depende da escassez dos animais convocados. O número de animais depende da margem de sucesso.",
   },
   {
-    cost: "Sem custo de sangue",
+    cost: "Um Teste de Rouse",
     description:
-      "Sacia um ponto adicional de Fome ao alimentar-se de animais e trata a Potência de Sangue como dois níveis mais baixa contra penalidades de saciedade com sangue animal. Consumir o próprio famulus sacia 4 pontos de Fome e adiciona dois pontos ao Atributo associado ao animal até a próxima alimentação.",
+      "Manipulação + Animalismo vs. resistência do animal. Permite comunicar-se com animais e convocá-los.",
+    duration: "Uma cena",
+    level: 1,
+    name: "Sussurro Ferino",
+    rouse: true,
+  },
+  {
+    cost: "Gratuito",
+    description:
+      "O vampiro pode saciar Fome adicional alimentando-se de animais. Além disso, o vampiro pode consumir seu famulus, obtendo nutrição muito além do que ganharia de um animal de porte semelhante e absorvendo uma fração de seu atributo primário.",
     duration: "Passiva",
     level: 3,
     name: "Suculência Animal",
     rouse: false,
+    system:
+      "Alimentar-se de animais sacia 1 ponto adicional de Fome, e o vampiro conta sua Potência de Sangue como dois níveis mais baixa em relação a penalidades para saciar Fome com sangue animal. Consumir o próprio famulus sacia 4 pontos de Fome, independentemente do tamanho do animal. Este ato nunca pode remover o último dado de Fome. Além disso, consumir o famulus aumenta em dois pontos o Atributo do vampiro mais associado a esse animal (determinado pelo Narrador).",
   },
   {
-    cost: "Um Rouse Check",
+    cost: "Um Teste de Rouse",
     description:
-      "Ao fixar o olhar no alvo, o vampiro faz a Fera interior dele adormecer temporariamente. Carisma + Animalismo vs. Vigor + Determinação. Mortais ficam apáticos e letárgicos pela cena. Vampiros afetados não podem usar Surtos de Sangue nem marcar acertos críticos caóticos; vitória crítica encerra o frenesi do vampiro.",
-    duration: "Uma cena",
+      "Ao travar o olhar com um alvo, o vampiro acalma sua Fera interior em um sono temporário. Mortais afetados tornam-se apáticos, incapazes de realizar qualquer ação além de se manterem vivos, enquanto os impulsos bestiais dos vampiros diminuem temporariamente.",
+    dicePool: "Carisma + Animalismo vs. Vigor + Determinação",
+    duration: "Uma cena ou margem de turnos",
     level: 3,
     name: "Acalmar a Fera",
     rouse: true,
+    system:
+      "Role Carisma + Animalismo vs. Vigor + Determinação. Uma vitória contra um alvo mortal o incapacita durante a cena, incutindo severa letargia. Ele age apenas para se preservar, não contra o usuário ou qualquer outra pessoa. Uma vitória contra um vampiro impede o alvo de realizar Surtos de Sangue. Contra vampiros, este poder dura um turno mais um número de turnos igual à margem de vitória. Uma vitória crítica contra um vampiro encerra seu frenesi.",
   },
   {
+    amalgam: "Ofuscação 2",
     cost: "Sem custo adicional",
     description:
-      "Amálgama: Ofuscação 2. Estende os poderes de Animalismo a enxames de insetos (moscas, baratas, escorpiões), tratando o enxame como uma criatura única. O vampiro pode abrigar o enxame dentro das cavidades e dobras da sua carne morta-viva, ocultando-o de qualquer detecção mundana.",
+      "Mais frequentemente visto entre os Nosferatu, este poder perturbador permite ao usuário estender sua influência animal a enxames de insetos, como moscas ou baratas. Certos vampiros chegam ao ponto de adotar enxames como famuli, dando-lhes um lar permanente nas dobras e cavidades de sua carne deformada.",
+    duration: "Passiva",
+    level: 3,
+    name: "Colmeia Desalmada",
+    rouse: false,
+    system:
+      "Este poder estende todos os poderes de Animalismo para enxames de insetos, tratando um enxame como uma criatura única. O vampiro pode vincular o enxame como um famulus e aninhá-lo dentro das cavidades de seu corpo, tornando-o indetectável exceto por raios X. Enxames têm Vitalidade 5 e parada de 8 dados para resistir a ataques. Sofrem dano Superficial de Briga; fogo e inseticidas causam dano Agravado.",
+  },
+  {
+    amalgam: "Ofuscação 2",
+    cost: "Sem custo adicional",
+    description:
+      "Mais frequentemente visto entre os Nosferatu, este poder perturbador permite ao usuário estender sua influência animal a enxames de insetos, como moscas ou baratas. Certos vampiros chegam ao ponto de adotar enxames como famuli, dando-lhes um lar permanente nas dobras e cavidades de sua carne deformada.",
     duration: "Passiva",
     level: 3,
     name: "Colmeia Inanimada",
     rouse: false,
+    system:
+      "Este poder estende todos os poderes de Animalismo para enxames de insetos, tratando um enxame como uma criatura única. O vampiro pode vincular o enxame como um famulus e aninhá-lo dentro das cavidades de seu corpo, tornando-o indetectável exceto por raios X.",
   },
   {
-    cost: "Um Rouse Check",
+    cost: "Um Teste de Rouse (gratuito no famulus)",
     description:
-      "Projeta a consciência do vampiro para dentro do corpo de um animal, controlando suas ações e sentidos enquanto o próprio corpo físico descansa imóvel em torpor (gratuito no famulus). Manipulação + Animalismo contra Dificuldade 4. Vitória crítica permite habitar o animal indefinidamente.",
-    duration: "Uma cena",
+      "O vampiro pode transferir completamente sua mente para o corpo de um animal. Ele pode controlar o animal e usar seus sentidos livremente, mesmo durante o dia, caso consiga permanecer acordado. Enquanto faz isso, o corpo do vampiro fica imóvel como se estivesse em torpor.",
+    dicePool: "Manipulação + Animalismo",
+    duration: "Uma cena / indefinidamente",
     level: 4,
     name: "Subjugar o Espírito",
     rouse: true,
+    system:
+      "Faça um teste de Manipulação + Animalismo (Dificuldade 4). Em uma vitória, o vampiro pode habitar o corpo do animal por uma cena. Em uma vitória crítica, pode habitá-lo indefinidamente. Estender a possessão durante o dia exige permanecer acordado; ver o sol exige teste de frenesi de medo, embora a luz solar não fira o animal possuído. O usuário permanece alheio ao seu corpo original, mas danos a ele interrompem o transe.",
   },
   {
-    cost: "Dois Rouse Checks",
+    cost: "Dois Testes de Rouse",
     description:
-      "Subjuga e comanda bandos, enxames e matilhas inteiras de animais presentes na área como extensões do próprio corpo. Carisma + Animalismo com Dificuldade de 3 a 5 conforme a complexidade e periculosidade das ordens.",
-    duration: "Uma cena",
+      "O poder que o vampiro exerce sobre os animais torna-se grandioso o suficiente para comandar bandos e matilhas como se fossem extensões de seu próprio corpo. Com um gesto, dezenas ou até centenas de animais sacrificam suas vidas para satisfazer seu mestre.",
+    dicePool: "Carisma + Animalismo",
+    duration: "Uma cena ou até ordem cumprida",
     level: 5,
     name: "Domínio Animal",
     rouse: true,
+    system:
+      "Escolha um tipo de animal e faça um teste de Carisma + Animalismo com Dificuldade baseada na natureza dos animais e na ordem dada (Dificuldade 3 para dispersar corvos à procura de alguém; Dificuldade 5 para matilha de cães atacar em investida suicida contra outro vampiro). O vampiro pode ordenar que os animais retornem após completarem a tarefa.",
   },
   {
-    cost: "Um Rouse Check",
+    cost: "Um Teste de Rouse",
     description:
-      "Ao sucumbir a um frenesi de fúria ou terror, transfere a Fera para um alvo próximo mortal ou vampiro. Raciocínio + Animalismo vs. Autocontrole + Determinação. Se vencer, a vítima entra em frenesi no lugar do vampiro (não afeta frenesi de Fome).",
-    duration: "Uma cena",
+      "O vampiro pode projetar sua Fera no momento de um frenesi de terror ou fúria, transferindo-a para um alvo próximo, seja mortal ou vampiro. Essa pessoa experimenta imediatamente o frenesi em seu lugar, entrando em fúria impiedosa ou fugindo em pavor dependendo do gatilho.",
+    dicePool: "Raciocínio + Animalismo vs. Autocontrole + Determinação",
+    duration: "Duração do frenesi",
+    level: 5,
+    name: "Expulsar a Fera",
+    rouse: true,
+    system:
+      "Em vez do teste de Força de Vontade para resistir a frenesi de terror ou fúria, role Raciocínio + Animalismo vs. Autocontrole + Determinação do alvo. Se falhar, entra em frenesi normalmente. Em uma vitória, o alvo experimenta o frenesi em vez do usuário. Este poder não pode transferir frenesi de fome.",
+  },
+  {
+    cost: "Um Teste de Rouse",
+    description:
+      "O vampiro pode projetar sua Fera no momento de um frenesi de terror ou fúria, transferindo-a para um alvo próximo, seja mortal ou vampiro. Essa pessoa experimenta imediatamente o frenesi em seu lugar.",
+    dicePool: "Raciocínio + Animalismo vs. Autocontrole + Determinação",
+    duration: "Duração do frenesi",
     level: 5,
     name: "Expelir a Fera",
     rouse: true,
+    system:
+      "Role Raciocínio + Animalismo vs. Autocontrole + Determinação do alvo. Se vencer, a vítima entra em frenesi no lugar do vampiro.",
+  },
+  {
+    cost: "Um Teste de Rouse",
+    description:
+      "Ao sucumbir a um frenesi de fúria ou terror, transfere a Fera para um alvo próximo mortal ou vampiro. Se vencer, a vítima entra em frenesi no lugar do vampiro.",
+    dicePool: "Raciocínio + Animalismo vs. Autocontrole + Determinação",
+    duration: "Duração do frenesi",
+    level: 5,
+    name: "Desfazer a Fera",
+    rouse: true,
+    system: "Raciocínio + Animalismo vs. Autocontrole + Determinação do alvo.",
   },
 ];
 
 const AUSPEX_POWERS: readonly PowerTemplate[] = [
   {
-    cost: "Sem custo de sangue",
+    cost: "Gratuito (mas veja abaixo)",
     description:
-      "Aguça a visão, audição e olfato a patamares sobrenaturais, permitindo enxergar na escuridão total e ouvir frequências inaudíveis. Adiciona o nível de Auspícios a todas as rolagens de percepção. Estímulos intensos exigem Raciocínio + Determinação para evitar sobrecarga de -3 dados pela cena.",
-    duration: "Passiva",
+      "Os sentidos do vampiro se aguçam a um grau sobrenatural, concedendo-lhe a capacidade de enxergar na escuridão total, ouvir frequências ultrassônicas e farejar o medo de presas acuadas.",
+    dicePool: "Raciocínio + Determinação",
+    duration: "Até ser desativado",
     level: 1,
     name: "Sentidos Aguçados",
     rouse: false,
+    system:
+      "O usuário adiciona sua pontuação de Auspícios a todos os testes de percepção. Se for exposto a sensações extremas (estrondos altos, clarões de luz intensa, odores avassaladores) enquanto o poder estiver ativo, deve vencer um teste de Raciocínio + Determinação (Dificuldade 3 ou mais) para amortecer os sentidos a tempo, caso contrário sofre uma penalidade de -2 em testes de percepção pelo resto da cena.",
   },
   {
-    cost: "Sem custo de sangue",
+    cost: "Gratuito",
     description:
-      "Sente presenças ocultas além do plano mundano, como vampiros sob Ofuscação, espíritos, fantasmas ou projeções astrais. O efeito opera de forma passiva avisando sobre presenças sobrenaturais.",
+      "Os sentidos do vampiro tornam-se sintonizados com dimensões além do reino mundano. Isso permite que sintam a presença de seres sobrenaturais invisíveis a olho nu, desde espíritos e fantasmas até outros vampiros ocultos por Ofuscação ou rituais místicos dormentes.",
     duration: "Passiva",
     level: 1,
     name: "Sentir o Invisível",
     rouse: false,
+    system:
+      "Sempre que houver algo sobrenatural oculto à vista de todos, o Narrador faz um teste secreto de Raciocínio + Auspícios contra uma Dificuldade escolhida por ele. Contra uma entidade tentando ativamente se esconder (usando Ofuscação, por exemplo), o teste é disputado contra a parada de dados dessa criatura.",
   },
   {
-    cost: "Sem custo de sangue",
+    cost: "Gratuito ou um Teste de Rouse",
     description:
-      "O vampiro recebe lampejos de intuição, presságios ou visões que o alertam de emboscadas ou revelam pistas esquecidas. Pode ser provocado ativamente gastando um Rouse Check e rolando Determinação + Auspícios para obter revelações proféticas sobre uma pessoa, local ou objeto.",
+      "O vampiro vivencia lampejos de pressentimentos premonitórios na forma de arrepios na nuca, súbitas inspirações ou visões vívidas. Embora nunca sejam inteiramente precisas, essas visões podem afastar o vampiro do perigo ou revelar uma verdade anteriormente negligenciada.",
+    dicePool: "Determinação + Auspícios",
     duration: "Passiva",
     level: 2,
     name: "Premonição",
     rouse: false,
+    system:
+      "Sempre que o Narrador achar apropriado, este poder fornece ao personagem uma pista súbita que o ajuda de alguma forma (salvando-o de perigo iminente ou descobrindo uma pista perdida). O usuário também pode provocar ativamente uma premonição concentrando-se em um sujeito ou objeto específico e fazendo um Teste de Rouse, rolando Determinação + Auspícios contra Dificuldade 3 ou mais.",
   },
   {
-    cost: "Um Rouse Check",
+    cost: "Um Teste de Rouse",
     description:
-      "Examina a aura e o estado anímico de um indivíduo através de um halo cromático mutável. Inteligência + Auspícios vs. Autocontrole + Dissimulação. Cada margem de sucesso revela o estado emocional, a Ressonância do sangue, natureza sobrenatural, feitiços ativos ou diablerie cometida no último ano.",
-    duration: "Um turno",
+      "Ao focar em uma pessoa, o vampiro pode perceber sua aura e discernir seu humor, saúde mental, perturbações, intenções e traços sobrenaturais ocultos.",
+    dicePool: "Inteligência + Auspícios vs. Autocontrole + Subterfúgio",
+    duration: "Um turno ou a critério do Narrador",
     level: 3,
     name: "Sondar a Alma",
     rouse: true,
+    system:
+      "Faça um teste de Inteligência + Auspícios vs. Autocontrole + Subterfúgio. Em uma vitória, o Narrador responde com sinceridade a um número de perguntas igual à margem da vitória sobre a aura e psique do alvo (estado emocional, se é vampiro, lobisomem, etc., intensidade da Fome, etc.).",
   },
   {
-    cost: "Um Rouse Check",
+    cost: "Um Teste de Rouse",
     description:
-      "Conecta a mente aos sentidos de outro ser humano ou vampiro dentro do campo de visão, compartilhando o que o alvo vê, ouve e experimenta em tempo real. Determinação + Auspícios contra Dificuldade 3. A vítima pode tentar expulsar a conexão com Raciocínio + Determinação.",
+      "O usuário pode sintonizar-se com os sentidos de outra pessoa, vendo, ouvindo e sentindo tudo o que o alvo percebe através de seus próprios sentidos.",
+    dicePool: "Determinação + Auspícios",
     duration: "Uma cena",
     level: 3,
     name: "Compartilhar os Sentidos",
     rouse: true,
+    system:
+      "Role Determinação + Auspícios com Dificuldade 3. Uma vitória permite ao vampiro experimentar tudo o que o alvo percebe sensorialmente durante uma cena. O alvo geralmente não percebe a intrusão.",
   },
   {
-    cost: "Um Rouse Check",
+    cost: "Um Teste de Rouse",
     description:
-      "Ao tocar um objeto ou solo, o vampiro capta as impressões psíquicas e resíduos emocionais intensos deixados pelas pessoas que o manusearam. Inteligência + Auspícios contra Dificuldade 3 a 6+. Cada margem revela vislumbres dos portadores e fatos ocorridos com o item.",
+      "Ao tocar um objeto inanimado, o vampiro pode captar resíduos emocionais e impressões psíquicas deixadas pela última pessoa que o manuseou. Não apenas quem tocou, mas também o que foi feito e sob quais circunstâncias emocionais.",
+    dicePool: "Inteligência + Auspícios",
     duration: "Um turno",
     level: 4,
     name: "Toque do Espírito",
     rouse: true,
+    system:
+      "Faça um teste de Inteligência + Auspícios contra uma Dificuldade baseada nas informações desejadas (Dificuldade 3 para arma do crime recente, 5 ou mais para eventos mais antigos ou sutis). A margem de sucesso revela detalhes mais profundos e precisos.",
   },
   {
-    cost: "Um Rouse Check",
+    cost: "Um Teste de Rouse",
     description:
-      "Ao entrar em transe, projeta sua consciência por uma área de até um quarteirão inteiro, monitorando eventos, conversas e presenças instantaneamente. Inteligência + Auspícios (adiciona os pontos do Refúgio à parada se utilizado dentro dele).",
-    duration: "Uma noite",
+      "Fechando os olhos e entrando em um breve transe, o vampiro pode projetar seus sentidos para qualquer local familiar ou nas proximidades, observando eventos como se estivesse fisicamente presente lá.",
+    dicePool: "Inteligência + Auspícios",
+    duration: "Alguns minutos para coletar informações, até uma cena inteira",
     level: 5,
     name: "Clarividência",
     rouse: true,
+    system:
+      "Role Inteligência + Auspícios contra uma Dificuldade baseada na segurança e nível de atividade da área (Dificuldade 3 em sua própria mansão, até 7 ou mais em um quarteirão desconhecido). O vampiro pode ver e ouvir a área como se estivesse lá fisicamente.",
   },
   {
-    cost: "Dois Rouse Checks",
+    amalgam: "Dominação 3",
+    cost: "Dois Testes de Rouse",
     description:
-      "Amálgama: Dominação 3. Subjuga a mente de um mortal através de contato visual e possui integralmente seu corpo físico, enquanto o corpo do vampiro fica inerte em transe. Determinação + Auspícios vs. Determinação + Inteligência. Permite canalizar Auspícios, Presença e Dominação através do corpo possuído.",
-    duration: "Até ser encerrada",
+      "Com este poder, o vampiro pode invadir e assumir o controle total do corpo de um mortal, subjugando a mente da vítima e operando seu invólucro físico diretamente.",
+    dicePool: "Determinação + Auspícios vs. Determinação + Inteligência",
+    duration: "Até ser encerrado voluntária ou involuntariamente",
     level: 5,
     name: "Possessão",
     rouse: true,
+    system:
+      "Este poder só pode ser usado em mortais (se for um carniçal, deve estar com Laço de Sangue). Exige contato visual. Role Determinação + Auspícios vs. Determinação + Inteligência do alvo. Em uma vitória, o vampiro transfere sua consciência para o mortal. O corpo original do vampiro cai em torpor comatoso durante a possessão.",
   },
   {
-    cost: "Um Rouse Check",
+    cost: "Um Teste de Rouse (mais 1 Força de Vontade vs. vampiros relutantes)",
     description:
-      "Lê mentes através de contato visual e projeta pensamentos diretamente na mente de outros seres sem teste. Para ler pensamentos de alvos relutantes: Determinação + Auspícios vs. Raciocínio + Dissimulação (vampiros resistentes exigem o gasto adicional de 1 Força de Vontade pelo usuário).",
-    duration: "Uma cena",
+      "O usuário pode ler os pensamentos superficiais e memórias profundas de outras mentes, bem como projetar seus próprios pensamentos diretamente na mente de outros.",
+    dicePool: "Determinação + Auspícios vs. Raciocínio + Subterfúgio",
+    duration: "Cerca de um minuto por Teste de Rouse",
     level: 5,
     name: "Telepatia",
     rouse: true,
+    system:
+      "Projetar pensamentos em uma mente em linha de visão não requer rolagem de dados. Ler a mente de um mortal voluntário é gratuito e automático. Ler a mente de um mortal resistente ou de outro vampiro exige um teste de Determinação + Auspícios vs. Raciocínio + Subterfúgio. Cada margem de sucesso permite extrair fatos mais profundos e memórias ocultas.",
   },
 ];
 
 const CELERITY_POWERS: readonly PowerTemplate[] = [
   {
-    cost: "Sem custo de sangue",
+    cost: "Gratuito",
     description:
-      "Concede equilíbrio e coordenação física perfeitos que superam acrobatas de elite. O vampiro passa automaticamente em qualquer teste de Destreza ou Atletismo necessário para se equilibrar em parapeitos estreitos, vigas e fios finos sem hesitar.",
+      "O usuário atinge uma graça sobrenatural que iguala e supera os melhores trapezistas do mundo. Ele pode andar e até correr sobre beiradas e cabos estreitos sem esforço, mantendo o equilíbrio sobre o mais tênue dos apoios.",
     duration: "Passiva",
     level: 1,
     name: "Graça Felina",
     rouse: false,
+    system:
+      "O usuário passa automaticamente em qualquer teste baseado em Destreza ou Atletismo necessário para manter o equilíbrio. Isso não permite equilibrar-se em apoios que não suportem seu peso corporal.",
   },
   {
-    cost: "Sem custo de sangue",
+    cost: "Gratuito",
     description:
-      "Reage em velocidade prodigiosa a ataques imprevistos. O usuário não sofre penalidades em suas paradas de defesa por falta de cobertura contra armas de fogo e tem direito a realizar uma ação menor gratuita por turno (como recarregar ou desembainhar armas).",
+      "Para o vampiro dotado deste poder, o mundo ao redor parece desacelerar. Ele percebe ameaças que se aproximam instantaneamente e reage com presteza sobre-humana, sendo capaz de desviar de flechas e disparos sem cobertura disponível.",
     duration: "Passiva",
     level: 1,
     name: "Reflexos Rápidos",
     rouse: false,
+    system:
+      "O vampiro não sofre penalidades em sua parada de defesa por falta de cobertura contra ataques com Armas de Fogo. Ele também pode realizar uma ação menor (de até dois dados por turno, como sacar ou recarregar uma arma) gratuitamente a cada turno.",
   },
   {
-    cost: "Um Rouse Check",
+    cost: "Um Teste de Rouse",
     description:
-      "Move-se em velocidade estonteante. O vampiro soma sua pontuação de Celeridade a todas as paradas de dados de testes de Destreza fora de combate. Uma vez por turno de combate, pode somar esse mesmo bônus à esquiva defensiva com Destreza + Atletismo.",
+      "Seu domínio sobre a Celeridade permite ao vampiro mover-se e reagir com uma velocidade estarrecedora, tornando seus movimentos um borrão para os olhos comuns.",
     duration: "Uma cena",
     level: 2,
     name: "Rapidez",
     rouse: true,
+    system:
+      "Adicione a pontuação de Celeridade à parada de dados do usuário para todos os testes de Destreza fora de combate. Uma vez por turno, o usuário também pode adicionar esse valor ao se defender usando Destreza + Atletismo.",
   },
   {
-    cost: "Um Rouse Check",
+    cost: "Um Teste de Rouse",
     description:
-      "O vampiro se desloca em linha reta cobrindo qualquer distância até 50 metros em uma fração de segundo, mantendo tempo suficiente para agir no mesmo turno. Terrenos acidentados exigem Destreza + Atletismo para evitar tropeços. Para observadores, parece teletransporte instantâneo.",
+      "O vampiro aproxima-se velozmente de um adversário, engajando em combate ou escapando em um piscar de olhos. Para um observador desprevenido, ele parece teleportar, deixando para trás apenas uma rajada de vento.",
+    dicePool: "Destreza + Atletismo",
     duration: "Um turno",
     level: 3,
     name: "Lampejo",
     rouse: true,
+    system:
+      "O vampiro se move em linha reta em direção a um alvo, cobrindo qualquer distância inferior a 50 metros e ainda tendo tempo hábil para realizar uma ação, como um ataque, durante o turno. Se o terreno for perigoso ou exigir manobras, role Destreza + Atletismo.",
   },
   {
-    cost: "Um Rouse Check",
+    cost: "Um Teste de Rouse",
     description:
-      "Permite correr sobre qualquer superfície, escalando paredes verticais e correndo sobre águas calmas por curtas distâncias sem afundar. Destreza + Atletismo com Dificuldade de 3 a 6 conforme a inclinação e atrito da superfície.",
+      "Com velocidade inacreditável, o vampiro pode correr por superfícies verticais, muros, vidraças ou através de líquidos sem afundar, desde que mantenha o ímpeto e não pare de correr.",
+    dicePool: "Destreza + Atletismo",
     duration: "Um turno",
     level: 3,
     name: "Travessia",
     rouse: true,
+    system:
+      "Faça um teste de Destreza + Atletismo com Dificuldade de 3 (superfície inclinada) a 6 (parede vertical lisa, água aberta). Cada ponto de margem leva o vampiro mais longe pela superfície impossível antes que a gravidade volte a agir.",
   },
   {
-    cost: "Um Rouse Check",
+    cost: "Um Teste de Rouse",
     description:
-      "O sangue do vampiro transmite agilidade sobrenatural a quem bebê-lo. Beber uma Checagem de Sangue diretamente de suas veias concede pontos temporários de Celeridade iguais à metade do nível do doador (arredondado para baixo) e seus poderes não-amálgama até aquele nível.",
-    duration: "Uma noite",
+      "O Sangue do vampiro fica saturado com a essência da Celeridade, transmitindo temporariamente parte dessa velocidade sobrenatural para qualquer um que dele beba.",
+    duration: "Uma noite; para vampiros, até a próxima alimentação ou Fome 5",
     level: 4,
     name: "Gole de Elegância",
     rouse: true,
+    system:
+      "Beber o equivalente a um Teste de Rouse diretamente do usuário concede ao bebedor Celeridade temporária igual à metade dos pontos de Celeridade do doador (arredondado para baixo). O bebedor ganha os mesmos poderes sem amálgama do doador até esse nível.",
   },
   {
-    cost: "Um Rouse Check",
+    amalgam: "Auspícios 2",
+    cost: "Um Teste de Rouse",
     description:
-      "Amálgama: Auspícios 2. O mundo ao redor desacelera até quase parar. O vampiro mira e dispara qualquer arma de arremesso ou fogo contra um alvo como se este estivesse perfeitamente estático. O alvo não realiza rolagens de defesa ou esquiva; o ataque é feito contra Dificuldade 1.",
-    duration: "Um turno",
+      "Com o mundo ao seu redor congelado em câmera lenta, o vampiro pode mirar e arremessar ou disparar qualquer projétil contra um alvo como se ele estivesse perfeitamente estático.",
+    duration: "Um ataque",
     level: 4,
     name: "Mira Certeira",
     rouse: true,
+    system:
+      "Use antes de realizar um ataque à distância. O alvo não faz rolagem de esquiva ou defesa; faça o ataque com Dificuldade 1. Um oponente com Celeridade 5 pode anular este poder fazendo seu próprio Teste de Rouse para se defender na mesma velocidade.",
   },
   {
-    cost: "Um Rouse Check",
+    cost: "Um Teste de Rouse",
     description:
-      "Desfere um golpe corpo a corpo desarmado ou com arma branca com velocidade inumana tão vertiginosa que o oponente não tem tempo hábil para esquivar ou se defender. O ataque é realizado contra Dificuldade 1 (oponentes com Celeridade 5 podem anular gastando um Rouse Check).",
-    duration: "Um turno",
+      "Mais rápido do que a visão humana ou vampírica pode acompanhar, o vampiro desfere um golpe desarmado ou com arma branca com tal velocidade que o oponente é incapaz de reagir ou esquivar.",
+    duration: "Um ataque",
     level: 5,
     name: "Golpe Relâmpago",
     rouse: true,
+    system:
+      "Use antes de fazer um ataque de Briga ou Armas Brancas. O oponente não faz rolagem de esquiva ou defesa; faça o ataque com Dificuldade 1. Um oponente com Celeridade 5 pode anular este poder fazendo seu próprio Teste de Rouse para se defender na mesma velocidade.",
   },
   {
-    cost: "Um Rouse Check",
+    cost: "Um Teste de Rouse",
     description:
-      "Sua velocidade atinge a mesma cadência de seus reflexos acelerados, permitindo interromper a narrativa do Narrador para reagir a imprevistos: cruzar uma porta prestes a fechar, escapar de uma explosão iminente ou evitar uma emboscada assim que ela tem início.",
-    duration: "Uma ação",
+      "O vampiro atinge o ápice da velocidade sobrenatural, reagindo instantaneamente antes que eventos ao seu redor se desenrolem. Emboscadores encontram sua presa já posicionada atrás deles, e favores são concluídos antes que o pedido termine de ser pronunciado.",
+    duration: "Um turno",
     level: 5,
     name: "Fração de Segundo",
     rouse: true,
+    system:
+      "O jogador pode interromper e se sobrepor à narração de eventos pelo Narrador dentro da razão: passar por uma porta antes que ela feche, contornar uma emboscada assim que deflagrada, rolar para longe de uma explosão iminente, etc. Permite agir antes de todos na ordem de iniciativa.",
   },
 ];
 
 const DOMINATE_POWERS: readonly PowerTemplate[] = [
   {
-    cost: "Sem custo de sangue",
+    cost: "Gratuito",
     description:
-      "Com a palavra 'Esqueça!', o vampiro faz a vítima esquecer o momento presente e os últimos minutos, encobrindo encontros e alimentações. Alvos mundanos despreparados não exigem teste; alvos resistentes disputam Carisma + Dominação vs. Raciocínio + Determinação.",
+      "Pronunciando uma palavra-gatilho como 'Esqueça!', o vampiro faz com que a vítima esqueça os eventos imediatos dos últimos minutos, suficiente para ocultar uma alimentação superficial ou um encontro casual.",
+    dicePool: "Carisma + Dominação vs. Raciocínio + Determinação",
     duration: "Indefinida",
     level: 1,
     name: "Nublar Memória",
     rouse: false,
+    system:
+      "Nenhum teste é necessário contra mortais desprevenidos. Nublar a memória de um mortal resistente ou de outro vampiro requer uma disputa de Carisma + Dominação vs. Raciocínio + Determinação. Não cria memórias novas; se questionada, a vítima nota um lapso de tempo.",
   },
   {
-    cost: "Sem custo de sangue",
+    cost: "Gratuito",
     description:
-      "Com contato visual, emite um comando direto de uma única ação formulado em uma frase curta (como 'Pare!', 'Fuja!', 'Solte!'). Mortais despreparados não rolam; alvos resistentes ou vampiros disputam Carisma + Dominação vs. Inteligência + Determinação.",
-    duration: "Uma ação",
+      "Com o contato visual e uma ordem falada de uma única palavra, o vampiro compele a vítima a obedecer imediatamente a uma instrução simples e direta: 'Pare', 'Corra', 'Entregue', 'Pule'.",
+    dicePool: "Carisma + Dominação vs. Raciocínio + Determinação",
+    duration: "Não mais que um turno",
     level: 1,
     name: "Compelir",
     rouse: false,
+    system:
+      "Nenhum teste é necessário contra um mortal desprevenido. Contra um mortal resistente, alguém já dominado na mesma cena ou outro vampiro, dispute Carisma + Dominação vs. Raciocínio + Determinação. O comando deve ser de uma palavra e ser realizável em um único turno.",
   },
   {
-    cost: "Um Rouse Check",
+    cost: "Um Teste de Rouse",
     description:
-      "Com contato visual e fala pausada, implanta ordens complexas na mente da vítima, a serem executadas imediatamente com sua melhor capacidade. Alvos relutantes ou vampiros disputam Manipulação + Dominação vs. Inteligência + Determinação.",
-    duration: "Uma cena",
+      "O vampiro pode implantar ordens e sugestões complexas na mente de uma vítima por meio de contato visual e fala hipnótica. As ordens podem conter várias etapas e ser executadas com precisão pela vítima.",
+    dicePool: "Manipulação + Dominação vs. Inteligência + Determinação",
+    duration: "Até a ordem ser cumprida ou a cena terminar",
     level: 2,
     name: "Mesmerizar",
     rouse: true,
+    system:
+      "Nenhum teste contra mortais desprevenidos. Contra vítimas resistentes ou outros vampiros, dispute Manipulação + Dominação vs. Inteligência + Determinação. A ordem deve ser cumprida imediatamente com o melhor das habilidades da vítima, sem exigir discernimento moral ou ações suicidas diretas.",
   },
   {
-    cost: "Um Rouse Check",
+    amalgam: "Ofuscação 2",
+    cost: "Um Teste de Rouse por cena",
     description:
-      "Amálgama: Ofuscação 2. Inserindo insinuações e inflexões perturbadoras em uma conversa casual, o vampiro instiga os demônios interiores do alvo. A cada turno, ataca o alvo com Manipulação + Dominação vs. Autocontrole + Inteligência, causando dano Superficial à Força de Vontade.",
+      "A voz e os maneirismos do vampiro transmitem uma semente de insanidade. A vítima se vê cada vez mais agitada à medida que seus demônios internos emergem para a superfície, sufocando a razão e o equilíbrio mental.",
+    dicePool: "Manipulação + Dominação vs. Autocontrole + Inteligência",
     duration: "Uma cena",
     level: 2,
     name: "Dementação",
     rouse: true,
+    system:
+      "Após conversar com a vítima, dispute Manipulação + Dominação vs. Autocontrole + Inteligência. Em uma vitória, o usuário inflige dano de Força de Vontade Superficial no alvo a cada turno através da conversa insidiosa. Se o alvo for desmoralizado (Força de Vontade esgotada), desenvolve um surto psicótico ou compulsão severa temporária.",
   },
   {
-    cost: "Um Rouse Check",
+    cost: "Um Teste de Rouse",
     description:
-      "Reescreve parcelas inteiras das memórias da vítima mantendo contato visual ininterrupto, descrevendo os novos fatos aceitos como verdades pelo alvo. Manipulação + Dominação vs. Inteligência + Determinação; a margem determina o número e clareza das memórias adulteradas.",
-    duration: "Indefinida",
+      "O vampiro pode reescrever completamente as memórias de uma vítima, apagando acontecimentos inteiros, alterando detalhes cruciais ou inserindo lembranças fabricadas que o sujeito aceita como genuínas.",
+    dicePool: "Manipulação + Dominação vs. Inteligência + Determinação",
+    duration: "Permanente",
     level: 3,
     name: "A Mente Esquecida",
     rouse: true,
+    system:
+      "Dispute Manipulação + Dominação vs. Inteligência + Determinação. Cada ponto de margem permite ao vampiro adicionar ou remover uma lembrança substancial ou alterar uma existente. A vítima passa a recordar a nova versão fabricada como verdade absoluta.",
   },
   {
     cost: "Sem custo adicional",
     description:
-      "Permite adicionar uma sugestão pós-hipnótica ao usar Mesmerizar, deixando a ordem dormente na mente da vítima até que um gatilho específico ocorra (uma data, um encontro ou uma palavra-chave). A diretiva nunca expira por si mesma.",
-    duration: "Passiva",
+      "Ao mesmerizar alguém, o vampiro pode condicionar a ordem para disparar no futuro através de um gatilho pré-estabelecido, como uma data, evento ou frase de código específica.",
+    duration: "Até ser ativada (permanente)",
     level: 3,
     name: "Diretiva Submersa",
     rouse: false,
+    system:
+      "Funciona como Mesmerizar. A diretiva permanece oculta na mente do sujeito por meses ou anos até que as condições do gatilho ocorram. Uma vez engatilhada, a vítima executa a ordem hipnótica sem questionar.",
   },
   {
     cost: "Sem custo adicional",
     description:
-      "As vítimas de Dominação passam a acreditar piamente que tudo o que fizeram sob comando foi fruto de sua própria e livre escolha, defendendo seus atos com convicção absoluta mesmo quando ilógicos ou absurdos.",
+      "As vítimas do vampiro passam a acreditar piamente que tudo o que fizeram sob a influência de sua Dominação foi fruto de sua própria livre vontade, defendendo suas ações mesmo que tenham sido bizarras ou ilógicas.",
     duration: "Indefinida",
     level: 4,
     name: "Racionalizar",
     rouse: false,
+    system:
+      "Qualquer comando de Dominação usado pelo vampiro ganha este efeito. Se questionada sobre suas ações, a vítima racionaliza o comportamento como escolha pessoal. Testar a consistência mental da vítima exige dela um teste de Raciocínio + Percepção (Dificuldade 5).",
   },
   {
-    cost: "Um Rouse Check adicional",
+    cost: "Um Teste de Rouse adicional ao custo do poder amplificado",
     description:
-      "Amplifica qualquer outro poder de Dominação para afetar multidões de mortais e grupos de vampiros simultaneamente, desde que todos possam ver os olhos do vampiro. O teste é rolado contra o oponente de maior resistência do grupo.",
-    duration: "Uma cena",
+      "O vampiro pode agora comandar multidões inteiras de mortais e até grupos de vampiros de uma só vez, emitindo ordens coletivas com uma presença magnética e intimidadora.",
+    duration: "Conforme o poder utilizado",
     level: 5,
     name: "Manipulação em Massa",
     rouse: true,
+    system:
+      "O vampiro pode amplificar Compelir ou Mesmerizar para afetar um grupo inteiro de pessoas ao mesmo tempo. Todas as vítimas precisam enxergar os olhos do vampiro. O usuário faz uma única rolagem contra o maior atributo de defesa do grupo ou contra cada um individualmente.",
   },
   {
-    cost: "Sem custo de sangue",
+    cost: "Sem custo adicional de Fome (mas com potencial perda de Humanidade)",
     description:
-      "Supera o instinto de autopreservação da vítima. O vampiro agora pode ordenar comandos suicidas ou diretamente letais (como atirar em si mesmo, pular de um prédio ou caminhar para o fogo ou luz do sol). O alvo tem direito a testes normais para resistir ao poder.",
+      "A vontade do vampiro é tão absoluta que consegue sobrepujar o mais profundo instinto de autopreservação de suas vítimas, ordenando suicídio, mutilação direta ou o avanço cego contra chamas ou luz solar.",
     duration: "Passiva",
     level: 5,
     name: "Decreto Terminal",
     rouse: false,
+    system:
+      "Comandos que causam a morte ou automutilação imediata não falham mais automaticamente. Vítimas mortais e vampiros podem resistir através de disputas normais do poder de Dominação utilizado, mas sucumbem se perderem o teste.",
   },
 ];
 
 const FORTITUDE_POWERS: readonly PowerTemplate[] = [
   {
-    cost: "Sem custo de sangue",
+    cost: "Gratuito",
     description:
-      "Reforça a resistência mística do corpo vampírico. O usuário adiciona sua pontuação total em Fortitude diretamente à sua trilha de Vitalidade.",
+      "Dotado de vigor sobrenatural, o vampiro fortalece sua estrutura física e tolerância ao dano. A carne se torna mais densa e suporta agressões que destruiriam um mortal.",
     duration: "Passiva",
     level: 1,
     name: "Resiliência",
     rouse: false,
+    system:
+      "Adicione a pontuação de Fortitude do vampiro ao seu total de Vitalidade.",
   },
   {
-    cost: "Sem custo de sangue",
+    cost: "Gratuito",
     description:
-      "Concede serenidade inabalável contra manipulações mentais, sedução, chantagem mundana e coerção sobrenatural (incluindo Dominação e Presença). Adiciona a Fortitude como dados extras em qualquer teste para resistir a tentativas de controlar a mente.",
+      "A determinação imutável dos mortos-vivos confere ao vampiro uma barreira impenetrável contra intimidação, sedução e dominação mental sobrenatural.",
     duration: "Passiva",
     level: 1,
     name: "Mente Inabalável",
     rouse: false,
+    system:
+      "O usuário adiciona sua pontuação de Fortitude a quaisquer paradas de dados de Autocontrole ou Determinação para resistir a persuasão mundana, intimidação, bem como poderes sobrenaturais como Dominação e Presença.",
   },
   {
-    cost: "Um Rouse Check",
+    cost: "Gratuito",
     description:
-      "O vampiro absorve danos brutais ignorando o impacto. Subtrai sua Fortitude de todo o dano Superficial recebido antes de aplicar a divisão por dois (o dano sofrido nunca pode ser reduzido a menos de 1).",
-    duration: "Uma cena",
+      "A carne do vampiro adquire uma tenacidade inata que ignora e amortece ferimentos que rasgariam músculos e quebrariam ossos.",
+    duration: "Passiva",
     level: 2,
     name: "Tenacidade",
-    rouse: true,
+    rouse: false,
+    system:
+      "Sempre que o usuário sofrer dano Superficial, reduza o total de dano sofrido por ataque em um valor igual à sua pontuação de Fortitude (antes de dividir o dano pela metade, se aplicável), até um mínimo de 1 de dano.",
   },
   {
-    cost: "Sem custo para famulus; Um Rouse Check para outros animais",
+    amalgam: "Animalismo 1",
+    cost: "Gratuito ou um Teste de Rouse",
     description:
-      "Amálgama: Animalismo 1. Compartilha a durabilidade sobrenatural com animais sob seu controle, concedendo-lhes níveis de Vitalidade adicionais iguais à Fortitude do vampiro. Gratuito no famulus; para outros animais exige Vigor + Animalismo (Dificuldade 3).",
+      "O vampiro pode estender a resistência sobrenatural de sua Fortitude aos animais que comanda ou ao seu famulus ligado por Sangue.",
     duration: "Uma cena",
     level: 2,
     name: "Bestas Resistentes",
     rouse: false,
+    system:
+      "O vampiro confere sua pontuação de Fortitude (Resiliência e Tenacidade) aos seus animais comandados ou ao seu famulus. O famulus recebe esse benefício passivamente de forma gratuita; animais comuns exigem um Teste de Rouse.",
   },
   {
-    cost: "Um Rouse Check",
+    cost: "Um Teste de Rouse",
     description:
-      "Permite resistir a fogo, luz solar e ferimentos mortais. Converte dano Agravado recebido em dano Superficial até um total de pontos igual ao valor de Fortitude na cena. Pode ser ativado reflexivamente ao sofrer dano com um teste de Raciocínio + Sobrevivência (Dificuldade 3).",
+      "Concentrando o poder de sua Vitae, o vampiro torna-se temporariamente resistente às maiores fraquezas e terrores de sua espécie: fogo e luz solar.",
     duration: "Uma cena",
     level: 3,
     name: "Desafiar a Ruína",
     rouse: true,
+    system:
+      "Durante uma cena, o vampiro converte uma quantidade de dano Agravado proveniente de fogo ou luz solar igual à sua pontuação de Fortitude por turno em dano Superficial. Além disso, adiciona sua Fortitude a testes para resistir ao Rötschreck.",
   },
   {
-    cost: "Sem custo de sangue",
+    cost: "Gratuito",
     description:
-      "Protege pensamentos e emoções contra espionagem sobrenatural, mantendo a mente em branco e a aura plana. Aumenta a Dificuldade de poderes como Sondar a Alma e Telepatia em metade da Fortitude; se o poder permitir teste de resistência, soma a Fortitude à parada.",
-    duration: "Uma cena",
+      "O vampiro constrói uma barreira psíquica impenetrável em sua mente, ocultando seus pensamentos mais íntimos, emoções e até sua aura de qualquer perscrutação mística.",
+    duration: "Passiva",
     level: 3,
     name: "Fortificar a Fachada Interior",
     rouse: false,
+    system:
+      "Qualquer tentativa sobrenatural de ler a mente do vampiro (como Telepatia) ou sondar sua aura (como Sondar a Alma) sofre uma penalidade na parada de dados igual à pontuação de Fortitude do usuário, ou o usuário soma Fortitude à sua rolagem de resistência.",
   },
   {
-    cost: "Um Rouse Check",
+    cost: "Um Teste de Rouse",
     description:
-      "O sangue do vampiro transmite durabilidade inumana a quem o beber. Beber uma Checagem de Sangue diretamente de suas veias concede ao receptor pontos de Fortitude temporários iguais à metade da pontuação do doador e seus poderes não-amálgama até esse nível.",
-    duration: "Uma noite",
+      "O Sangue do vampiro transborda com a tenacidade da Fortitude, transferindo temporariamente essa resistência colossal para quem quer que beba dele.",
+    duration: "Uma noite; para vampiros, até a próxima alimentação ou Fome 5",
     level: 4,
     name: "Gole de Resistência",
     rouse: true,
+    system:
+      "Beber o equivalente a um Teste de Rouse diretamente do usuário concede ao bebedor Fortitude temporária igual à metade dos pontos de Fortitude do doador (arredondado para baixo), recebendo os mesmos poderes sem amálgama.",
   },
   {
-    cost: "Dois Rouse Checks",
+    cost: "Dois Testes de Rouse",
     description:
-      "A pele do vampiro ganha a dureza e impermeabilidade do mármore. Enquanto ativo, ignora a primeira fonte de dano físico recebida a cada turno (incluindo fogo, mas exceto luz solar). Um acerto crítico em rolagem de ataque inimiga ultrapassa essa proteção.",
+      "O poder do Sangue faz a pele do vampiro endurecer com a perfeição translúcida do mármore esculpido, tornando-o invulnerável ao primeiro golpe violento desferido contra ele em cada turno.",
     duration: "Uma cena",
     level: 5,
     name: "Pele de Mármore",
     rouse: true,
+    system:
+      "Enquanto ativo, o vampiro ignora completamente todo o dano físico do primeiro ataque bem-sucedido contra ele em cada turno, a menos que o ataque seja causado por fogo ou luz solar.",
   },
   {
-    cost: "Um Rouse Check",
+    cost: "Gratuito",
     description:
-      "Converte dor em vigor avassalador. O vampiro anula quaisquer penalidades de dados decorrentes de dano em Vitalidade e ganha 1 ponto em um Atributo Físico para cada nível de dano marcado em sua trilha de Vitalidade, até o limite máximo de Surto de Sangue + 6.",
-    duration: "Uma cena",
+      "Em vez de ser enfraquecido pelos ferimentos, o vampiro converte a dor em pura energia sobrenatural, ficando mais forte e letal à medida que seu corpo é rasgado em batalha.",
+    duration: "Passiva",
     level: 5,
     name: "Proeza da Dor",
-    rouse: true,
+    rouse: false,
+    system:
+      "O vampiro não sofre penalidades por caixas de Vitalidade danificadas. Além disso, para cada nível de dano que normalmente causaria penalidade em suas paradas de dados, ele ganha dados bônus adicionais em testes físicos.",
   },
 ];
 
 const OBFUSCATE_POWERS: readonly PowerTemplate[] = [
   {
-    cost: "Sem custo de sangue",
+    cost: "Gratuito",
     description:
-      "Permanecendo em repouso e aproveitando coberturas ou penumbra, o vampiro se funde ao cenário e passa totalmente despercebido por observadores naturais. O efeito dura até que se mova ou emita sons altos. Apenas meios mecânicos ou Sentir o Invisível conseguem detectá-lo.",
-    duration: "Uma cena",
+      "Permanecendo imóvel, o usuário se mescla completamente ao ambiente ao redor. Desde que haja qualquer tipo de sombra, cobertura ou canto escuro, ele se torna indetectável à visão casual.",
+    duration: "Até que o usuário se mova ou ataque",
     level: 1,
     name: "Manto de Sombras",
     rouse: false,
+    system:
+      "O vampiro é automaticamente imperceptível enquanto permanecer imóvel e em alguma cobertura ou penumbra. Observadores em busca ativa devem vencer uma disputa de Raciocínio + Percepção contra a Destreza + Furtividade do vampiro.",
   },
   {
-    cost: "Sem custo de sangue",
+    cost: "Gratuito",
     description:
-      "Amortece e anula todos os sons emitidos pela pessoa do vampiro: passos, roupas e respiração. Observadores mundanos que dependam da audição não conseguem ouvi-lo. Não silencia sons produzidos fora de seu espaço pessoal nem engana microfones eletrônicos.",
+      "O vampiro abafa todo som emanado de sua pessoa e pertences imediatos. Seus passos não estalam folhas secas, suas roupas não farfalham e objetos derrubados atingem o chão em silêncio absoluto.",
     duration: "Uma cena",
     level: 1,
     name: "Silêncio da Morte",
     rouse: false,
+    system:
+      "O usuário silencia completamente sons emitidos por seus movimentos corporais e itens pessoais. Ele pode conversar em sussurro direto sem que ninguém além do interlocutor pretendido ouça.",
   },
   {
-    cost: "Um Rouse Check",
+    cost: "Um Teste de Rouse",
     description:
-      "Permite caminhar e deslocar-se livremente mantendo-se invisível aos olhos mundanos, contanto que não emita odores fortes nem produza sons mais altos que um sussurro. Não pode ser ativado caso o vampiro já esteja sob observação direta no instante do acionamento.",
+      "Com este poder, o vampiro pode mover-se furtivamente permanecendo totalmente despercebido. As mentes ao redor simplesmente ignoram sua presença, desviando o olhar inconscientemente.",
+    dicePool: "Raciocínio + Furtividade vs. Raciocínio + Percepção",
     duration: "Uma cena",
     level: 2,
     name: "Passagem Invisível",
     rouse: true,
+    system:
+      "O vampiro pode se deslocar enquanto permanece imperceptível aos sentidos de mortais e vampiros. Chamar atenção deliberadamente (falar alto, empurrar alguém, quebrar um objeto ou atacar) quebra a ilusão imediatamente.",
   },
   {
-    cost: "Sem custo adicional",
+    cost: "Gratuito",
     description:
-      "Transmite os efeitos ilusórios de Ofuscação através de meios eletrônicos, ficando invisível em câmeras de vídeo e telas ao vivo. Em gravações posteriores, a silhueta aparece borrada com +3 na Dificuldade para identificação, e o usuário ganha +3 dados para burlar segurança eletrônica.",
-    duration: "Uma cena",
+      "O usuário agora consegue transmitir os efeitos hipnóticos da Ofuscação através de mídias eletrônicas, permitindo ocultar-se de câmeras de segurança, detectores digitais e gravações de vídeo.",
+    duration: "Passiva",
     level: 3,
     name: "Fantasma na Máquina",
     rouse: false,
+    system:
+      "Os poderes de Ofuscação do vampiro passam a funcionar igualmente contra equipamentos de gravação de vídeo, sensores e câmeras de segurança, gerando distorções sutis, falhas na imagem ou simplesmente desaparecendo das filmagens.",
   },
   {
-    cost: "Um Rouse Check",
+    cost: "Gratuito",
     description:
-      "O vampiro altera sutilmente sua aura e feições para aparentar ser um estranho anônimo e insuspeito compatível com o local (como um faxineiro ou vigia). Não exige teste contra observadores casuais; Sentir o Invisível pode romper o disfarce.",
+      "O vampiro projeta uma ilusão mental sobre quem o observa, fazendo com que o vejam não com seu verdadeiro rosto, mas como um estranho qualquer, um funcionário inócuo ou uma pessoa sem traços marcantes.",
+    dicePool: "Manipulação + Furtividade vs. Raciocínio + Percepção",
     duration: "Uma cena",
     level: 3,
     name: "Máscara de Mil Faces",
-    rouse: true,
+    rouse: false,
+    system:
+      "O vampiro assume a aparência de um desconhecido comum e insignificante. Se tentar imitar alguém específico, deve fazer um teste de Manipulação + Furtividade contra Raciocínio + Percepção de conhecidos dessa pessoa.",
   },
   {
-    cost: "Um Rouse Check",
+    amalgam: "Auspícios 3",
+    cost: "Um Teste de Rouse",
     description:
-      "Amálgama: Auspícios 3. Oculta um objeto inanimado (como um carro, porta ou edifício pequeno) e tudo dentro dele da atenção de transeuntes através de sugestão hipnótica. Inteligência + Ofuscação contra Dificuldade 2 a 6. Auspícios pode disputar com Raciocínio + Auspícios.",
-    duration: "Uma noite",
+      "Esta habilidade permite ao usuário estender o manto da Ofuscação para esconder um objeto inanimado de grande porte ou até um veículo, tornando-o invisível à percepção casual.",
+    dicePool: "Inteligência + Furtividade",
+    duration: "Uma cena",
     level: 4,
     name: "Ocultar",
     rouse: true,
+    system:
+      "O vampiro pode ocultar um objeto inanimado com tamanho até o de um carro ou caminhão pequeno. Quem procurar ativamente pelo objeto disputa Raciocínio + Percepção contra a parada de dados do usuário.",
   },
   {
-    cost: "Um Rouse Check",
+    cost: "Um Teste de Rouse",
     description:
-      "Pré-requisito: Manto de Sombras. Permite ativar Manto de Sombras ou Passagem Invisível mesmo sob vista direta de outras pessoas. Diante de mortais: Raciocínio + Ofuscação vs. Raciocínio + Prontidão; vitória faz a testemunha duvidar que o viu, e crítico apaga o fato da memória.",
-    duration: "Uma cena",
+      "O vampiro pode desaparecer instantaneamente da vista de todos mesmo quando sob observação direta ou no calor do combate, deixando seus adversários perplexos e desorientados.",
+    dicePool: "Raciocínio + Furtividade vs. Raciocínio + Percepção",
+    duration: "Conforme Passagem Invisível",
     level: 4,
     name: "Desvanecer",
     rouse: true,
+    system:
+      "Permite ativar Passagem Invisível sob escrutínio aberto ou durante um combate. Dispute Raciocínio + Furtividade vs. Raciocínio + Percepção de quem estiver olhando diretamente. Se vencer, desvanece no ar.",
   },
   {
-    cost: "Um Rouse Check adicional",
+    cost: "Um Teste de Rouse adicional",
     description:
-      "Estende os poderes de Ofuscação conhecidos para proteger companheiros voluntários próximos. Abriga um número de aliados igual ao Raciocínio do usuário (mais um por Rouse Check extra). Os aliados usam a pontuação de Ofuscação do conjurador para testes.",
+      "O vampiro pode estender o manto de Ofuscação para abrigar seus companheiros, fazendo com que um grupo inteiro compartilhe de sua invisibilidade e discrição sobrenatural.",
     duration: "Uma cena",
     level: 5,
     name: "Manto Coletivo",
     rouse: true,
+    system:
+      "O usuário estende Passagem Invisível ou Manto de Sombras a um número de pessoas adicionais igual à sua pontuação de Furtividade, desde que permaneçam por perto.",
   },
   {
-    cost: "Um Rouse Check",
+    cost: "Um Teste de Rouse",
     description:
-      "Pré-requisito: Máscara de Mil Faces. Permite imitar com perfeição a aparência física, timbre vocal e maneirismos de um indivíduo estudado por 15 minutos. Exige teste oculto de Raciocínio + Ofuscação (Dificuldade 4) e Manipulação + Performance para atuar como o indivíduo.",
+      "O usuário pode transformar sua aparência na réplica exata e impecável de qualquer indivíduo específico, copiando com perfeição rosto, voz, altura, peso, sotaque e tiques motores.",
+    dicePool: "Manipulação + Performance vs. Raciocínio + Percepção",
     duration: "Uma cena",
     level: 5,
     name: "Disfarce do Impostor",
     rouse: true,
+    system:
+      "O vampiro se disfarça perfeitamente como alguém que estudou previamente. Pessoas próximas do indivíduo imitado precisam vencer uma disputa de Raciocínio + Percepção vs. Manipulação + Performance para desconfiar de algo.",
   },
 ];
 
 const POTENCE_POWERS: readonly PowerTemplate[] = [
   {
-    cost: "Sem custo de sangue",
+    cost: "Gratuito",
     description:
-      "A musculatura do vampiro ganha força avassaladora capaz de causar danos terríveis a mortais, rasgando pele e quebrando ossos com os dedos nus. Os ataques desarmados podem causar dano Agravado de Vitalidade a mortais e ignoram um nível de blindagem por ponto de Potência do usuário.",
+      "Usando este poder, o vampiro é capaz de causar danos horrendos a mortais com socos e chutes, rasgando carne e quebrando ossos com facilidade monstruosa.",
     duration: "Passiva",
     level: 1,
     name: "Corpo Letal",
     rouse: false,
+    system:
+      "Ao usar ataques desarmados (Briga), o usuário causa dano Agravado em mortais em vez de dano Superficial. Contra seres sobrenaturais, causa dano Superficial normalmente mas não tem o dano reduzido pela metade.",
   },
   {
-    cost: "Sem custo de sangue",
+    cost: "Gratuito",
     description:
-      "Possuindo força sobrenatural em pernas e tronco, o usuário pode saltar distâncias verticais de até três vezes seu nível de Potência em metros, e distâncias horizontais de até cinco vezes sua pontuação de Potência em metros, sem precisar tomar impulso prévio.",
-    duration: "Passiva",
-    level: 1,
-    name: "Salto Elevado",
-    rouse: false,
-  },
-  {
-    cost: "Sem custo de sangue",
-    description:
-      "A musculatura do vampiro ganha força avassaladora capaz de causar danos terríveis a mortais, rasgando pele e quebrando ossos com os dedos nus. Os ataques desarmados podem causar dano Agravado de Vitalidade a mortais e ignoram um nível de blindagem por ponto de Potência do usuário.",
+      "Usando este poder, o vampiro é capaz de causar danos horrendos a mortais com socos e chutes, rasgando carne e quebrando ossos com facilidade monstruosa.",
     duration: "Passiva",
     level: 1,
     name: "Toque Letal",
     rouse: false,
+    system:
+      "Ao usar ataques desarmados (Briga), o usuário causa dano Agravado em mortais em vez de dano Superficial. Contra seres sobrenaturais, causa dano Superficial normalmente mas não tem o dano reduzido pela metade.",
   },
   {
-    cost: "Sem custo de sangue",
+    cost: "Gratuito",
     description:
-      "Possuindo força sobrenatural em pernas e tronco, o usuário pode saltar distâncias verticais de até três vezes seu nível de Potência em metros, e distâncias horizontais de até cinco vezes sua pontuação de Potência em metros, sem precisar tomar impulso prévio.",
+      "As pernas do vampiro flexionam-se com força descomunal, impulsionando-o em saltos verticais e horizontais vertiginosos que desafiam as leis da física.",
+    duration: "Passiva",
+    level: 1,
+    name: "Salto Elevado",
+    rouse: false,
+    system:
+      "O usuário pode saltar verticalmente uma altura em metros igual a três vezes seu nível de Potência, e horizontalmente cinco vezes seu nível de Potência sem precisar de teste.",
+  },
+  {
+    cost: "Gratuito",
+    description:
+      "As pernas do vampiro flexionam-se com força descomunal, impulsionando-o em saltos verticais e horizontais vertiginosos que desafiam as leis da física.",
     duration: "Passiva",
     level: 1,
     name: "Força Prodigiosa",
     rouse: false,
+    system:
+      "O usuário pode saltar verticalmente uma altura em metros igual a três vezes seu nível de Potência, e horizontalmente cinco vezes seu nível de Potência sem precisar de teste.",
   },
   {
-    cost: "Um Rouse Check",
+    cost: "Um Teste de Rouse",
     description:
-      "Multiplica a força física bruta da vitae. Adiciona a pontuação de Potência do usuário diretamente ao dano final de seus golpes desarmados e a todas as paradas de dados em façanhas de Força física realizadas durante a cena.",
+      "Os vampiros dotados de Potência extraem muito mais força bruta de seu Sangue místico, amplificando o impacto de seus ataques e a capacidade de erguer cargas colossais.",
     duration: "Uma cena",
     level: 2,
     name: "Proeza",
     rouse: true,
+    system:
+      "Quando ativado, adicione a pontuação de Potência do usuário ao dano de seus ataques desarmados e a todos os testes que envolvam proezas extraordinárias de Força física.",
   },
   {
-    cost: "Um Rouse Check",
+    cost: "Gratuito",
     description:
-      "Permite realizar saltos sobre-humanos de grande alcance e altura durante a cena com impulso da vitae.",
-    duration: "Uma cena",
+      "As pernas do vampiro flexionam-se com força descomunal, impulsionando-o em saltos verticais e horizontais vertiginosos que desafiam as leis da física.",
+    duration: "Passiva",
     level: 2,
     name: "Salto Prodigioso",
-    rouse: true,
+    rouse: false,
+    system:
+      "O usuário pode saltar verticalmente uma altura em metros igual a três vezes seu nível de Potência, e horizontalmente cinco vezes seu nível de Potência sem precisar de teste.",
   },
   {
-    cost: "Sem custo de sangue",
+    cost: "Gratuito",
     description:
-      "Conhecido como o 'Beijo Selvagem', permite drenar o sangue de uma vítima em meros segundos logo após um acerto com presas em combate. Cada ponto de Fome saciado inflige 1 ponto de dano Agravado em mortais (ou dano Superficial em vampiros).",
-    duration: "Uma alimentação",
+      "Conhecido como o 'Beijo Selvagem', este poder permite ao usuário empregar uma força impiedosa ao sugar o sangue de uma vítima, drenando um mortal em segundos.",
+    duration: "Um turno",
     level: 3,
     name: "Alimentação Brutal",
     rouse: false,
+    system:
+      "O vampiro drena um mortal por completo em poucos segundos (geralmente um único turno). Cada ponto de Fome saciado causa dois pontos de dano Agravado na vítima mortal.",
   },
   {
-    cost: "Um Rouse Check",
+    amalgam: "Presença 3",
+    cost: "Um Teste de Rouse",
     description:
-      "Amálgama: Presença 3. Provoca fúria violenta e frenesi em espectadores. O usuário soma sua Potência a testes para incitar multidões ao motim. Contra outro vampiro: Manipulação + Potência vs. Autocontrole + Inteligência; se vencer, o adversário deve fazer teste de frenesi de fúria (Dificuldade 3).",
+      "O usuário canaliza a energia de sua Fera e sua força bruta para incitar paixões violentas e fúria assassina em indivíduos ou multidões ao seu redor.",
+    dicePool: "Manipulação + Potência",
     duration: "Uma cena",
     level: 3,
     name: "Centelha de Fúria",
     rouse: true,
+    system:
+      "O usuário soma sua pontuação de Potência a qualquer tentativa de incitar um motim, provocar brigas ou atiçar o frenesi de fúria em alvos mortais ou vampiros próximos.",
   },
   {
-    cost: "Um Rouse Check",
+    cost: "Um Teste de Rouse",
     description:
-      "O vampiro crava dedos e artelhos em quase qualquer superfície sólida por pura força bruta, escalando paredes e pendurando-se em tetos com sucesso automático em superfícies não-metálicas. Deixa marcas detectáveis com Inteligência + Investigação.",
+      "O vampiro crava os dedos em superfícies sólidas como pedra, tijolos ou madeira com força titânica, permitindo-lhe escalar paredes verticais e agarrar-se com firmeza inabalável.",
     duration: "Uma cena",
     level: 3,
     name: "Aderência Sobrenatural",
     rouse: true,
+    system:
+      "O usuário passa automaticamente em testes de Atletismo para escalar superfícies não metálicas sólidas cravando os dedos nelas. Em manobras de imobilização, adiciona Potência à parada.",
   },
   {
-    cost: "Um Rouse Check",
+    cost: "Um Teste de Rouse",
     description:
-      "Desfere um golpe devastador canalizado pelo Sangue, dobrando o impacto destrutivo ou dano em um ataque bem-sucedido com Força física.",
-    duration: "Um ataque",
+      "O vampiro desfere socos devastadores capazes de fraturar estruturas e lançar oponentes longe.",
+    duration: "Um turno",
     level: 3,
     name: "Golpe Brutal",
     rouse: true,
+    system:
+      "Adiciona bônus massivo ao impacto de golpes contundentes desarmados.",
   },
   {
-    cost: "Um Rouse Check",
+    cost: "Um Teste de Rouse",
     description:
-      "O sangue do vampiro transmite força inumana a quem o beber. Beber uma Checagem de Sangue diretamente de suas veias concede pontos temporários de Potência iguais à metade da pontuação do doador e seus poderes não-amálgama até esse nível.",
-    duration: "Uma noite",
+      "O Sangue do vampiro fica impregnado com a pura força da Potência, transmitindo temporariamente essa pujança titânica para quem o consome.",
+    duration: "Uma noite; para vampiros, até a próxima alimentação ou Fome 5",
     level: 4,
     name: "Gole de Poder",
     rouse: true,
+    system:
+      "Beber o equivalente a um Teste de Rouse diretamente do usuário concede ao bebedor Potência temporária igual à metade dos pontos de Potência do doador (arredondado para baixo).",
   },
   {
-    cost: "Dois Rouse Checks",
+    cost: "Dois Testes de Rouse",
     description:
-      "O vampiro desfere um golpe esmagador no solo com o punho ou calcanhar, irradiando uma onda de choque sísmica destrutiva. Todos em um raio de 5 metros devem testar Destreza + Atletismo (Dificuldade 3); falhas causam queda ao chão e perda da ação.",
-    duration: "Um turno",
+      "Com uma força elemental avassaladora, o vampiro esmurra ou pisa com violência extrema no chão, propagando uma onda de choque sísmica destrutiva ao redor.",
+    duration: "Instantânea",
     level: 5,
     name: "Terremoto",
     rouse: true,
+    system:
+      "Não exige teste para deflagrar o impacto. Todos em um raio de 5 metros ao redor do usuário devem fazer um teste de Destreza + Atletismo (Dificuldade 4) ou cair ao chão atordoados e sofrer 3 pontos de dano Superficial.",
   },
   {
-    cost: "Um Rouse Check",
+    cost: "Um Teste de Rouse",
     description:
-      "Os golpes desarmados do vampiro ganham letalidade mística ancestral. Durante a cena, seus ataques de Briga causam dano Agravado de Vitalidade tanto a mortais quanto a seres sobrenaturais, dilacerando membros e arrancando corações.",
+      "A força do vampiro se torna uma arma de aniquilação mitológica. Seus golpes são capazes de decapitar, rasgar membros ou arrancar o coração do peito de mortais e vampiros com as próprias mãos.",
     duration: "Uma cena",
     level: 5,
     name: "Punho de Caim",
     rouse: true,
+    system:
+      "Por uma cena inteira, o usuário causa dano Agravado a mortais e seres sobrenaturais ao lutar desarmado (Briga), destroçando carcaças com facilidade colossal.",
   },
 ];
 
 const PRESENCE_POWERS: readonly PowerTemplate[] = [
   {
-    cost: "Sem custo de sangue",
+    cost: "Gratuito",
     description:
-      "Todos na presença do vampiro têm sua atenção hipnotizada por suas palavras e magnetismo. Adiciona a pontuação de Presença a testes sociais envolvendo Persuasão ou Performance. Alvos alertas podem resistir em disputa de Autocontrole + Inteligência vs. Manipulação + Presença.",
-    duration: "Uma cena",
+      "Qualquer um na presença do vampiro sente sua atenção inexplicavelmente atraída para ele. Aqueles que o ouvem inclinam-se a concordar com suas opiniões e pontos de vista.",
+    dicePool: "Manipulação + Presença vs. Autocontrole + Inteligência",
+    duration: "Uma cena ou até ser cancelado",
     level: 1,
     name: "Fascínio",
     rouse: false,
+    system:
+      "Adiciona a pontuação de Presença a qualquer teste social envolvendo Persuasão ou Performance. Contra alvos em disputa, role Manipulação + Presença vs. Autocontrole + Inteligência.",
   },
   {
-    cost: "Sem custo de sangue",
+    cost: "Gratuito",
     description:
-      "O vampiro exala uma aura ameaçadora de terror predatório. Adiciona sua Presença a todas as rolagens de Intimidação. Qualquer indivíduo que deseje atacar o vampiro diretamente deve antes passar em um teste de Resolução + Autocontrole (Dificuldade 2). Não pode ser usado junto com Fascínio.",
+      "Qualquer um na presença do vampiro sente sua atenção inexplicavelmente atraída para ele. Aqueles que o ouvem inclinam-se a concordar com suas opiniões e pontos de vista.",
+    dicePool: "Manipulação + Presença vs. Autocontrole + Inteligência",
+    duration: "Uma cena ou até ser cancelado",
+    level: 1,
+    name: "Fascinação",
+    rouse: false,
+    system:
+      "Adiciona a pontuação de Presença a qualquer teste social envolvendo Persuasão ou Performance. Contra alvos em disputa, role Manipulação + Presença vs. Autocontrole + Inteligência.",
+  },
+  {
+    cost: "Gratuito",
+    description:
+      "O vampiro exala uma aura palpável de perigo predatório, fazendo mortais evitarem seu olhar e outros vampiros pensarem duas vezes antes de confrontá-lo.",
     duration: "Uma cena",
     level: 1,
     name: "Intimidação",
     rouse: false,
+    system:
+      "Adicione a pontuação de Presença a qualquer rolagem de Intimidação. Qualquer pessoa que tente atacar o usuário deve antes vencer um teste de Determinação + Autocontrole (Dificuldade 2).",
   },
   {
-    cost: "Sem custo de sangue",
+    cost: "Gratuito",
     description:
-      "O Beijo do vampiro gera um arrebatamento e dependência psicológica obsessiva na vítima. Adiciona dados iguais à Presença a testes sociais de Carisma subsequentes contra o indivíduo mordido. A vítima resiste com teste semanal de Força de Vontade contra Dificuldade igual à Presença.",
+      "O Beijo do vampiro induz um êxtase avassalador que deixa as presas completamente viciadas em sua mordida, desejando ardentemente ser alimentadas de novo.",
     duration: "Até ser superado",
     level: 2,
     name: "Beijo Duradouro",
     rouse: false,
+    system:
+      "O vampiro pode escolher ativar este efeito durante a alimentação. Vítimas mortais tornam-se submissas e viciadas no Beijo, concedendo +2 dados em testes sociais subsequentes contra elas.",
   },
   {
-    cost: "Um Rouse Check",
+    cost: "Um Teste de Rouse",
     description:
-      "Ao exibir suas presas e uma expressão predatória medonha, o vampiro instila pânico avassalador em um alvo. Carisma + Presença vs. Autocontrole + Determinação. Mortais fogem aterrorizados ou entram em estado de choque; vampiros recuam em pavor ou entram em frenesi de terror (Rötschreck).",
-    duration: "Um turno",
+      "Exibindo brevemente sua natureza vampírica predatória, o usuário incute em um alvo um pavor paralisante, forçando mortais a fugir e vampiros a fraquejar ou entrar em Rötschreck.",
+    dicePool: "Carisma + Presença vs. Autocontrole + Determinação",
+    duration: "Uma cena",
     level: 3,
     name: "Olhar Aterrorizante",
     rouse: true,
+    system:
+      "Role Carisma + Presença vs. Autocontrole + Determinação. Mortais derrotados fogem em pânico ou ficam catatônicos de medo. Vampiros derrotados sofrem penalidades ou devem testar contra o frenesi de terror.",
   },
   {
-    cost: "Um Rouse Check",
+    cost: "Um Teste de Rouse",
     description:
-      "Foca o magnetismo em uma pessoa, despertando nela paixão ou adoração cega pelo vampiro. Carisma + Presença vs. Autocontrole + Raciocínio. O alvo faz o possível para agradar o usuário e este adiciona sua Presença a testes sociais contra ele; pedidos que firam crenças fundamentais rompem o efeito.",
-    duration: "Uma cena",
+      "O vampiro encanta um indivíduo tão profundamente que este se torna totalmente fascinado, buscando a aprovação do vampiro acima de quaisquer outros laços comuns.",
+    dicePool: "Carisma + Presença vs. Autocontrole + Raciocínio",
+    duration: "Uma hora mais uma hora por ponto de margem",
     level: 3,
     name: "Transe",
     rouse: true,
+    system:
+      "Dispute Carisma + Presença vs. Autocontrole + Raciocínio. Em uma vitória, o alvo fica hipnotizado pelo vampiro, concordando com quase qualquer pedido razoável que não lhe cause dano físico direto.",
   },
   {
+    amalgam: "Dominação 1",
     cost: "Sem custo adicional",
     description:
-      "Amálgama: Dominação 1. A presença do usuário permite canalizar poderes de Dominação exclusivamente através de sua voz emitida em presença física, sem exigir contato visual direto com a vítima.",
+      "A Presença do usuário serve como um condutor perfeito para a Dominação. O vampiro agora precisa apenas que sua voz seja ouvida para usar seus poderes de Dominação, sem exigir contato visual.",
     duration: "Passiva",
     level: 4,
     name: "Voz Irresistível",
     rouse: false,
+    system:
+      "Permite usar todos os poderes de Dominação que exigem contato visual apenas através da voz falada, desde que o alvo consiga ouvi-lo claramente pessoalmente (não funciona por mídia eletrônica).",
   },
   {
-    cost: "Um Rouse Check",
+    cost: "Um Teste de Rouse",
     description:
-      "Chama até si qualquer mortal ou vampiro que já tenha provado seu sangue ou sido alvo de Fascínio, Transe ou Majestade. Manipulação + Presença vs. Autocontrole + Inteligência. O alvo sente uma urgência magnética de viajar até o invocador.",
+      "O vampiro pode chamar para sua presença qualquer pessoa que já tenha experimentado sua Presença ou provado de seu Sangue, independentemente da distância.",
+    dicePool: "Manipulação + Presença vs. Autocontrole + Inteligência",
     duration: "Uma noite",
     level: 4,
     name: "Convocar",
     rouse: true,
+    system:
+      "Role Manipulação + Presença vs. Autocontrole + Inteligência. Em uma vitória, o alvo sente uma atração irresistível e viaja até o vampiro pelo caminho mais rápido possível.",
   },
   {
-    cost: "Dois Rouse Checks",
+    cost: "Dois Testes de Rouse",
     description:
-      "O vampiro manifesta uma aura sublime de autoridade divina ou terror infernal. Todos os presentes ficam petrificados em reverência ou medo. Quem desejar agir contra o vampiro deve antes vencer uma disputa de Autocontrole + Determinação contra Carisma + Presença do usuário.",
+      "No ápice da Disciplina, o vampiro amplifica seu semblante a níveis semidivinos ou aterradores. Testemunhar a Majestade é estar diante de um deus ou de um soberano supremo.",
+    dicePool: "Carisma + Presença vs. Autocontrole + Determinação",
     duration: "Uma cena",
     level: 5,
     name: "Majestade",
     rouse: true,
+    system:
+      "Ninguém na presença do usuário pode atacá-lo ou mesmo falar de forma desrespeitosa sem antes vencer um teste de Autocontrole + Determinação contra a parada de Carisma + Presença do usuário.",
   },
   {
-    cost: "Um Rouse Check adicional",
+    cost: "Um Teste de Rouse adicional",
     description:
-      "Permite transmitir os poderes de Fascínio, Intimidação e Transe através de transmissões de vídeo ao vivo ou chamadas telefônicas, impactando espectadores que acompanham o sinal em tempo real.",
+      "A Presença do vampiro torna-se tão potente que consegue ultrapassar as barreiras das transmissões eletrônicas, projetando Fascínio, Intimidação ou Transe através de câmeras, transmissões ao vivo ou chamadas de telefone.",
     duration: "Uma cena",
     level: 5,
     name: "Magnetismo de Estrela",
     rouse: true,
+    system:
+      "Permite transmitir Fascínio, Intimidação e Transe através de feeds de vídeo e telas digitais ao vivo, afetando espectadores remotos que estejam assistindo no momento.",
   },
 ];
 
 const PROTEAN_POWERS: readonly PowerTemplate[] = [
   {
-    cost: "Sem custo de sangue",
+    cost: "Gratuito",
     description:
-      "Os olhos do vampiro emitem um brilho avermelhado sobrenatural que lhe permite enxergar perfeitamente na escuridão total (mesmo sobrenatural). Enquanto ativo, confere dois dados extras em testes de Intimidação contra mortais.",
-    duration: "Passiva",
+      "O vampiro faz seus olhos brilharem em um tom vermelho sobrenatural, permitindo-lhe enxergar com perfeita nitidez mesmo na mais absoluta escuridão.",
+    duration: "Enquanto desejado",
     level: 1,
     name: "Olhos da Besta",
     rouse: false,
+    system:
+      "Não exige teste. O vampiro ignora todas as penalidades de visão decorrentes da escuridão, incluindo sombras sobrenaturais ordinárias.",
   },
   {
-    cost: "Sem custo de sangue",
+    cost: "Gratuito",
     description:
-      "Reduz a densidade corporal tornando o vampiro praticamente sem peso. Torna-o imune a dano decorrente de quedas de qualquer altura, impactos e arremessos, impedindo o acionamento de sensores de pressão no chão. Ativação súbita durante queda usa Raciocínio + Sobrevivência (Dificuldade 3).",
+      "Ao alterar momentaneamente a densidade de sua forma morta, o vampiro pode cair de alturas absurdas sem sofrer qualquer dano, pousando no solo suavemente como uma folha ou pena.",
+    dicePool: "Raciocínio + Sobrevivência",
     duration: "Passiva",
     level: 1,
     name: "Peso da Pena",
     rouse: false,
+    system:
+      "Se o vampiro tiver tempo para se preparar para a queda, não requer teste. Como reação súbita a uma queda inesperada, faça um teste de Raciocínio + Sobrevivência (Dificuldade 3) para desacelerar a descida.",
   },
   {
-    cost: "Um Rouse Check",
+    cost: "Um Teste de Rouse",
     description:
-      "O vampiro estende garras curvas e afiadas nas mãos ou presas pontiagudas como adagas. Adiciona +2 ao dano de ataques de Briga e causa dano Agravado a mortais; dano Superficial infligido não é dividido pela metade contra outros vampiros.",
+      "O vampiro projeta suas armas naturais a proporções monstruosas: unhas que se estendem em garras recurvadas e afiadas como navalhas, ou presas que se alongam em presas de serpente gigantesca.",
     duration: "Uma cena",
     level: 2,
     name: "Armas Ferais",
     rouse: true,
+    system:
+      "O vampiro adiciona +2 de modificador ao dano de seus ataques desarmados (Briga) e inflige dano Agravado de Vitalidade em mortais e seres sobrenaturais.",
   },
   {
-    cost: "Um Rouse Check",
+    cost: "Um Teste de Rouse",
     description:
-      "O vampiro dissolve seu corpo no solo natural (terra crua, relva ou rochas), fundindo-se à terra para descansar durante o dia protegido da luz do sol ou se ocultar de perseguidores, despertando na noite seguinte.",
-    duration: "Um dia",
+      "Tornando-se um com o solo, o vampiro afunda na terra virgem, repousando protegido de todos os perigos e da luz do sol até a noite seguinte.",
+    duration: "Um dia ou até acordar",
     level: 3,
     name: "Fusão com a Terra",
     rouse: true,
+    system:
+      "Não exige teste, mas o vampiro deve repousar sobre uma superfície natural de terra, grama ou rochas virgens. O vampiro fica totalmente selado dentro da terra, seguro contra o sol e detecção mundana.",
   },
   {
-    cost: "Um Rouse Check",
+    cost: "Um Teste de Rouse",
     description:
-      "O vampiro transmuta seu corpo na forma de um animal de porte e massa similar à sua (tipicamente um lobo, cão grande, lince ou serpente volumosa). A transformação leva um turno e concede os Atributos Físicos, sentidos e habilidades da espécie animal.",
-    duration: "Uma cena",
+      "O vampiro pode transformar seu corpo na forma de um animal predador de tamanho similar ao seu, tipicamente um lobo selvagem ou grande felino.",
+    duration: "Uma cena ou até retornar voluntariamente",
     level: 3,
     name: "Metamorfose",
     rouse: true,
+    system:
+      "A transformação leva um turno. Na forma de lobo, ganha sentidos aprimorados, velocidade extra e armas naturais que causam dano Agravado de Briga.",
   },
   {
-    cost: "Um Rouse Check",
+    cost: "Um Teste de Rouse",
     description:
-      "Pré-requisito: Metamorfose. Concede uma forma animal adicional permitindo ao vampiro alterar drasticamente seu tamanho físico, assumindo formas diminutas como morcegos, ratos ou cobras para infiltração e espionagem.",
-    duration: "Uma cena",
+      "Este poder concede uma forma animal adicional ao vampiro, desta vez muito menor que sua forma original, como um morcego, rato, corvo ou serpente venenosa.",
+    duration: "Uma cena ou até retornar voluntariamente",
     level: 4,
     name: "Metamorfose Maior",
+    prerequisite: "Metamorfose",
     rouse: true,
+    system:
+      "Funciona como Metamorfose. Permite assumir a forma de criaturas pequenas como morcegos (capazes de voar) ou ratos (capazes de infiltrar-se em tubulações e frestas estreitas).",
   },
   {
-    cost: "De um a três Rouse Checks",
+    cost: "De um a três Testes de Rouse",
     description:
-      "O vampiro converte seu corpo em uma nuvem de névoa impalpável, totalmente imune a ataques físicos ordinários (suscetível apenas a fogo, luz solar ou rituais mágicos). Consegue esgueirar-se por canos, frestas e fechaduras em velocidade de caminhada.",
+      "O vampiro alcança o lendário poder de dissolver seu corpo sólido em uma densa névoa sobrenatural, imune a danos físicos e capaz de esgueirar-se por frestas e fechaduras.",
     duration: "Uma cena",
     level: 5,
     name: "Forma de Névoa",
     rouse: true,
+    system:
+      "A transformação leva três turnos (ou menos se gastar mais Testes de Rouse). Na forma de névoa, o usuário é imune a armas físicas comuns, exceto fogo e luz solar, e pode passar por tubulações e rachaduras.",
   },
   {
-    cost: "Sem custo de sangue",
+    cost: "Gratuito",
     description:
-      "O coração do vampiro torna-se móvel e maleável dentro do peito, mudando de posição todas as noites. Aumenta a Dificuldade de qualquer tentativa de empalação em +3 (em combate, apenas acertos críticos atingem o coração). Se empalado, pode rolar Força + Determinação para expelir a estaca.",
+      "O vampiro ganha controle absoluto sobre a anatomia de seu cadáver imortal, sendo capaz de deslocar seu coração para qualquer parte do corpo ou desfazer a paralisia de uma estaca de madeira.",
     duration: "Passiva",
     level: 5,
     name: "O Coração Liberto",
     rouse: false,
+    system:
+      "Aumenta a Dificuldade de qualquer tentativa de empalar o vampiro com uma estaca no coração em +3. Se empalado, pode gastar um Teste de Rouse para expelir a estaca e desfazer a paralisia.",
   },
 ];
 
 const BLOOD_SORCERY_POWERS: readonly PowerTemplate[] = [
   {
-    cost: "Um ou mais Rouse Checks",
+    cost: "Um Teste de Rouse",
     description:
-      "O sangue derramado pelo feiticeiro ganha propriedades altamente corrosivas para matéria inanimada. Cada Rouse Check de sangue derrete cerca de 35 cm de matéria sólida em cinco minutos, dissolvendo trincos, grades e algemas metálicas.",
+      "Alterando as propriedades químicas e místicas de seu próprio Sangue, o vampiro o torna um ácido avassaladoramente corrosivo para matérias inanimadas e metais.",
     duration: "Instantânea",
     level: 1,
     name: "Vitae Corrosiva",
     rouse: true,
+    system:
+      "O Sangue expelido pelo vampiro corrói metais, madeira e plásticos, destruindo fechaduras, algemas, correntes e grades em poucos segundos. Se cuspido em combate, causa dano Agravado a equipamentos.",
   },
   {
-    cost: "Sem custo de sangue",
+    cost: "Gratuito",
     description:
-      "Ao provar uma gota de sangue na língua, discerne traços essenciais do doador. Determinação + Feitiçaria de Sangue contra Dificuldade 3. Uma vitória revela se é mortal, carniçal, vampiro ou outra entidade, e sua Ressonância. Vitória crítica revela Potência de Sangue, geração aproximada e se já cometeu diablerie.",
+      "Ao provar uma única gota do sangue de um indivíduo, o feiticeiro discerne instantaneamente a espécie da criatura, sua ressonância, geração e intensidade de poder sobrenatural.",
+    dicePool: "Determinação + Feitiçaria de Sangue",
     duration: "Instantânea",
     level: 1,
     name: "Gosto por Sangue",
     rouse: false,
+    system:
+      "Role Determinação + Feitiçaria de Sangue (Dificuldade 3). Cada ponto de margem revela detalhes sobre o dono do sangue: se é mortal, carniçal ou vampiro, sua Geração aproximada, Potência de Sangue e estado de saúde.",
   },
   {
-    cost: "Um Rouse Check",
+    cost: "Um Teste de Rouse",
     description:
-      "Ritual de Nível 1. Em uma taça de prata com uma amostra de sangue do alvo, mistura sua vitae e entoa cânticos por uma hora. Inteligência + Feitiçaria de Sangue contra Dificuldade 2. Vitória revela nome, geração e senhor do alvo; vitória crítica revela laços de sangue ativos.",
-    duration: "Instantânea",
-    level: 1,
-    name: "Caminhada do Sangue",
-    rouse: true,
-  },
-  {
-    cost: "Um Rouse Check",
-    description:
-      "Ritual de Nível 1. Esmaga uma aranha viva em uma ampola com sua vitae e bebe a mistura. Inteligência + Feitiçaria de Sangue contra Dificuldade 2. Ganha a capacidade de escalar paredes e tetos usando mãos e pés durante uma cena inteira (ou pela noite toda em vitória crítica).",
-    duration: "Uma cena",
-    level: 1,
-    name: "Aderência do Inseto",
-    rouse: true,
-  },
-  {
-    cost: "Um Rouse Check",
-    description:
-      "Ritual de Nível 1. Encanta um minério de ferro ou ímã imerso em sangue com cânticos por três noites. Inteligência + Feitiçaria de Sangue contra Dificuldade 2. Sintoniza a mente à pedra, sabendo infalivelmente a direção e distância exatas até onde ela estiver por uma semana.",
-    duration: "Uma semana",
-    level: 1,
-    name: "Criar Pedra de Sangue",
-    rouse: true,
-  },
-  {
-    cost: "Um Rouse Check",
-    description:
-      "Ritual de Nível 1. Traça um círculo com cinzas de galo e sangue ao redor do leito de repouso. Se qualquer perigo surgir durante o dia, acorda imediatamente em prontidão total com Inteligência + Feitiçaria de Sangue, anulando penalidades diurnas pela cena.",
-    duration: "Uma cena",
-    level: 1,
-    name: "Despertar com o Frescor Noturno",
-    rouse: true,
-  },
-  {
-    cost: "Um Rouse Check",
-    description:
-      "Ritual de Nível 1. Traça um glifo com a própria vitae sobre um objeto ou ponto de passagem de até um metro. Quando tocado por um carniçal, o glifo causa 1 ponto de dano Agravado (3 em acerto crítico) e pânico extremo.",
-    duration: "Permanente",
-    level: 1,
-    name: "Proteção contra Carniçais",
-    rouse: true,
-  },
-  {
-    cost: "Um Rouse Check",
-    description:
-      "Concentrando-se e gesticulando sutilmente, retira as propriedades vitais do sangue nas veias de outro vampiro à vista, secando suas reservas e elevando sua Fome. Inteligência + Feitiçaria de Sangue vs. Vigor + Autocontrole. Uma vitória aumenta a Fome da vítima em 1 ponto; vitória crítica aumenta em 2.",
+      "O feiticeiro pode resfriar e anular o poder nutriente do sangue no interior de outro vampiro, acelerando a queima de sua Fome interior.",
+    dicePool: "Inteligência + Feitiçaria de Sangue vs. Vigor + Determinação",
     duration: "Instantânea",
     level: 2,
     name: "Extinguir Vitae",
     rouse: true,
+    system:
+      "Dispute Inteligência + Feitiçaria de Sangue vs. Vigor + Determinação. Em uma vitória, o vampiro alvo tem 1 ponto de sua Fome aumentado (máximo de 5) como se seu sangue tivesse sido consumido.",
   },
   {
-    cost: "Um Rouse Check",
+    cost: "Um Teste de Rouse",
     description:
-      "Ritual de Nível 2. Mergulha um objeto pertencente ao senhor em uma bacia de prata com sangue e água por quinze minutos. Inteligência + Feitiçaria de Sangue contra Dificuldade 3. Estabelece elo telepático bidirecional de comunicação a longa distância por dez minutos.",
-    duration: "Uma cena",
-    level: 2,
-    name: "Comunicação com o Senhor",
-    rouse: true,
-  },
-  {
-    cost: "Um Rouse Check",
-    description:
-      "Ritual de Nível 2. Arrancando e ingerindo os olhos e a língua fresca de uma pessoa recém-morta, o feiticeiro absorve o conhecimento linguístico da vítima com Inteligência + Feitiçaria de Sangue (Dificuldade 3), falando e lendo fluentemente todos os idiomas que ela conhecia por uma semana.",
-    duration: "Uma semana",
-    level: 2,
-    name: "Olhos de Babel",
-    rouse: true,
-  },
-  {
-    cost: "Um Rouse Check",
-    description:
-      "Ritual de Nível 2. Embebe uma fita de cetim branco em sua vitae e queima-a. Inteligência + Feitiçaria de Sangue contra Dificuldade 3. Permite enxergar a trilha percorrida por uma presa específica nas últimas 24 horas como um rastro luminescente no chão durante toda a noite.",
-    duration: "Uma noite",
-    level: 2,
-    name: "Iluminar o Rastro da Presa",
-    rouse: true,
-  },
-  {
-    cost: "Um Rouse Check",
-    description:
-      "Ritual de Nível 2. Mistura a própria vitae com o sangue do alvo em um cálice e mergulha o dedo. A cada frase dita pelo sujeito, disputa Resolução + Feitiçaria de Sangue vs. Autocontrole + Ocultismo para saber infalivelmente se o depoimento é verdadeiro.",
-    duration: "Uma cena",
-    level: 2,
-    name: "Verdade do Sangue",
-    rouse: true,
-  },
-  {
-    cost: "Um Rouse Check",
-    description:
-      "Ritual de Nível 2. Traça um glifo com punhado de sal e sangue sobre um objeto ou passagem. Espíritos incorpóreos e fantasmas que tocarem o item sofrem 1 ponto de dano Agravado e são repelidos por terror sobrenatural.",
-    duration: "Permanente",
-    level: 2,
-    name: "Proteção contra Espíritos",
-    rouse: true,
-  },
-  {
-    cost: "Um Rouse Check",
-    description:
-      "O feiticeiro concentra o poder místico da vitae em suas veias, elevando temporariamente sua Potência de Sangue. Determinação + Feitiçaria de Sangue contra Dificuldade 2 + Potência de Sangue atual. Vitória aumenta a Potência em 1 nível; vitória crítica aumenta em 2 níveis.",
+      "O vampiro pode concentrar misticamente sua própria Vitae, elevando temporariamente sua Potência de Sangue acima de seus limites habituais.",
+    dicePool: "Determinação + Feitiçaria de Sangue",
     duration: "Uma cena",
     level: 3,
     name: "Sangue de Potência",
     rouse: true,
+    system:
+      "Role Determinação + Feitiçaria de Sangue contra Dificuldade 3. Uma vitória aumenta a Potência de Sangue do vampiro em 1 ponto pela duração de uma cena.",
   },
   {
-    cost: "Um ou mais Rouse Checks",
+    cost: "Um Teste de Rouse",
     description:
-      "Transmuta o próprio sangue em um veneno paralisante de contato, cobrindo armas brancas ou cuspindo contra o adversário. Força + Feitiçaria de Sangue vs. Vigor + Ocultismo. Causa a margem em dano Agravado a mortais (desmaiando-os) ou dano Superficial direto em vampiros.",
+      "O usuário transmuta sua Vitae em um veneno paralisante e virulento, capaz de revestir armas brancas ou ser expelido pelo toque para minar o vigor de suas vítimas.",
+    dicePool: "Força + Feitiçaria de Sangue vs. Vigor + Determinação",
     duration: "Uma cena",
     level: 3,
     name: "Toque de Escorpião",
     rouse: true,
+    system:
+      "Reveste uma arma com sangue venenoso. Em um acerto que cause dano de Vitalidade, a vítima sofre dano Superficial adicional de Vitalidade igual aos sucessos do feiticeiro no teste.",
   },
   {
-    cost: "Um Rouse Check",
+    cost: "Um Teste de Rouse",
     description:
-      "Ritual de Nível 3. Tendo entrado em contato físico com a pele ou sangue da vítima previamente, o feiticeiro perfura a própria carne com uma adaga cerimonial de ouro. Resolução + Feitiçaria de Sangue vs. Vigor + Determinação. Cada margem rompe vasos e inunda os pulmões da vítima de sangue à distância.",
+      "Através de artes ocultas tenebrosas, o vampiro abre feridas invisíveis em uma vítima à distância, fazendo com que uma torrente carmesim de sangue flutue no ar diretamente para sua boca sedenta.",
+    dicePool: "Raciocínio + Feitiçaria de Sangue vs. Vigor + Sobrevivência",
     duration: "Instantânea",
-    level: 3,
-    name: "Chamado de Dagon",
-    rouse: true,
-  },
-  {
-    cost: "Um Rouse Check",
-    description:
-      "Ritual de Nível 3. Medita em um círculo traçado com lascas de madeira e sangue, colocando uma farpa de madeira sob a língua. A primeira estaca de madeira que tentaria empalar o coração do vampiro despedaça-se instantaneamente em estilhaços inofensivos antes de furar a pele.",
-    duration: "Uma noite",
-    level: 3,
-    name: "Deflexão do Destino de Madeira",
-    rouse: true,
-  },
-  {
-    cost: "Um Rouse Check",
-    description:
-      "Ritual de Nível 3. Reduz folhas e bagas de beladona em fogo brando com vitae, destilando uma poção escura que, quando bebida, concede a capacidade de levitar e voar pelos céus em velocidade de corrida durante uma cena inteira.",
-    duration: "Uma cena",
-    level: 3,
-    name: "Essência do Ar",
-    rouse: true,
-  },
-  {
-    cost: "Um Rouse Check",
-    description:
-      "Ritual de Nível 3. O feiticeiro corta a ponta de um de seus dedos e o queima com sangue em uma taça dourada com Vigor + Determinação (Dificuldade 3). Pela noite toda, todo dano recebido por fogo é reduzido à metade.",
-    duration: "Uma noite",
-    level: 3,
-    name: "Caminhante do Fogo",
-    rouse: true,
-  },
-  {
-    cost: "Um Rouse Check",
-    description:
-      "Ritual de Nível 3. Inscrição mística traçada com pó de prata e vitae sobre um objeto. Lobisomens em qualquer forma que tocarem o objeto sofrem dano Agravado imediato e são repelidos por pânico sobrenatural.",
-    duration: "Permanente",
-    level: 3,
-    name: "Proteção contra Lupinos",
-    rouse: true,
-  },
-  {
-    cost: "Um Rouse Check",
-    description:
-      "Abre um ferimento místico nas artérias de uma presa à vista, fazendo o sangue jorrar pelo ar em um arco contínuo até a boca do feiticeiro. Raciocínio + Feitiçaria de Sangue vs. Raciocínio + Ocultismo. O usuário alimenta-se a distância no dobro da velocidade comum sem deixar marcas físicas posteriores.",
-    duration: "Uma alimentação",
     level: 4,
     name: "Roubo de Vitae",
     rouse: true,
+    system:
+      "Dispute Raciocínio + Feitiçaria de Sangue vs. Vigor + Sobrevivência contra um alvo a até 15 metros. Cada ponto de margem drena sangue do alvo, saciando a Fome do usuário sem exigir contato físico.",
   },
   {
-    cost: "Um Rouse Check",
+    cost: "Um Teste de Rouse",
     description:
-      "Ritual de Nível 4. Inscrição de glifos protetores com vitae ao redor de uma câmara de até 6 metros de raio. Ao nascer do sol, sombras místicas cobrem portas e janelas, bloqueando totalmente a entrada de luz solar e resguardando os vampiros adormecidos.",
-    duration: "Um dia",
-    level: 4,
-    name: "Defesa do Refúgio Sagrado",
-    rouse: true,
-  },
-  {
-    cost: "Um Rouse Check",
-    description:
-      "Ritual de Nível 4. Alimenta uma ave de rapina carnívora (corvo ou gavião) com seu sangue e entra em transe, enxergando através de seus olhos e guiando seu voo por distâncias ilimitadas. Permite canalizar disciplinas mentais através do pássaro.",
-    duration: "Uma noite",
-    level: 4,
-    name: "Olhos do Falcão Noturno",
-    rouse: true,
-  },
-  {
-    cost: "Um Rouse Check",
-    description:
-      "Ritual de Nível 4. Quebra um espelho coberto de sangue entoando palavras de poder e segura um de seus cacos. Torna-se espectral e incorpóreo, atravessando portas e paredes sólidas em linha reta, imune a danos físicos mundanos.",
-    duration: "Uma cena",
-    level: 4,
-    name: "Passagem Incorpórea",
-    rouse: true,
-  },
-  {
-    cost: "Um Rouse Check",
-    description:
-      "Ritual de Nível 4. Glifo traçado com cinzas quentes de brasa e sangue. Qualquer vampiro além do próprio conjurador que tocar no objeto sofre 1 ponto de dano Agravado (3 pontos em acerto crítico) e fica repelido.",
-    duration: "Permanente",
-    level: 4,
-    name: "Proteção contra Cainitas",
-    rouse: true,
-  },
-  {
-    cost: "Um ou mais Rouse Checks",
-    description:
-      "Transmuta a própria vitae em uma toxina hiperagressiva que impregna lâminas corpo a corpo. Força + Feitiçaria de Sangue vs. Vigor + Ocultismo. Inflige dano Agravado igual à margem a mortais e vampiros; mortais morrem instantaneamente e vampiros atingidos arriscam entrar em torpor ao dormir.",
+      "O vampiro transforma seu Sangue em um veneno corrosivo lendário, letal para mortais e devastador para carcaças mortas-vivas de vampiros.",
     duration: "Uma cena",
     level: 5,
     name: "Carícia de Baal",
     rouse: true,
+    system:
+      "O Sangue reveste uma arma branca ou as presas do feiticeiro. Todos os ataques bem-sucedidos desferidos com a arma envenenada causam dano Agravado em vampiros e mortais.",
   },
   {
-    cost: "Um Rouse Check",
+    cost: "Um Teste de Rouse e uma Força de Vontade",
     description:
-      "Com um toque físico, o feiticeiro ferve instantaneamente o sangue dentro das próprias veias da vítima em agonia atroz. Determinação + Feitiçaria de Sangue vs. Autocontrole + Ocultismo. Cada margem causa 1 de dano Agravado; vítimas mortais falecem aos berros e vampiros aumentam 1 ponto de Fome por ponto de dano sofrido.",
-    duration: "Um turno",
+      "Com um simples toque e uma palavra amaldiçoada, o feiticeiro ferve a Vitae no interior das veias de sua vítima até o ponto de ebulição, dilacerando-a de dentro para fora.",
+    dicePool: "Determinação + Feitiçaria de Sangue vs. Autocontrole + Vigor",
+    duration: "Instantânea",
     level: 5,
     name: "Caldeirão de Sangue",
     rouse: true,
+    system:
+      "Dispute Determinação + Feitiçaria de Sangue vs. Autocontrole + Vigor após tocar a vítima. Cada ponto de margem inflige dano Agravado direto no alvo e faz seu sangue ferver em agonia atroz.",
   },
   {
-    cost: "Doze Rouse Checks",
+    cost: "Um Teste de Rouse",
     description:
-      "Ritual de Nível 5. Cria dois círculos místicos interligados queimados no solo e consagrados por três noites. Ao entrar no círculo de partida e se concentrar por um turno, teletransporta-se instantaneamente para o círculo de chegada a qualquer distância do planeta.",
+      "Este ritual expande a percepção do sangue, traçando a árvore genealógica espiritual do indivíduo até seus progenitores mais antigos.",
+    duration: "Uma noite",
+    ingredients: "100 ml de sangue do sujeito em um recipiente de prata pura",
+    level: 1,
+    name: "Caminhada do Sangue",
+    process:
+      "O feiticeiro derrama seu próprio Sangue no recipiente, misturando as amostras e entoando cânticos ancestrais enquanto queima incenso de sândalo.",
+    rouse: true,
+    system:
+      "Permite discernir a linhagem completa do indivíduo: seu senhor, o senhor de seu senhor e toda a árvore genealógica de sangue até os fundadores míticos.",
+  },
+  {
+    cost: "Um Teste de Rouse",
+    description:
+      "Permite ao taumaturgo escalar superfícies verticais e tetos com a mesma facilidade e aderência de uma aranha ou inseto rastejante.",
+    duration: "Uma cena",
+    ingredients: "Uma aranha viva ou besouro esmagado e misturado ao Sangue",
+    level: 1,
+    name: "Aderência do Inseto",
+    process:
+      "O conjurador espalha a mistura de sangue e inseto nas palmas das mãos e solas dos pés enquanto entoa as palavras de ligação.",
+    rouse: true,
+    system:
+      "O feiticeiro ganha a capacidade de escalar paredes e tetos como um inseto durante uma cena inteira sem precisar de testes de equilíbrio.",
+  },
+  {
+    cost: "Um Teste de Rouse",
+    description:
+      "Cria um talismã sintonizado com o Sangue do vampiro, permitindo que ele sinta intuitivamente a direção e proximidade da pedra onde quer que ela esteja.",
+    duration: "Permanente até ser destruída",
+    ingredients: "Um seixo polido e Sangue do conjurador",
+    level: 1,
+    name: "Criar Pedra de Sangue",
+    process:
+      "A pedra é banhada na Vitae fervente por uma hora sob encantamentos arcanos.",
+    rouse: true,
+    system:
+      "A pedra fica sintonizada com o conjurador, permitindo-lhe sempre saber a direção e distância exatas onde ela se encontra.",
+  },
+  {
+    cost: "Um Teste de Rouse",
+    description:
+      "Protege o vampiro contra a letargia mortal durante as horas do dia, acordando-o instantaneamente caso seu refúgio seja ameaçado.",
+    duration: "Um dia",
+    ingredients: "Pena de coruja ou cinzas de ervas noturnas",
+    level: 1,
+    name: "Despertar com o Frescor Noturno",
+    process:
+      "O feiticeiro desenha um círculo de cinzas ao redor de seu leito antes de dormir.",
+    rouse: true,
+    system:
+      "Permite ao vampiro acordar instantaneamente em plena vigília ao primeiro sinal de perigo diurno ou invasão, agindo sem as penalidades habituais de vigília diurna.",
+  },
+  {
+    cost: "Um Teste de Rouse",
+    description:
+      "Inscreve uma runa protetora em um objeto ou passagem que causa queimaduras místicas em carniçais que tentarem transpô-la.",
+    duration: "Permanente até ser ativada",
+    ingredients: "Pó de osso humano e Sangue do conjurador",
+    level: 1,
+    name: "Proteção contra Carniçais",
+    process:
+      "O símbolo protetor é pintado na entrada ou objeto com a tinta de ossos e sangue.",
+    rouse: true,
+    system:
+      "Qualquer carniçal que toque o objeto ou tente atravessar a barreira sofre dano Superficial e é repelido por uma força mística intransponível.",
+  },
+  {
+    cost: "Um Teste de Rouse",
+    description:
+      "Abre um elo mental entre o conjurador e seu senhor através do Laço de Sangue primordial que os conecta.",
+    duration: "Uma conversa",
+    ingredients:
+      "Um espelho de água e uma mecha de cabelo ou gota de sangue do senhor",
+    level: 2,
+    name: "Comunicação com o Senhor",
+    process:
+      "O vampiro medita diante da água sob a luz da lua, chamando mentalmente o senhor.",
+    rouse: true,
+    system:
+      "Abre um canal telepático claro e audível com o senhor do conjurador, permitindo conversação mística independentemente da distância geográfica.",
+  },
+  {
+    cost: "Um Teste de Rouse",
+    description:
+      "Concede ao feiticeiro a capacidade de compreender, ler e falar qualquer idioma mortal ao consumir a língua de uma criatura.",
+    duration: "Uma noite",
+    ingredients:
+      "Língua de um pássaro canoro ou papiro antigo empapado em sangue",
+    level: 2,
+    name: "Olhos de Babel",
+    process:
+      "O feiticeiro engole a língua ou queima o papiro inalando a fumaça.",
+    rouse: true,
+    system:
+      "Permite ao feiticeiro ler, escrever e falar perfeitamente qualquer idioma desconhecido durante a noite.",
+  },
+  {
+    cost: "Um Teste de Rouse",
+    description:
+      "Faz o rastro de uma vítima brilhar em luminescência visível apenas para o feiticeiro, facilitando sua perseguição implacável.",
+    duration: "Uma cena",
+    ingredients:
+      "Um fio de cabelo ou pertence pessoal da presa e uma vela branca",
+    level: 2,
+    name: "Iluminar o Rastro da Presa",
+    process:
+      "A vela é acesa com o pertence e o sangue do feiticeiro pingado no pavio.",
+    rouse: true,
+    system:
+      "O rastro deixado pela presa brilha no chão com uma luminescência visível apenas para o feiticeiro, facilitando o rastreamento através de qualquer labirinto urbano.",
+  },
+  {
+    cost: "Um Teste de Rouse",
+    description:
+      "Obriga uma pessoa que provar da poção consagrada a dizer a verdade pura sob interrogatório místico.",
+    duration: "Uma cena",
+    ingredients: "Gota de sangue do interrogado e cinzas de espinheiro",
+    level: 2,
+    name: "Verdade do Sangue",
+    process:
+      "O sangue do interrogado é misturado em vinho ou água e consagrado.",
+    rouse: true,
+    system:
+      "O alvo não consegue mentir deliberadamente diante do feiticeiro durante o interrogatório enquanto o ritual estiver ativo.",
+  },
+  {
+    cost: "Um Teste de Rouse",
+    description:
+      "Cria uma barreira defensiva que impede a intrusão de fantasmas, espectros e entidades astrais desencarnadas.",
+    duration: "Permanente até ser ativada",
+    ingredients: "Pó de prata pura misturado com o Sangue do conjurador",
+    level: 2,
+    name: "Proteção contra Espíritos",
+    process: "Desenha-se o símbolo protetor com uma adaga de ferro consagrada.",
+    rouse: true,
+    system:
+      "Impede a passagem de fantasmas, espectros e espíritos desincorporados, causando-lhes dor intolerável ao tentar tocar o local protegido.",
+  },
+  {
+    cost: "Um Teste de Rouse",
+    description:
+      "Ruptura mística terrível: o feiticeiro ferve e coagula o sangue no interior dos pulmões e coração de um inimigo à distância.",
     duration: "Instantânea",
+    ingredients:
+      "Adaga cerimonial de ouro e lascas de madeira banhadas em sangue",
+    level: 3,
+    name: "Chamado de Dagon",
+    process:
+      "O conjurador profere a invocação profana enquanto crava a adaga em uma efígie da vítima.",
+    rouse: true,
+    system:
+      "A vítima (que já tenha provado da Vitae do conjurador) tem os vasos sanguíneos rompidos de dentro para fora, sofrendo dano Agravado letal à distância.",
+  },
+  {
+    cost: "Um Teste de Rouse",
+    description:
+      "Encantamento protetor que envolve o coração do vampiro, repelindo e estilhaçando a primeira estaca de madeira cravada contra ele.",
+    duration: "Até ser descarregado ou amanhecer",
+    ingredients:
+      "Uma lasca de carvalho envolta em seda vermelha e mergulhada no Sangue",
+    level: 3,
+    name: "Deflexão do Destino de Madeira",
+    process: "A seda é amarrada próxima ao coração do vampiro.",
+    rouse: true,
+    system:
+      "A primeira estaca de madeira que atingiria o coração do vampiro em combate se estilhaça e se desfaz em pó no momento do impacto.",
+  },
+  {
+    cost: "Um Teste de Rouse",
+    description:
+      "O feiticeiro destila a sutileza do éter, tornando seu corpo leve como pluma para planar pelas correntes de ar da noite.",
+    duration: "Uma cena",
+    ingredients:
+      "Folhas secas de beladona e Sangue do conjurador reduzidos em braseiro",
+    level: 3,
+    name: "Essência do Ar",
+    process: "A poção é preparada em fogo brando e inalada.",
+    rouse: true,
+    system:
+      "O corpo do feiticeiro torna-se tão leve quanto uma brisa, permitindo-lhe levitar e planar lentamente pelo ar durante uma cena.",
+  },
+  {
+    cost: "Um Teste de Rouse",
+    description:
+      "Ritual ancestral de purificação e resguardo que torna a carne do vampiro invulnerável às queimaduras de chamas mundanas.",
+    duration: "Uma cena",
+    ingredients:
+      "A ponta de um dedo do conjurador cortada e queimada em cálice de ouro com Sangue",
+    level: 3,
+    name: "Caminhante do Fogo",
+    process:
+      "O feiticeiro consome as cinzas do próprio dedo em comunhão com o fogo.",
+    rouse: true,
+    system:
+      "O vampiro e seus companheiros selecionados ganham imunidade temporária às queimaduras de chamas mundanas durante uma cena.",
+  },
+  {
+    cost: "Um Teste de Rouse",
+    description:
+      "Inscrição rúnica potente projetada especificamente para repelir lobisomens e criaturas metamorfas selvagens.",
+    duration: "Permanente até ser ativada",
+    ingredients:
+      "Prata moída e sangue de lobo misturados ao Sangue do feiticeiro",
+    level: 3,
+    name: "Proteção contra Lupinos",
+    process: "O glifo de proteção é traçado com uma lâmina de prata virgem.",
+    rouse: true,
+    system:
+      "Lobisomens que tocarem o objeto ou barreira sofrem dano Agravado terrível e não conseguem cruzar o perímetro.",
+  },
+  {
+    cost: "Um Teste de Rouse",
+    description:
+      "Ergue um manto impenetrável de trevas místicas sobre as janelas e paredes do refúgio, protegendo-o completamente dos raios solares.",
+    duration: "Um dia inteiro",
+    ingredients: "Nada além do Sangue do conjurador",
+    level: 4,
+    name: "Defesa do Refúgio Sagrado",
+    process:
+      "O conjurador traça sigilos nas janelas e paredes do refúgio por várias horas antes do amanhecer.",
+    rouse: true,
+    system:
+      "A escuridão mística envolve completamente o refúgio, bloqueando a luz solar destrutiva e mantendo o interior seguro mesmo durante o dia.",
+  },
+  {
+    cost: "Um Teste de Rouse",
+    description:
+      "Sintoniza a visão do feiticeiro com os olhos de uma ave de rapina, enxergando toda a cidade lá de cima com clareza cristalina.",
+    duration: "Uma noite",
+    ingredients:
+      "Os olhos de uma ave de rapina noturna alimentada com a Vitae do feiticeiro",
+    level: 4,
+    name: "Olhos do Falcão Noturno",
+    process:
+      "O conjurador entra em transe profundo sintonizando sua visão com a ave.",
+    rouse: true,
+    system:
+      "Permite ao vampiro enxergar através dos olhos da ave enquanto ela sobrevoa a cidade, cobrindo quilômetros de observação aérea.",
+  },
+  {
+    cost: "Um Teste de Rouse",
+    description:
+      "O feiticeiro torna-se translúcido e imaterial, podendo atravessar portas de cofre, concreto armado e paredes sólidas.",
+    duration: "Uma cena",
+    ingredients: "Um espelho de corpo inteiro e o Sangue do conjurador",
+    level: 4,
+    name: "Passagem Incorpórea",
+    process:
+      "O conjurador quebra o espelho consagrado e passa através dos estilhaços.",
+    rouse: true,
+    system:
+      "O vampiro torna-se imaterial por uma cena, sendo capaz de atravessar paredes sólidas e portas trancadas sem ser tocado.",
+  },
+  {
+    cost: "Um Teste de Rouse",
+    description:
+      "Poderosa runa ancestral que queima com fúria cósmica qualquer outro vampiro que tente violar o refúgio protegido.",
+    duration: "Permanente até ser ativada",
+    ingredients: "Cinzas mornas de fogueira e Sangue de um vampiro ancião",
+    level: 4,
+    name: "Proteção contra Cainitas",
+    process:
+      "O símbolo é desenhado com uma faca de ferro mergulhada em sal e Sangue.",
+    rouse: true,
+    system:
+      "Impede a passagem de outros vampiros; qualquer cainita que tocar a barreira sofre queimaduras imediatas de dano Agravado.",
+  },
+  {
+    cost: "Dois Testes de Rouse",
+    description:
+      "Prepara dois portais místicos distantes que permitem ao taumaturgo teleportar-se instantaneamente para seu santuário em caso de perigo mortal.",
+    duration: "Permanente até ser utilizado",
+    ingredients:
+      "Dois círculos de um metro de diâmetro queimados no solo com fogo e Sangue",
     level: 5,
     name: "Fuga para o Verdadeiro Santuário",
+    process:
+      "Um círculo é preparado no santuário principal e outro no local de fuga.",
     rouse: true,
+    system:
+      "Ao pisar no círculo ritual de partida, o conjurador é teleportado instantaneamente através do éter para o círculo de chegada em seu santuário.",
   },
   {
-    cost: "Um Rouse Check",
+    cost: "Dois Testes de Rouse",
     description:
-      "Ritual de Nível 5. Após uma noite de meditação com uma vela acesa sobre o peito em uma laje de pedra, o coração do vampiro transforma-se em pedra sólida impenetrável. Fica imune a estacas de madeira e adquire total frieza emocional (+3 dados para resistir a Presença).",
-    duration: "Indefinida",
+      "Transmuta o coração do vampiro em rocha sólida, tornando-o imune a estacas de madeira e insensível a apelos e manipulações emocionais.",
+    duration: "Enquanto desejado",
+    ingredients:
+      "Uma laje de pedra e uma vela de cera banhada no Sangue do conjurador",
     level: 5,
     name: "Coração de Pedra",
+    process:
+      "O feiticeiro deita-se na laje e deixa a vela queimar sobre seu peito.",
     rouse: true,
+    system:
+      "O coração do vampiro transmuta-se literalmente em rocha sólida, tornando-o completamente imune a ser empalado por estacas e resistente a manipulações emocionais.",
   },
   {
-    cost: "Dois Rouse Checks",
+    cost: "Dois Testes de Rouse",
     description:
-      "Ritual de Nível 5. Entalha runas malévolas em uma estaca de freixo embebida em sangue e fogo. Confere +3 dados no ataque de empalação; se atingir o peito com margem 5+, o vampiro atingido desintegra-se em cinzas pela Morte Final no mesmo turno.",
-    duration: "Um ataque",
+      "Encanta uma estaca de madeira mística que, ao perfurar uma vítima, se fragmenta e viaja internamente até despedaçar o coração do alvo.",
+    duration: "Permanente até ser disparada",
+    ingredients:
+      "Uma estaca entalhada em madeira de tramazeira gravada com runas proibidas",
     level: 5,
     name: "Estaca da Dissolução Tardia",
+    process:
+      "A estaca é embebida com 2 Testes de Rouse de Sangue sob ritos necromânticos.",
     rouse: true,
+    system:
+      "Se cravada em uma vítima, a estaca se fragmenta em lascas microscópicas que viajam pelas veias do alvo até perfurar o coração de forma irreversível e fatal.",
   },
 ];
 
 const OBLIVION_POWERS: readonly PowerTemplate[] = [
   {
-    cost: "Sem custo de sangue",
+    cost: "Gratuito",
     description:
-      "Manipula sombras ao redor do corpo para ocultar contornos e conferir ocultamento místico. Adiciona bônus a testes de Furtividade e confere vantagem em testes de Intimidação realizados na penumbra.",
+      "O vampiro manipula as sombras ao seu redor, condensando a escuridão em uma capa protetora quase física que distorce sua silhueta e absorve a luz circundante.",
     duration: "Uma cena",
     level: 1,
     name: "Sombra Palpável",
     rouse: false,
+    system:
+      "Adiciona dois dados a testes de Furtividade e fornece 1 ponto de armadura contra ataques mundanos de concussão.",
   },
   {
-    cost: "Um Rouse Check",
+    cost: "Gratuito",
     description:
-      "Sintoniza a visão com a entropia do Vazio e da morte, permitindo ao usuário enxergar na escuridão absoluta e discernir espíritos de mortos, fantasmas e auras de seres doentes ou à beira da destruição.",
+      "Os olhos do vampiro adquirem a palidez e a visão da própria morte, permitindo-lhe enxergar fantasmas no Mundo Inferior e rastros deixados pelos mortos.",
     duration: "Uma cena",
     level: 1,
     name: "Vista Cadavérica",
-    rouse: true,
+    rouse: false,
+    system:
+      "O usuário enxerga através de escuridão sobrenatural e percebe fantasmas e aparições na mortalha do Além sem restrições.",
   },
   {
-    cost: "Um Rouse Check",
+    cost: "Um Teste de Rouse",
     description:
-      "Manifesta tentáculos de pura escuridão sólida a partir de sombras no ambiente para agarrar e esmagar adversários. Disputa Raciocínio + Oblívio vs. Destreza + Atletismo para imobilizar e sufocar alvos à distância.",
+      "O vampiro invoca tentáculos sinistros de sombras sólidas que brotam do solo ou de paredes, agarrando e estrangulando seus oponentes com frieza cadavérica.",
+    dicePool: "Raciocínio + Oblívio vs. Destreza + Atletismo",
     duration: "Uma cena",
     level: 2,
     name: "Braços de Ahriman",
     rouse: true,
+    system:
+      "Os tentáculos de sombra agarram e atacam alvos a até 10 metros, causando dano Superficial de Vitalidade e restringindo a locomoção da vítima.",
   },
   {
-    cost: "Sem custo de sangue",
+    cost: "Um Teste de Rouse",
     description:
-      "Oculta a forma do vampiro sob uma capa de sombras e reflexos negros enganosos, dificultando sua localização exata e concedendo bônus em esquiva e camuflagem no escuro.",
+      "Projeta sombras tridimensionais que podem se afastar do usuário, confundindo a visão dos inimigos e criando duplicatas ilusórias na penumbra.",
     duration: "Uma cena",
     level: 2,
     name: "Manto de Sombras",
-    rouse: false,
+    rouse: true,
+    system:
+      "Cria distrações e sombras animadas que cobrem uma área inteira, penalizando a percepção e ataques à distância dos oponentes em -2 dados.",
   },
   {
-    cost: "Um Rouse Check",
+    cost: "Um Teste de Rouse",
     description:
-      "Canaliza a essência gelada e decadente do Vazio através do toque da mão, causando necrose instantânea e dano Agravado devastador a carnes vivas ou mortas-vivas e apodrecendo matéria orgânica.",
-    duration: "Instantânea",
+      "O vampiro imbui a ponta de seus dedos com a frieza gélida do Vazio. Ao tocar um oponente, drena sua vitalidade e gela sua alma instantaneamente.",
+    dicePool: "Força + Oblívio vs. Vigor + Determinação",
+    duration: "Um turno",
     level: 3,
     name: "Toque do Oblívio",
     rouse: true,
+    system:
+      "Um ataque desarmado bem-sucedido inflige 3 pontos de dano Agravado de Vitalidade e deixa o membro tocado atrofiado e paralisado.",
   },
   {
-    cost: "Um Rouse Check",
+    cost: "Um Teste de Rouse",
     description:
-      "Irradia uma aura de decadência e entropia que drena a vitalidade e vigor físico de inimigos no mesmo ambiente e acelera a ferrugem e desgaste de equipamentos e armas dos oponentes.",
+      "O vampiro consegue projetar seus sentidos através de sombras distantes, usando a escuridão como seus olhos e ouvidos sem ser notado.",
     duration: "Uma cena",
     level: 3,
     name: "Sombra do Aniquilador",
     rouse: true,
+    system:
+      "O usuário pode enxergar e ouvir através de qualquer sombra em linha de visão a até 50 metros como se estivesse presente naquele ponto.",
   },
   {
-    cost: "Um Rouse Check",
+    cost: "Um Teste de Rouse",
     description:
-      "Apodrece instantaneamente os tecidos musculares e membros de um alvo por pura emanação cadavérica, infligindo ferimentos severos e inutilizando braços ou pernas da vítima pela dor ou atrofia.",
-    duration: "Instantânea",
+      "Uma infecção putrefata do Abismo se espalha pelo toque do vampiro, apodrecendo carne viva ou morta-viva em questão de instantes com dores atrozes.",
+    dicePool: "Inteligência + Oblívio vs. Vigor + Medicina",
+    duration: "Uma cena",
     level: 4,
     name: "Necrose",
     rouse: true,
+    system:
+      "Causa necrose acelerada na carne da vítima, impondo 2 pontos de dano Agravado por turno até que o membro seja amputado ou tratado magicamente.",
   },
   {
-    cost: "Um Rouse Check",
+    cost: "Dois Testes de Rouse",
     description:
-      "Captura e aprisiona a alma ou sombra errante de um fantasma ou espectro recém-falecido, forçando a entidade espiritual a responder a questionamentos ou cumprir serviços de vigilância na noite.",
-    duration: "Uma noite",
+      "O vampiro captura o fantasma de uma pessoa no exato instante de sua morte, aprisionando sua alma em um receptáculo ou escravizando-a ao seu serviço.",
+    dicePool: "Determinação + Oblívio vs. Determinação + Autocontrole",
+    duration: "Indefinida",
     level: 4,
     name: "Aprisionar Alma",
     rouse: true,
+    system:
+      "O espírito do recém-falecido é impedido de passar para o Além, ficando compelido a responder perguntas do vampiro e obedecer a seus comandos.",
   },
   {
-    cost: "Dois Rouse Checks",
+    cost: "Dois Testes de Rouse",
     description:
-      "Abre uma fenda na própria tapeçaria da realidade conectando sombras distantes, permitindo ao vampiro e seus aliados transitarem por quilômetros de distância em um único passo no Vazio.",
+      "Abre uma fenda na própria tapeçaria da realidade conectando sombras distantes, permitindo ao vampiro transitar por quilômetros de distância em um único passo no Vazio.",
     duration: "Instantânea",
     level: 5,
     name: "Túnel de Sombras",
     rouse: true,
+    system:
+      "O vampiro entra em uma sombra e emerge instantaneamente em outra sombra a até 10 quilômetros de distância, escapando de qualquer perigo terreno.",
   },
   {
-    cost: "Um Rouse Check",
+    cost: "Um Teste de Rouse",
     description:
-      "O vampiro dissolve sua carcaça física em um espectro de pura escuridão viva e maleável, imune a armas mundanas e capaz de esgueirar-se velozmente através das sombras da noite.",
+      "O vampiro dissolve sua carcaça física em um espectro de pura escuridão viva e maleável, imune a armas mundanas e capaz de esgueirar-se velozmente pela noite.",
     duration: "Uma cena",
     level: 5,
     name: "Passo Tenebroso",
     rouse: true,
+    system:
+      "O vampiro torna-se uma sombra incorpórea e tridimensional, imune a todo dano físico não mágico e capaz de voar e deslizar por frestas sem ruído.",
   },
 ];
 

@@ -319,4 +319,36 @@ describe("buildInfo", () => {
       roll: "Manipulação + Animalismo vs. resistência do animal",
     });
   });
+
+  it("poder estruturado preenche texto interno e rótulos de parada de dados, custo, sistema e duração", () => {
+    const info = buildInfo({
+      disc: "Animalismo",
+      key: "Famulus Enlaçado",
+      kind: "poder",
+      nivel: 1,
+    });
+    expect(info.desc).toContain("Ao criar um Laço de Sangue com um animal");
+    expect(info.niveis.map((l) => l.n)).toEqual([
+      "Parada de Dados",
+      "Custo",
+      "Sistema",
+      "Duração",
+    ]);
+    expect(info.niveis[0]).toMatchObject({
+      n: "Parada de Dados",
+      txt: "Carisma + Empatia com Animais",
+    });
+    expect(info.niveis[1]).toMatchObject({
+      n: "Custo",
+      txt: "Gratuito (exige 3 noites com Teste de Rouse)",
+    });
+    expect(info.niveis[2]).toMatchObject({
+      n: "Sistema",
+      txt: expect.stringContaining("Sem o uso de Sussurros Ferais"),
+    });
+    expect(info.niveis[3]).toMatchObject({
+      n: "Duração",
+      txt: "Apenas a morte liberta",
+    });
+  });
 });

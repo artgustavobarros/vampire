@@ -1,7 +1,11 @@
 import { BLOOD_POTENCY, bloodPotencyRow } from "#/data/blood-potency";
 import { CLAN_FULL } from "#/data/clan-rules";
 import { findClan } from "#/data/clans";
-import { canonicalDiscipline, POWERS } from "#/data/disciplines";
+import {
+  canonicalDiscipline,
+  POWERS,
+  type PowerTemplate,
+} from "#/data/disciplines";
 import {
   ATTR_INFO,
   DISC_INFO,
@@ -175,6 +179,7 @@ function discInfo(target: Extract<InfoTarget, { kind: "disc" }>): InfoContent {
 // "Manipulação + Animalismo", "Inteligência + Feitiçaria de Sangue", com "vs."/"contra" opcional
 const ROLL =
   /[A-ZÁ-Ú][a-zà-ú]+ \+ [A-ZÁ-Ú][a-zà-ú]+(?: de [A-ZÁ-Ú][a-zà-ú]+)?(?: (?:vs\.|contra) [^.;]+)?/;
+const LEADING_DOT = /^\s*\.\s*/;
 const TRAILING_DOT = /\s*\.\s*$/;
 
 /** Separa a rolagem citada na descrição do catálogo do resto do texto. */
@@ -194,6 +199,7 @@ export function splitRoll(
   }
   const rest = description
     .replace(hit[0], "")
+    .replace(LEADING_DOT, "")
     .replace(/\s*\.\s*\./g, ".")
     .replace(/\s+/g, " ")
     .replace(TRAILING_DOT, "")
@@ -204,6 +210,29 @@ export function splitRoll(
   return { desc: rest.endsWith(".") ? rest : `${rest}.`, roll: hit[0] };
 }
 
+function powerRows(
+  hit: PowerTemplate | undefined,
+  split: { roll: string } | null
+): [string, string][] {
+  if (!hit) {
+    return [];
+  }
+  const candidates: [string, string | undefined][] = [
+    ["Amálgama", hit.amalgam],
+    ["Pré-requisito", hit.prerequisite],
+    ["Parada de Dados", hit.dicePool],
+    ["Rolagem", hit.dicePool ? undefined : split?.roll],
+    ["Custo", hit.cost],
+    ["Sistema", hit.system],
+    ["Duração", hit.duration],
+    ["Ingredientes", hit.ingredients],
+    ["Processo", hit.process],
+  ];
+  return candidates.filter((entry): entry is [string, string] =>
+    Boolean(entry[1])
+  );
+}
+
 function powerInfo(
   target: Extract<InfoTarget, { kind: "poder" }>
 ): InfoContent {
@@ -212,21 +241,12 @@ function powerInfo(
   const list = POWERS[discName] ?? POWERS[target.disc.trim()] ?? [];
   const hit = list.find((p) => p.name.toLowerCase() === name.toLowerCase());
   const split = hit ? splitRoll(hit.description, hit.duration) : null;
-  const niveis =
-    hit && split
-      ? levels(
-          [
-            ["Rolagem", split.roll],
-            ["Custo", hit.cost],
-            ["Duração", hit.duration],
-          ],
-          ""
-        )
-      : [];
+  const rows = powerRows(hit, split);
+  const niveis = rows.length ? levels(rows, "") : [];
   return {
     atual: "",
     desc:
-      split?.desc ??
+      (hit?.system ? hit.description : split?.desc) ??
       (target.desc ||
         "Poder fora do catálogo. A descrição é a que você registrou."),
     kicker: `${target.disc || "Poder"} · nível ${hit?.level ?? target.nivel}`,
