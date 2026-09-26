@@ -1,5 +1,5 @@
 import { findClan } from "#/data/clans";
-import { POWERS, type PowerTemplate } from "#/data/disciplines";
+import { POWERS, type PowerTemplate, sameDiscipline } from "#/data/disciplines";
 import {
   findPredator,
   type MeritOption,
@@ -118,12 +118,12 @@ export function predatorDiscipline(
   disc: readonly Discipline[],
   predDisc: string
 ): PredatorDiscipline {
-  const own = disc.slice(0, 2).find((d) => d.nome === predDisc);
+  const own = disc.slice(0, 2).find((d) => sameDiscipline(d.nome, predDisc));
   const atual = own?.nivel || 0;
   const clan = findClan(cla);
   const doCla = clan?.disciplines.includes("Livre escolha")
     ? Boolean(own)
-    : (clan?.disciplines.includes(predDisc) ?? false);
+    : (clan?.disciplines.some((d) => sameDiscipline(d, predDisc)) ?? false);
   const novo = Math.min(5, atual + 1);
   const taken = new Set(own?.powers.map((p) => p.nome));
   const elegiveis = (POWERS[predDisc] ?? [])
@@ -164,11 +164,11 @@ export function applyPredator(sheet: Sheet): Sheet {
   );
   const poder = template ? toPower(template) : undefined;
   if (disciplina) {
-    const has = sheet.disc.some((d) => d.nome === disciplina);
+    const has = sheet.disc.some((d) => sameDiscipline(d.nome, disciplina));
     novaDisciplina = !has;
     next.disc = has
       ? sheet.disc.map((d) =>
-          d.nome === disciplina
+          sameDiscipline(d.nome, disciplina)
             ? {
                 ...d,
                 nivel: Math.min(5, d.nivel + 1),
@@ -211,10 +211,10 @@ function withoutDisciplineBonus(
     return disc;
   }
   if (nova) {
-    return disc.filter((d) => d.nome !== nome);
+    return disc.filter((d) => !sameDiscipline(d.nome, nome));
   }
   return disc.map((d) =>
-    d.nome === nome
+    sameDiscipline(d.nome, nome)
       ? {
           ...d,
           nivel: Math.max(0, d.nivel - 1),

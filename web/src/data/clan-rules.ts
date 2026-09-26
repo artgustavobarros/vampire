@@ -53,10 +53,7 @@ export const CLAN_FULL: Readonly<
           "Efeito",
           "−2 dados em todas as paradas que não sirvam para contrariar a ordem, a autoridade ou a expectativa de alguém.",
         ],
-        [
-          "Termina",
-          "Quando tiver feito a autoridade mudar de ideia",
-        ],
+        ["Termina", "Quando tiver feito a autoridade mudar de ideia"],
       ],
     ],
   },
@@ -69,10 +66,7 @@ export const CLAN_FULL: Readonly<
           "Efeito",
           "Ganha {G} traços animais. Cada traço dá −1 em um Atributo (escolha na hora) até a próxima noite.",
         ],
-        [
-          "Opção",
-          "Pode escolher Curtir a Onda e manifesta apenas um aspecto.",
-        ],
+        ["Opção", "Pode escolher Curtir a Onda e manifesta apenas um aspecto."],
       ],
     ],
     comp: [
@@ -95,7 +89,10 @@ export const CLAN_FULL: Readonly<
           "Rolagem",
           "Mortais relutantes não contidos ou amarrados tentarão escapar, e mesmo aqueles dispostos, Vigor + Determinação contra {G} + 2 para não recuar.",
         ],
-        ["Alimentação", "Vítimas vampiras devem fazer teste de frenesi contra dificuldade 3 para evitar cair em frenesi de terror."],
+        [
+          "Alimentação",
+          "Vítimas vampiras devem fazer teste de frenesi contra dificuldade 3 para evitar cair em frenesi de terror.",
+        ],
       ],
     ],
     comp: [
@@ -183,11 +180,8 @@ export const CLAN_FULL: Readonly<
     bane: [
       "O corpo é deformado e monstruoso. Não há como se passar por humano sem ajuda sobrenatural.",
       [
-        [
-          "Efeito",
-          "Defeito Repulsivo (-2)",
-        ],
-          ["Rolagem", "Retire {G} dados da parada de disfarce."],
+        ["Efeito", "Defeito Repulsivo (-2)"],
+        ["Rolagem", "Retire {G} dados da parada de disfarce."],
         ["Restrição", "Não podem aumentar seu valor na Qualidade Visual."],
       ],
     ],

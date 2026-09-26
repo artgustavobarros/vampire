@@ -7,7 +7,7 @@ import {
 } from "#/components/ui/field";
 import { NativeSelect } from "#/components/vtm/fields";
 import { PowerCard } from "#/components/vtm/power-card";
-import { POWERS, type PowerTemplate } from "#/data/disciplines";
+import { POWERS, type PowerTemplate, sameDiscipline } from "#/data/disciplines";
 import { notify } from "#/lib/toast";
 import { cn } from "#/lib/utils";
 import {
@@ -62,9 +62,9 @@ function DisciplineRow({
     name: [`disc.${index}.nome`, `disc.${index}.nivel`, `disc.${other}.nome`],
   });
   const level = nivel || 0;
-  const choices = options.filter((o) => o !== otherName);
+  const choices = options.filter((o) => !sameDiscipline(o, otherName));
   // uma disciplina gravada de fora do clã aparece como slot vazio
-  const shown = choices.includes(nome) ? nome : "";
+  const shown = choices.find((o) => sameDiscipline(o, nome)) ?? "";
   const catalog = POWERS[shown] ?? [];
   const cap = Math.max(level, 1);
   const label = index === 0 ? "Primeira Disciplina" : "Segunda Disciplina";

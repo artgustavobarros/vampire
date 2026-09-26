@@ -1,5 +1,9 @@
 import { findClan } from "#/data/clans";
-import { DISCIPLINES, type PowerTemplate } from "#/data/disciplines";
+import {
+  DISCIPLINES,
+  type PowerTemplate,
+  sameDiscipline,
+} from "#/data/disciplines";
 import {
   DEFAULT_DISTRIBUTION,
   SKILL_DISTRIBUTIONS,
@@ -158,8 +162,10 @@ export function distributionSummary(
 /** Clã sem Disciplinas intrínsecas, sem Predador e com Qualidades/Defeitos próprios. */
 export const THIN_BLOOD = "Sangue Fraco";
 
-export const isThinBlood = (cla: string | undefined) =>
-  (cla ?? "").trim() === THIN_BLOOD;
+export const isThinBlood = (cla: string | undefined) => {
+  const trimmed = (cla ?? "").trim();
+  return trimmed === THIN_BLOOD || trimmed === "Sangue-ralo";
+};
 
 export type ClanDisciplineKind = "none" | "clan" | "free" | "thin";
 
@@ -177,7 +183,7 @@ export function clanDisciplineOptions(cla: string | undefined): {
       options: DISCIPLINES,
     };
   }
-  if (clan.name === THIN_BLOOD) {
+  if (clan.name === THIN_BLOOD || clan.name === "Sangue-ralo") {
     return {
       aviso:
         "Sangues-ralos não têm Disciplinas intrínsecas. Siga para o próximo passo.",
@@ -207,7 +213,9 @@ export function keepClanDisciplines(
 ): Discipline[] {
   const { options } = clanDisciplineOptions(cla);
   return disc.map((d) =>
-    !d.nome || options.includes(d.nome) ? d : { nivel: 0, nome: "", powers: [] }
+    !d.nome || options.some((o) => sameDiscipline(o, d.nome))
+      ? d
+      : { nivel: 0, nome: "", powers: [] }
   );
 }
 

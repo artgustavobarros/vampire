@@ -157,7 +157,7 @@ describe("buildInfo", () => {
       kind: "poder",
       nivel: 1,
     });
-    expect(info.desc).toBe("Comunica-se com animais.");
+    expect(info.desc).toBe("Permite comunicar-se com animais e convocá-los.");
     expect(info.niveis[0]).toMatchObject({
       n: "Rolagem",
       txt: "Manipulação + Animalismo vs. resistência do animal",

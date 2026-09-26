@@ -41,8 +41,7 @@ export const CLANS: readonly Clan[] = [
   },
   {
     bane: "Repulsivo",
-    baneText:
-      "Eles são vistos como grotestos e quase sempre aterrorizantes.",
+    baneText: "Eles são vistos como grotestos e quase sempre aterrorizantes.",
     compulsion: "Criptofilia",
     compulsionText:
       "Ele é consumido por uma fome de segredos quase tão forte quanto sua sede de sangue.",
@@ -54,7 +53,8 @@ export const CLANS: readonly Clan[] = [
     baneText:
       "Eles desejam tão intensamente a beleza que acabam sofrendo em sua ausência.",
     compulsion: "Obsessão",
-    compulsionText: "Torna-se temporariamente obcecado com algo singularmente belo, ficando incapaz de pensar em qualquer outra coisa.",
+    compulsionText:
+      "Torna-se temporariamente obcecado com algo singularmente belo, ficando incapaz de pensar em qualquer outra coisa.",
     disciplines: ["Auspícios", "Celeridade", "Presença"],
     name: "Toreador",
   },
@@ -83,8 +83,7 @@ export const CLANS: readonly Clan[] = [
     baneText:
       "Não aparece em espelhos, câmeras e microfones sem falhar tecnologia por perto.",
     compulsion: "Crueldade",
-    compulsionText:
-      "Fracasso não é uma opção. ",
+    compulsionText: "Fracasso não é uma opção. ",
     disciplines: ["Dominação", "Oblívio", "Potência"],
     name: "Lasombra",
   },
@@ -100,8 +99,7 @@ export const CLANS: readonly Clan[] = [
   },
   {
     bane: "Aversão à Luz",
-    baneText:
-      "O sangue do ministro abomina a luz.",
+    baneText: "O sangue do ministro abomina a luz.",
     compulsion: "Transgressão",
     compulsionText:
       "Tem que levar alguém a quebrar um tabu, ou quebrá-lo você mesmo.",
@@ -169,5 +167,10 @@ export const CLANS: readonly Clan[] = [
 
 export function findClan(name: string | undefined): Clan | undefined {
   const key = (name ?? "").trim();
-  return CLANS.find((c) => c.name === key);
+  return CLANS.find(
+    (c) =>
+      c.name === key ||
+      (key === "Sangue Fraco" && c.name === "Sangue-ralo") ||
+      (key === "Sangue-ralo" && c.name === "Sangue Fraco")
+  );
 }

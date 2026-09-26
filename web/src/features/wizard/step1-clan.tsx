@@ -94,7 +94,7 @@ export function Step1Clan() {
                   className="block font-label font-semibold text-ink-soft text-xs uppercase leading-none tracking-[.12em]"
                   target={{ geracao: field.value, kind: "geracao", potencia }}
                 >
-                  Sua geração
+                  Geração
                 </InfoTrigger>
                 <NativeSelect
                   {...field}

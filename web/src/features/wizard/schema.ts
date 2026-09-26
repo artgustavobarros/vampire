@@ -1,5 +1,6 @@
 import { z } from "zod";
-import { CLANS } from "#/data/clans";
+import { findClan } from "#/data/clans";
+import { sameDiscipline } from "#/data/disciplines";
 import { SKILL_DISTRIBUTIONS } from "#/data/distributions";
 import { GENERATIONS } from "#/data/generations";
 import { findPredator } from "#/data/predators";
@@ -162,10 +163,9 @@ const oneOf = (options: readonly string[], message: string) =>
 const traitRecord = z.record(z.string(), z.number());
 
 const step1 = z.object({
-  cla: oneOf(
-    CLANS.map((c) => c.name),
-    "Escolha um clã"
-  ),
+  cla: z
+    .string()
+    .refine((v) => Boolean(findClan(v)), { message: "Escolha um clã" }),
   geracao: oneOf(
     GENERATIONS.map((g) => g.label),
     "Escolha a geração"
@@ -264,7 +264,10 @@ const step5 = z
           message: "Escolha uma disciplina",
           path: ["disc", i, "nome"],
         });
-      } else if (kind === "clan" && !options.includes(d.nome)) {
+      } else if (
+        kind === "clan" &&
+        !options.some((o) => sameDiscipline(o, d.nome))
+      ) {
         ctx.addIssue({
           code: "custom",
           message: "Escolha Disciplinas do clã",
@@ -272,7 +275,7 @@ const step5 = z
         });
       }
     });
-    if (disc[0].nome && disc[0].nome === disc[1].nome) {
+    if (disc[0].nome && sameDiscipline(disc[0].nome, disc[1].nome)) {
       ctx.addIssue({
         code: "custom",
         message: "Escolha duas disciplinas diferentes",

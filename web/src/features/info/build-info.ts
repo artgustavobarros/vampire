@@ -1,7 +1,7 @@
 import { BLOOD_POTENCY, bloodPotencyRow } from "#/data/blood-potency";
 import { CLAN_FULL } from "#/data/clan-rules";
 import { findClan } from "#/data/clans";
-import { POWERS } from "#/data/disciplines";
+import { canonicalDiscipline, POWERS } from "#/data/disciplines";
 import {
   ATTR_INFO,
   DISC_INFO,
@@ -146,7 +146,8 @@ function specialtyInfo(
 
 function discInfo(target: Extract<InfoTarget, { kind: "disc" }>): InfoContent {
   const name = target.key.trim();
-  const catalog = POWERS[name] ?? [];
+  const discName = canonicalDiscipline(name);
+  const catalog = POWERS[discName] ?? POWERS[name] ?? [];
   const rows = [1, 2, 3, 4, 5].map(
     (n) =>
       [
@@ -160,6 +161,7 @@ function discInfo(target: Extract<InfoTarget, { kind: "disc" }>): InfoContent {
   return {
     atual: target.nivel ? `Nível ${target.nivel}` : "Sem pontos",
     desc:
+      DISC_INFO[discName] ??
       DISC_INFO[name] ??
       "Disciplina fora do catálogo. Registre os poderes à mão.",
     kicker: "Disciplina",
@@ -190,7 +192,12 @@ export function splitRoll(
           : "Sem teste: o efeito acontece ao ativar.",
     };
   }
-  const rest = description.replace(hit[0], "").replace(TRAILING_DOT, "").trim();
+  const rest = description
+    .replace(hit[0], "")
+    .replace(/\s*\.\s*\./g, ".")
+    .replace(/\s+/g, " ")
+    .replace(TRAILING_DOT, "")
+    .trim();
   if (!rest) {
     return { desc: description, roll: hit[0] };
   }
@@ -201,9 +208,9 @@ function powerInfo(
   target: Extract<InfoTarget, { kind: "poder" }>
 ): InfoContent {
   const name = target.key.trim();
-  const hit = (POWERS[target.disc.trim()] ?? []).find(
-    (p) => p.name.toLowerCase() === name.toLowerCase()
-  );
+  const discName = canonicalDiscipline(target.disc.trim());
+  const list = POWERS[discName] ?? POWERS[target.disc.trim()] ?? [];
+  const hit = list.find((p) => p.name.toLowerCase() === name.toLowerCase());
   const split = hit ? splitRoll(hit.description, hit.duration) : null;
   const niveis =
     hit && split
