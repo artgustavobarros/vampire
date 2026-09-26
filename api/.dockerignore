@@ -1,0 +1,8 @@
+node_modules
+dist
+coverage
+test
+.env
+*.tsbuildinfo
+Dockerfile
+docker-compose.yml
