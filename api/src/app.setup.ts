@@ -7,6 +7,7 @@ import {
   ExpressAdapter,
   type NestExpressApplication,
 } from "@nestjs/platform-express";
+import { DocumentBuilder, SwaggerModule } from "@nestjs/swagger";
 import { HttpExceptionFilter } from "./common/http-exception.filter.js";
 import type { Env } from "./config/env.js";
 
@@ -41,4 +42,31 @@ export function configureApp(app: NestExpressApplication): void {
   );
   app.useGlobalFilters(new HttpExceptionFilter());
   app.enableShutdownHooks();
+  setupSwagger(app);
+}
+
+/**
+ * Swagger UI em `/api/docs` e o OpenAPI em `/api/docs-json`. Montados direto
+ * no Express, ficam fora do `JwtAuthGuard`.
+ */
+function setupSwagger(app: NestExpressApplication): void {
+  const config = new DocumentBuilder()
+    .setTitle("Vampiro: A Máscara — API")
+    .setDescription(
+      "Contas com JWT e a ficha de cada jogador. Entre por `/auth/login`, " +
+        'copie o `accessToken` e use em "Authorize".'
+    )
+    .setVersion("0.1.0")
+    .addBearerAuth()
+    .build();
+  SwaggerModule.setup(
+    "docs",
+    app,
+    () => SwaggerModule.createDocument(app, config),
+    {
+      jsonDocumentUrl: "docs-json",
+      swaggerOptions: { persistAuthorization: true },
+      useGlobalPrefix: true,
+    }
+  );
 }

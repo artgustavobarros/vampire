@@ -315,4 +315,62 @@ describe("API (e2e)", () => {
       expect(res.headers["access-control-allow-origin"]).toBeUndefined();
     });
   });
+
+  describe("documentação", () => {
+    it("serve o Swagger UI sem token", async () => {
+      const res = await http().get("/api/docs").expect(200);
+      expect(res.headers["content-type"]).toContain("text/html");
+      expect(res.text).toContain("swagger-ui");
+    });
+
+    it("serve o OpenAPI com todas as rotas", async () => {
+      const { body } = await http().get("/api/docs-json").expect(200);
+      expect(body.openapi).toBe("3.0.0");
+      expect(
+        Object.entries(body.paths).flatMap(([path, ops]) =>
+          Object.keys(ops as object).map((method) => `${method} ${path}`)
+        )
+      ).toEqual(
+        expect.arrayContaining([
+          "post /api/auth/signup",
+          "post /api/auth/login",
+          "get /api/auth/me",
+          "get /api/me/sheet",
+          "put /api/me/sheet",
+          "patch /api/me/sheet",
+          "get /api/health",
+        ])
+      );
+    });
+
+    it("descreve corpo, erros e Bearer", async () => {
+      const { body } = await http().get("/api/docs-json").expect(200);
+      const { paths } = body;
+
+      const signupBody =
+        paths["/api/auth/signup"].post.requestBody.content["application/json"]
+          .schema;
+      expect(signupBody.required).toEqual(
+        expect.arrayContaining(["email", "name", "password"])
+      );
+      expect(signupBody.properties.password.minLength).toBe(6);
+
+      const login = paths["/api/auth/login"].post;
+      expect(Object.keys(login.responses)).toEqual(
+        expect.arrayContaining(["200", "400", "401"])
+      );
+      expect(
+        login.responses["401"].content["application/json"].schema.required
+      ).toEqual(expect.arrayContaining(["statusCode", "message", "error"]));
+
+      expect(body.components.securitySchemes.bearer).toMatchObject({
+        scheme: "bearer",
+        type: "http",
+      });
+      expect(paths["/api/me/sheet"].get.security).toEqual([{ bearer: [] }]);
+      expect(paths["/api/auth/me"].get.security).toEqual([{ bearer: [] }]);
+      expect(login.security).toBeUndefined();
+      expect(paths["/api/health"].get.security).toBeUndefined();
+    });
+  });
 });

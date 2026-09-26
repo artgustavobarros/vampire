@@ -8,6 +8,7 @@ import {
   Logger,
 } from "@nestjs/common";
 import type { Response } from "express";
+import type { ErrorResponse } from "./error-response.schema.js";
 
 /** Erros do body-parser (`http-errors`) chegam com `status` e `type`. */
 interface BodyParserError {
@@ -64,6 +65,6 @@ export class HttpExceptionFilter implements ExceptionFilter {
       error: STATUS_CODES[statusCode] ?? "Error",
       message,
       statusCode,
-    });
+    } satisfies ErrorResponse);
   }
 }

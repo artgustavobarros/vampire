@@ -6,12 +6,8 @@ import {
 import { JwtService } from "@nestjs/jwt";
 import bcrypt from "bcryptjs";
 import type { User } from "../db/schema.js";
-import {
-  type PublicUser,
-  toPublicUser,
-  UsersService,
-} from "../users/users.service.js";
-import type { LoginDto, SignupDto } from "./auth.schemas.js";
+import { toPublicUser, UsersService } from "../users/users.service.js";
+import type { AuthResponse, LoginDto, SignupDto } from "./auth.schemas.js";
 
 const BCRYPT_COST = 10;
 const UNIQUE_VIOLATION = "23505";
@@ -20,11 +16,6 @@ const EMAIL_TAKEN = 'E-mail já cadastrado. Use "Entrar".';
 export interface JwtPayload {
   email: string;
   sub: string;
-}
-
-export interface AuthResponse {
-  accessToken: string;
-  user: PublicUser;
 }
 
 /** O Drizzle embrulha o erro do `pg` em `cause`. */

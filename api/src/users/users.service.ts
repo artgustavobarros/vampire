@@ -2,12 +2,7 @@ import { Inject, Injectable } from "@nestjs/common";
 import { eq } from "drizzle-orm";
 import { type Database, DRIZZLE } from "../db/db.module.js";
 import { type User, users } from "../db/schema.js";
-
-export interface PublicUser {
-  email: string;
-  id: string;
-  name: string;
-}
+import type { PublicUser } from "./users.schemas.js";
 
 export function toPublicUser({ email, id, name }: User): PublicUser {
   return { email, id, name };

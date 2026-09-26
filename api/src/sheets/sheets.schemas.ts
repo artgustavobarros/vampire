@@ -15,6 +15,15 @@ export const patchSheetSchema = z.object(
   { error: INVALID }
 );
 
+/** O formato da ficha é o tipo `Sheet` de `web/src/lib/types.ts`. */
+export const sheetResponseSchema = z.object({
+  sheet: sheetObject.nullable().meta({
+    description:
+      "Ficha do personagem (tipo `Sheet` do web) ou `null` se ainda não existe",
+  }),
+  updatedAt: z.iso.datetime().nullable(),
+});
+
 export type SheetData = z.infer<typeof sheetObject>;
 export type ReplaceSheetDto = z.infer<typeof replaceSheetSchema>;
 export type PatchSheetDto = z.infer<typeof patchSheetSchema>;

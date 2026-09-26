@@ -54,6 +54,8 @@ A API não sobe se alguma variável for inválida.
 
 Todas as rotas ficam sob `/api`. As protegidas exigem `Authorization: Bearer <accessToken>`.
 
+A documentação interativa (Swagger UI) fica em [`/api/docs`](http://localhost:3333/api/docs) e o OpenAPI em JSON em `/api/docs-json`, ambos públicos. Para testar as rotas protegidas por lá: chame `POST /api/auth/login`, copie o `accessToken` e cole em "Authorize". Os corpos são gerados dos mesmos schemas zod que validam as rotas.
+
 | Método | Rota | Auth | Corpo | Resposta |
 |---|---|---|---|---|
 | `GET` | `/api/health` | — | — | `200 { status: "ok", db: "up" }` ou `503 { status: "error", db: "down" }` |
