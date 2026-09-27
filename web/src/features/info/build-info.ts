@@ -252,7 +252,7 @@ function powerInfo(
     kicker: `${target.disc || "Poder"} · nível ${hit?.level ?? target.nivel}`,
     niveis,
     nivelTit: niveis.length ? "Rolagem, custo e duração" : "",
-    nota: hit?.rouse ? "Este poder exige Rouse Check." : "",
+    nota: hit?.rouse ? "Este poder exige checagem de sangue." : "",
     titulo: name || "Poder sem nome",
   };
 }

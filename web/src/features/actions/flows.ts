@@ -37,7 +37,7 @@ export function flowView(flow: Flow, sheet: Sheet, setFlow: SetFlow): FlowView {
     setFlow({ difficulty, kind, note, stage });
   const hunger = sheet.fome || 0;
   const aggAction: FlowAction = {
-    label: "Curar dano agravado (3 Rouse Checks)",
+    label: "Curar dano agravado (3 checagens de sangue)",
     run: () => to("agg", "ask"),
   };
 
@@ -57,13 +57,13 @@ export function flowView(flow: Flow, sheet: Sheet, setFlow: SetFlow): FlowView {
           ],
           body: `Um dado. Resultado 6 ou mais é sucesso. Fome atual: ${hunger}.`,
           kicker: "Teste",
-          title: "Rouse Check",
+          title: "Checagem de sangue",
         };
       }
       return {
         actions: [
           { label: "Fechar", primary: true, run: close },
-          { label: "Outro Rouse Check", run: () => to("rouse", "ask") },
+          { label: "Outra checagem de sangue", run: () => to("rouse", "ask") },
         ],
         body: "Anotado na ficha.",
         kicker: "Resultado",
@@ -94,14 +94,14 @@ export function flowView(flow: Flow, sheet: Sheet, setFlow: SetFlow): FlowView {
       return {
         actions: [
           {
-            label: "Fazer Rouse Check",
+            label: "Fazer checagem de sangue",
             primary: true,
             run: () => to("rouse", "ask"),
           },
           aggAction,
           { label: "Depois", run: close },
         ],
-        body: "Faça um Rouse Check para sair do torpor.",
+        body: "Faça uma checagem de sangue para sair do torpor.",
         kicker: "Anoiteceu",
         title: "Hora de acordar",
       };
@@ -121,7 +121,7 @@ export function flowView(flow: Flow, sheet: Sheet, setFlow: SetFlow): FlowView {
             { label: "3 falharam", run: () => heal(3) },
             { label: "Cancelar", run: close },
           ],
-          body: `Cura 1 de dano agravado e exige três Rouse Checks. Quantos falharam? Fome atual: ${hunger}.`,
+          body: `Cura 1 de dano agravado e exige três checagens de sangue. Quantos falharam? Fome atual: ${hunger}.`,
           kicker: "Cura profunda",
           title: "Curar dano agravado",
         };

@@ -256,7 +256,7 @@ export function MeritCombobox({ isTaken, onPick, thin }: MeritComboboxProps) {
               <div
                 className={cn(
                   MERIT_ACTION,
-                  "sticky top-0 z-10 border-line-soft border-b bg-wash px-4 py-2 text-ink-soft"
+                  "sticky top-0 z-10 border-line-soft border-b bg-surface px-4 py-2 text-ink-soft"
                 )}
                 id={`${id}-g${gi}`}
               >

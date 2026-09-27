@@ -134,7 +134,7 @@ describe("buildInfo", () => {
     expect(current(info.niveis)).toEqual(["••"]);
   });
 
-  it("poder do catálogo com Rouse", () => {
+  it("poder do catálogo com checagem de sangue", () => {
     const info = buildInfo({
       disc: "Alquimia de Sangue-fraco",
       key: "Sangue Falso",
@@ -147,7 +147,7 @@ describe("buildInfo", () => {
       "Custo",
       "Duração",
     ]);
-    expect(info.nota).toBe("Este poder exige Rouse Check.");
+    expect(info.nota).toBe("Este poder exige checagem de sangue.");
   });
 
   it("rolagem com vs. sai da descrição", () => {
@@ -340,7 +340,7 @@ describe("buildInfo", () => {
     });
     expect(info.niveis[1]).toMatchObject({
       n: "Custo",
-      txt: "Gratuito (exige 3 noites com Teste de Rouse)",
+      txt: "Gratuito (exige 3 noites com checagem de sangue)",
     });
     expect(info.niveis[2]).toMatchObject({
       n: "Sistema",

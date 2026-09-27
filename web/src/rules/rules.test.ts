@@ -95,7 +95,7 @@ describe("trilhas", () => {
   });
 });
 
-describe("Rouse Check", () => {
+describe("Checagem de sangue", () => {
   it("passou não muda a Fome", () => {
     const r = rouseCheck(sheet({ fome: 2 }), true, true);
     expect(r.patch).toEqual({});

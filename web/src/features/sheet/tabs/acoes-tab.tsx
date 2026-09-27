@@ -26,9 +26,9 @@ export function AcoesTab() {
       title: "Teste de Frenesi",
     },
     {
-      cta: "Rouse + surto",
+      cta: "Checagem de sangue + surto",
       description:
-        "Adiciona o bônus de Potência de Sangue a um teste físico. Exige Rouse Check.",
+        "Adiciona o bônus de Potência de Sangue a um teste físico. Exige checagem de sangue.",
       red: true,
       run: () => dialog.open("rouse", bloodSurgeNote(sheet)),
       title: "Surto de Sangue",

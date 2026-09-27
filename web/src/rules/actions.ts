@@ -58,12 +58,12 @@ export function sleep(sheet: Sheet, healOnSleep: boolean): ActionResult {
   return { note, patch: { fdv: fdv.marks, noites, vit: vit.marks } };
 }
 
-/** Cura 1 agravado (vira superficial); cada Rouse Check falho soma 1 de Fome. */
+/** Cura 1 agravado (vira superficial); cada checagem de sangue falha soma 1 de Fome. */
 export function healAggravated(sheet: Sheet, failures: number): ActionResult {
   const fome = clampHunger((sheet.fome || 0) + failures);
   const cost = failures
-    ? `${failures}${failures > 1 ? " Rouse Checks falharam" : " Rouse Check falhou"}: Fome ${fome}.`
-    : `Nenhum Rouse Check falhou. Fome permanece em ${fome}.`;
+    ? `${failures}${failures > 1 ? " checagens de sangue falharam" : " checagem de sangue falhou"}: Fome ${fome}.`
+    : `Nenhuma checagem de sangue falhou. Fome permanece em ${fome}.`;
   const vit = trackBoxes(sheet.vit, vitalityMax(sheet));
   const i = vit.lastIndexOf(2);
   if (i < 0) {

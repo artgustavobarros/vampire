@@ -62,7 +62,7 @@ describe("painel de descrição", () => {
       <InfoProvider>
         <InfoTrigger
           target={{
-            desc: "Exige um Rouse Check.\n\nA Besta acorda.",
+            desc: "Exige uma checagem de sangue.\n\nA Besta acorda.",
             disc: "Serpentis",
             key: "Olhar da Serpente",
             kind: "poder",
@@ -78,9 +78,11 @@ describe("painel de descrição", () => {
     const dialog = await screen.findByRole("dialog", {
       name: "Olhar da Serpente",
     });
-    expect(dialog).toHaveTextContent("Exige um Rouse Check.");
+    expect(dialog).toHaveTextContent("Exige uma checagem de sangue.");
     expect(dialog).toHaveTextContent("A Besta acorda.");
     const desc = dialog.querySelector('[data-slot="sheet-description"]');
-    expect(desc?.textContent).toBe("Exige um Rouse Check.\n\nA Besta acorda.");
+    expect(desc?.textContent).toBe(
+      "Exige uma checagem de sangue.\n\nA Besta acorda."
+    );
   });
 });

@@ -133,7 +133,7 @@ function BottomBar() {
         onClick={() => dialog.open("rouse")}
         type="button"
       >
-        Rouse Check
+        Checagem de sangue
       </button>
       <div aria-live="polite" className="flex-none px-1 text-center">
         <div className="font-label font-semibold text-white/60 text-xs uppercase leading-none tracking-[.12em]">

@@ -10,7 +10,7 @@ import { useCharacterStore } from "#/stores/character-store";
 const COPY = {
   0: {
     kicker: "Saciado",
-    text: "Sua Fome está em 0. A Besta está quieta, mas o próximo Rouse Check já volta a subir a Fome.",
+    text: "Sua Fome está em 0. A Besta está quieta, mas a próxima checagem de sangue já volta a subir a Fome.",
     title: "Fome 0",
   },
   5: {

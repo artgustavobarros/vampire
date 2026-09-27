@@ -20,7 +20,7 @@ export function RegistrosTab() {
   const gives = [
     {
       label: "Surto de Sangue",
-      note: "Dados extras em um teste físico, ao custo de um Rouse Check.",
+      note: "Dados extras em um teste físico, ao custo de uma checagem de sangue.",
       value: bp.bloodSurge,
     },
     {
@@ -29,7 +29,7 @@ export function RegistrosTab() {
       value: bp.powerBonus,
     },
     {
-      label: "Rerrolagem de Rouse",
+      label: "Rerrolagem de Checagem de Sangue",
       note: "Uma segunda chance de não subir a Fome.",
       value: bp.rouseReroll,
     },

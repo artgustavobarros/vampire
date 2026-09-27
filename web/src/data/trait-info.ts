@@ -458,7 +458,7 @@ export const TRAIT_INFO: Readonly<Record<StateKind, TraitInfo>> = {
       ["4", "Voraz. Resistir à Besta fica mais difícil."],
       ["5", "No limite. Qualquer provocação vira frenesi."],
     ],
-    "Sobe com o Rouse Check. Desce quando você se alimenta.",
+    "Sobe com a checagem de sangue. Desce quando você se alimenta.",
   ],
   humanidade: [
     "Estado",

@@ -29,7 +29,7 @@ export function useRuleDialog(): RuleDialogApi {
   return ctx;
 }
 
-/** Diálogo único das ações de regra (Rouse, Dormir, Alimentação, Frenesi, cura agravada). */
+/** Diálogo único das ações de regra (Checagem de sangue, Dormir, Alimentação, Frenesi, cura agravada). */
 export function RuleDialogProvider({ children }: { children: ReactNode }) {
   const [flow, setFlow] = useState<Flow | null>(null);
   const sheet = useSheet();
