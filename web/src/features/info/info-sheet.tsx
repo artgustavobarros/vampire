@@ -12,6 +12,7 @@ import {
   SheetDescription,
   SheetTitle,
 } from "#/components/ui/sheet";
+import { useMediaQuery } from "#/hooks/use-media-query";
 import { cn } from "#/lib/utils";
 import { buildInfo, type InfoTable, type InfoTarget } from "./build-info";
 
@@ -32,10 +33,11 @@ export function useInfo(): InfoApi {
 const LABEL =
   "font-label font-semibold text-xs uppercase leading-none tracking-[.12em]";
 
-/** Painel lateral único que explica atributos, habilidades, disciplinas, poderes, méritos e estados. */
+/** Painel único (lateral, ou de baixo em tela estreita) que explica atributos, habilidades, disciplinas, poderes, méritos e estados. */
 export function InfoProvider({ children }: { children: ReactNode }) {
   const [target, setTarget] = useState<InfoTarget | null>(null);
   const [open, setOpen] = useState(false);
+  const isMobile = useMediaQuery("(max-width: 640px)");
   const api = useMemo<InfoApi>(
     () => ({
       open: (next) => {
@@ -54,14 +56,19 @@ export function InfoProvider({ children }: { children: ReactNode }) {
       <Sheet onOpenChange={setOpen} open={open}>
         <SheetContent
           className={cn(
-            "data-[state=open]:slide-in-from-right-6! max-w-[92vw] gap-0 overflow-y-auto border-line p-6 data-[state=closed]:duration-200 data-[state=open]:duration-200",
+            "gap-0 overflow-y-auto border-line p-6 data-[state=closed]:duration-200 data-[state=open]:duration-200",
+            // em tela estreita o painel sobe de baixo com largura total
+            isMobile
+              ? "max-h-[85dvh] pb-[calc(1.5rem+env(safe-area-inset-bottom))]"
+              : "data-[state=open]:slide-in-from-right-6! max-w-[92vw]",
             // tabelas largas pedem o painel mais largo
-            info?.tabelas?.length
-              ? "w-[760px] sm:max-w-[760px]"
-              : "w-[400px] sm:max-w-[400px]"
+            !isMobile &&
+              (info?.tabelas?.length
+                ? "w-[760px] sm:max-w-[760px]"
+                : "w-[400px] sm:max-w-[400px]")
           )}
           showCloseButton={false}
-          side="right"
+          side={isMobile ? "bottom" : "right"}
         >
           {info ? (
             <>
@@ -76,7 +83,7 @@ export function InfoProvider({ children }: { children: ReactNode }) {
                 </div>
                 <SheetClose
                   aria-label="Fechar"
-                  className="-mt-3 -mr-3 grid size-12 flex-none cursor-pointer place-items-center font-serif text-2xl text-ink-soft leading-none"
+                  className="-mt-3 -mr-3 grid size-12 flex-none cursor-pointer place-items-center font-serif text-[32px] text-ink-soft leading-none"
                 >
                   ×
                 </SheetClose>

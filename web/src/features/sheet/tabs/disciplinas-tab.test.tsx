@@ -49,19 +49,13 @@ describe("aba Disciplinas", () => {
     expect(within(dialog).getByText("Fala com os mortos")).toBeInTheDocument();
   });
 
-  it("× remove o poder sem abrir o painel", () => {
+  it("a linha do poder não tem botão de remover", () => {
     renderTab([
-      {
-        nivel: 2,
-        nome: "Domínio",
-        powers: [
-          { nivel: 1, nome: "Compelir" },
-          { nivel: 2, nome: "Hipnose" },
-        ],
-      },
+      { nivel: 1, nome: "Domínio", powers: [{ nivel: 1, nome: "Compelir" }] },
     ]);
-    fireEvent.click(screen.getByRole("button", { name: "Remover Compelir" }));
-    expect(powers()).toEqual(["Hipnose"]);
-    expect(screen.queryByRole("dialog")).toBeNull();
+    expect(
+      screen.queryByRole("button", { name: "Remover Compelir" })
+    ).toBeNull();
+    expect(screen.queryByText("×")).toBeNull();
   });
 });

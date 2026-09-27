@@ -7,7 +7,7 @@ import { blankSheet } from "#/lib/sheet";
 import type { DamageMark, Merit, Power, Sheet } from "#/lib/types";
 import { bloodSurgeNote, healAggravated, rouseCheck, sleep } from "./actions";
 import { nextDotValue } from "./dots";
-import { FEEDING_SOURCES, feed, feedingYield } from "./feeding";
+import { feed } from "./feeding";
 import {
   bloodPotency,
   potencyFromGeneration,
@@ -53,13 +53,6 @@ const sheet = (over: Partial<Sheet> = {}): Sheet => ({
   ...blankSheet(),
   ...over,
 });
-const source = (name: string) => {
-  const s = FEEDING_SOURCES.find((x) => x.name === name);
-  if (!s) {
-    throw new Error(name);
-  }
-  return s;
-};
 
 describe("pontos", () => {
   it("define o valor clicado ou diminui 1 no atual", () => {
@@ -158,24 +151,33 @@ describe("cura agravada", () => {
 });
 
 describe("alimentação", () => {
-  it("animal grande rende metade na Potência 2", () => {
-    const y = feedingYield(source("Animal grande"), 2);
-    expect(y.amount).toBe(1);
-    expect(feed(sheet({ fome: 3 }), y.amount, "Animal grande").patch.fome).toBe(
-      2
-    );
-  });
-  it("bolsa não sacia na Potência 3", () => {
-    const y = feedingYield(source("Bolsa de sangue"), 3);
-    expect(y.amount).toBe(0);
-    expect(y.warning).toBe("Sangue de bolsa não sacia na Potência 3.");
-  });
-  it("pessoa não sacia na Potência 4, matar sim", () => {
-    expect(feedingYield(source("Pessoa"), 4).amount).toBe(0);
-    expect(feedingYield(source("Matar a pessoa"), 4).amount).toBe(5);
+  it("sacia parcialmente", () => {
+    const r = feed(sheet({ fome: 3 }), 1);
+    expect(r.patch).toEqual({ fome: 2 });
+    expect(r.note).toBe("Fome 3 → 2.");
   });
   it("Fome nunca fica negativa", () => {
-    expect(feed(sheet({ fome: 2 }), 3, "Pessoa").patch.fome).toBe(0);
+    expect(feed(sheet({ fome: 2 }), 3).patch.fome).toBe(0);
+  });
+  it("com Ressonância grava tipo e intensidade", () => {
+    const r = feed(sheet({ fome: 2 }), 2, {
+      intensidade: "Intensa",
+      tipo: "Fleumática",
+    });
+    expect(r.patch).toEqual({
+      fome: 0,
+      resIntensidade: "Intensa",
+      ressonancia: "Fleumática",
+    });
+    expect(r.note).toBe("Fome 2 → 0. Ressonância Fleumática · Intensa.");
+  });
+  it("sem Ressonância não mexe na da ficha", () => {
+    const r = feed(
+      sheet({ fome: 3, resIntensidade: "Difusa", ressonancia: "Colérica" }),
+      1
+    );
+    expect(r.patch).not.toHaveProperty("ressonancia");
+    expect(r.patch).not.toHaveProperty("resIntensidade");
   });
 });
 

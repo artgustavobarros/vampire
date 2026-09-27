@@ -3,7 +3,7 @@ import { AcoesTab } from "./tabs/acoes-tab";
 import { DisciplinasTab } from "./tabs/disciplinas-tab";
 import { FichaTab } from "./tabs/ficha-tab";
 import { NotasTab } from "./tabs/notas-tab";
-import { RegistrosTab } from "./tabs/registros-tab";
+import { ResumoTab } from "./tabs/resumo-tab";
 import { SessoesTab } from "./tabs/sessoes-tab";
 
 export function SheetTabContent({ tab }: { tab: SheetTab }) {
@@ -12,8 +12,8 @@ export function SheetTabContent({ tab }: { tab: SheetTab }) {
       return <DisciplinasTab />;
     case "acoes":
       return <AcoesTab />;
-    case "registros":
-      return <RegistrosTab />;
+    case "resumo":
+      return <ResumoTab />;
     case "notas":
       return <NotasTab />;
     case "sessoes":

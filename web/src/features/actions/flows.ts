@@ -1,8 +1,6 @@
 import { settings } from "#/lib/settings";
 import type { Sheet } from "#/lib/types";
 import { healAggravated, rouseCheck, sleep } from "#/rules/actions";
-import { FEEDING_SOURCES, feed, feedingYield } from "#/rules/feeding";
-import { bloodPotency } from "#/rules/generation";
 import { willpowerMax } from "#/rules/tracks";
 import { patchSheet } from "#/stores/character-store";
 
@@ -135,7 +133,7 @@ export function flowView(flow: Flow, sheet: Sheet, setFlow: SetFlow): FlowView {
     }
 
     case "feed":
-      return feedView(flow, sheet, to, close);
+      return feedView(flow, sheet, close);
 
     case "frenzy": {
       const pool = willpowerMax(sheet);
@@ -213,35 +211,9 @@ export function flowView(flow: Flow, sheet: Sheet, setFlow: SetFlow): FlowView {
   }
 }
 
-function feedView(
-  flow: Flow,
-  sheet: Sheet,
-  to: (kind: FlowKind, stage: string, note?: string) => void,
-  close: () => void
-): FlowView {
+/** O estágio "ask" é o `FeedForm`, desenhado pelo `RuleDialogProvider` no lugar dos botões. */
+function feedView(flow: Flow, sheet: Sheet, close: () => void): FlowView {
   const hunger = sheet.fome || 0;
-  const potency = bloodPotency(sheet);
-  const apply = (amount: number, source: string) => {
-    const r = feed(sheet, amount, source);
-    patchSheet(r.patch);
-    to("feed", "done", r.note);
-  };
-
-  if (flow.stage === "pessoa") {
-    return {
-      actions: [
-        ...[1, 2, 3, 4].map((n) => ({
-          label: `−${n} de Fome`,
-          primary: n === 1,
-          run: () => apply(n, "Pessoa"),
-        })),
-        { label: "Voltar", run: () => to("feed", "ask") },
-      ],
-      body: `Beber de uma pessoa sacia de 1 a 4 de Fome, conforme o quanto você tomou. Fome atual: ${hunger}.`,
-      kicker: "Alimentação",
-      title: "Quanto você bebeu?",
-    };
-  }
   if (flow.stage === "done") {
     return {
       actions: [{ label: "Fechar", primary: true, run: close }],
@@ -251,31 +223,11 @@ function feedView(
     };
   }
   return {
-    actions: [
-      ...FEEDING_SOURCES.map((source): FlowAction => {
-        const y = feedingYield(source, potency);
-        if (!y.amount) {
-          return {
-            label: `${source.name} — não sacia`,
-            run: () => to("feed", "ask", y.warning),
-          };
-        }
-        const label = source.choose
-          ? `${source.name} — até −${y.amount} de Fome`
-          : `${source.name} — −${y.amount} de Fome`;
-        return {
-          label: label + (y.warning ? " *" : ""),
-          run: source.choose
-            ? () => to("feed", "pessoa")
-            : () => apply(y.amount, source.name),
-        };
-      }),
-      { label: "Cancelar", run: close },
-    ],
+    actions: [],
     body: hunger
-      ? `Fome atual: ${hunger}. Potência de Sangue ${potency} define o quanto cada fonte sacia.`
+      ? `Fome atual: ${hunger}.`
       : "Você está saciado. Nada a reduzir.",
     kicker: "Alimentação",
-    title: hunger ? "De onde veio o sangue?" : "Fome 0",
+    title: "Registrar alimentação",
   };
 }

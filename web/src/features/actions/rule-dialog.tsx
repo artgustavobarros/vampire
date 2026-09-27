@@ -12,7 +12,8 @@ import {
   DialogDescription,
   DialogTitle,
 } from "#/components/ui/dialog";
-import { useSheet } from "#/stores/character-store";
+import { patchSheet, useSheet } from "#/stores/character-store";
+import { FeedForm } from "./feed-form";
 import { type Flow, type FlowKind, flowView } from "./flows";
 
 interface RuleDialogApi {
@@ -68,19 +69,30 @@ export function RuleDialogProvider({ children }: { children: ReactNode }) {
                 {flow.note}
               </p>
             ) : null}
-            <div className="mt-6 flex flex-col gap-2">
-              {view.actions.map((a) => (
-                <Button
-                  className="h-auto w-full whitespace-normal px-3 py-4"
-                  key={a.label}
-                  onClick={a.run}
-                  type="button"
-                  variant={a.primary ? "default" : "outline"}
-                >
-                  {a.label}
-                </Button>
-              ))}
-            </div>
+            {flow?.kind === "feed" && flow.stage === "ask" ? (
+              <FeedForm
+                onApply={(r) => {
+                  patchSheet(r.patch);
+                  setFlow({ kind: "feed", note: r.note, stage: "done" });
+                }}
+                onCancel={() => setFlow(null)}
+                sheet={sheet}
+              />
+            ) : (
+              <div className="mt-6 flex flex-col gap-2">
+                {view.actions.map((a) => (
+                  <Button
+                    className="h-auto w-full whitespace-normal px-3 py-4"
+                    key={a.label}
+                    onClick={a.run}
+                    type="button"
+                    variant={a.primary ? "default" : "outline"}
+                  >
+                    {a.label}
+                  </Button>
+                ))}
+              </div>
+            )}
           </DialogContent>
         ) : null}
       </Dialog>

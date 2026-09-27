@@ -1,4 +1,5 @@
 import { fireEvent, render, screen } from "@testing-library/react";
+import userEvent from "@testing-library/user-event";
 import { useState } from "react";
 import { beforeEach, describe, expect, it, vi } from "vitest";
 import { InfoProvider } from "#/features/info/info-sheet";
@@ -7,6 +8,12 @@ import { specialtiesBySkill } from "#/rules/specialties";
 import { cycleBox } from "#/rules/tracks";
 import { useCharacterStore, useSheet } from "#/stores/character-store";
 import { DotRating } from "./dot-rating";
+import {
+  SegmentedTabs,
+  SegmentedTabsContent,
+  SegmentedTabsList,
+  SegmentedTabsTrigger,
+} from "./segmented-tabs";
 import { SelectableCard } from "./selectable";
 import { DamageTrack, HumanityTrack } from "./tracks";
 import { TraitGrid } from "./trait-grid";
@@ -205,5 +212,50 @@ describe("especialidade do Predador", () => {
     expect(dialog).toHaveTextContent("Intimidação 3");
     expect(dialog).not.toHaveTextContent("Tipo de Predador");
     expect(screen.queryByLabelText("Nome da especialidade")).toBeNull();
+  });
+});
+
+function Tabs() {
+  return (
+    <SegmentedTabs defaultValue="atributos">
+      <SegmentedTabsList>
+        <SegmentedTabsTrigger value="atributos">Atributos</SegmentedTabsTrigger>
+        <SegmentedTabsTrigger value="habilidades">
+          Habilidades
+        </SegmentedTabsTrigger>
+      </SegmentedTabsList>
+      <SegmentedTabsContent value="atributos">Força</SegmentedTabsContent>
+      <SegmentedTabsContent value="habilidades">Briga</SegmentedTabsContent>
+    </SegmentedTabs>
+  );
+}
+
+describe("SegmentedTabs", () => {
+  it("abre na aba padrão", () => {
+    render(<Tabs />);
+    expect(screen.getByRole("tab", { name: "Atributos" })).toHaveAttribute(
+      "aria-selected",
+      "true"
+    );
+    expect(screen.getByRole("tabpanel")).toHaveTextContent("Força");
+  });
+
+  it("clicar numa aba troca o painel", async () => {
+    render(<Tabs />);
+    await userEvent.click(screen.getByRole("tab", { name: "Habilidades" }));
+    expect(screen.getByRole("tab", { name: "Habilidades" })).toHaveAttribute(
+      "aria-selected",
+      "true"
+    );
+    expect(screen.getByRole("tabpanel")).toHaveTextContent("Briga");
+  });
+
+  it("seta para a direita move o foco e ativa a próxima aba", async () => {
+    render(<Tabs />);
+    screen.getByRole("tab", { name: "Atributos" }).focus();
+    await userEvent.keyboard("{ArrowRight}");
+    const next = screen.getByRole("tab", { name: "Habilidades" });
+    expect(next).toHaveFocus();
+    expect(next).toHaveAttribute("aria-selected", "true");
   });
 });

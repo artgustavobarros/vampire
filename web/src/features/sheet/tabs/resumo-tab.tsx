@@ -5,7 +5,7 @@ import { InfoTrigger } from "#/components/vtm/info-trigger";
 import { Panel } from "#/components/vtm/text";
 import { autoFit } from "#/components/vtm/trait-grid";
 import { bloodPotencyRow } from "#/data/blood-potency";
-import { BIO_FIELDS, LONG_FIELDS } from "#/data/fields";
+import { BIO_FIELDS, IDENTITY_FIELDS, LONG_FIELDS } from "#/data/fields";
 import { MeritsPanel } from "#/features/sheet/merits-panel";
 import { bloodPotency, potencyNote } from "#/rules/generation";
 import { patchSheet, useSheet } from "#/stores/character-store";
@@ -13,7 +13,7 @@ import { patchSheet, useSheet } from "#/stores/character-store";
 const TITLE =
   "mt-0 mb-3 font-label font-semibold text-ink text-xs uppercase leading-none tracking-[.12em]";
 
-export function RegistrosTab() {
+export function ResumoTab() {
   const sheet = useSheet();
   const potency = bloodPotency(sheet);
   const bp = bloodPotencyRow(potency);
@@ -54,6 +54,15 @@ export function RegistrosTab() {
 
   return (
     <>
+      <Panel className="mb-6 grid gap-x-6 gap-y-4" style={autoFit(220)}>
+        {IDENTITY_FIELDS.map((f) => (
+          <SheetTextField
+            field={{ ...f, placeholder: undefined }}
+            key={f.key}
+          />
+        ))}
+      </Panel>
+
       <div className="mb-6 grid gap-4" style={autoFit(260)}>
         {LONG_FIELDS.map((f) => (
           <Panel key={f.key}>

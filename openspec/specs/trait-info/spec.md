@@ -6,6 +6,8 @@ Painel lateral (Sheet) que explica atributos, habilidades, disciplinas, poderes,
 ### Requirement: Painel lateral de descrição
 O app SHALL oferecer um painel de descrição construído com o `Sheet` shadcn, aberto pela direita, com 400px de largura (`max-width: 92vw`), altura total, fundo Vellum `#F4F3F0`, filete esquerdo de 1px e fundo escurecido `rgba(0,0,0,.55)`. Quando o conteúdo tem tabelas, a largura MUST ser 760px (mantendo `max-width: 92vw`). O painel MUST fechar no ×, com clique fora ou com Esc, e MUST entrar deslizando 24px da direita em 200ms, declarada com classes Tailwind no componente (sem keyframes no CSS global). A estrutura MUST ser: kicker (rótulo Karla), título (Cormorant 600 32px), selo do valor atual (fundo tinta, rótulo branco, omitido quando vazio), descrição (Cormorant 18px renderizada em elementos `<p>` nativos com `whitespace-pre-line`), título da lista e lista de níveis (omitidos quando a lista é vazia), tabelas, e nota (Cormorant 16px suave, omitida quando vazia). O painel MUST NOT depender de parsers externos ou regex de markdown customizados (`rich-text.tsx`). Só um painel MUST existir por vez.
 
+Em telas que casam com `(max-width: 640px)`, o painel MUST abrir de baixo para cima (`side="bottom"` do mesmo `Sheet`), com largura total da tela (sem as larguras de 400px/760px nem o `max-width: 92vw`), altura máxima de 85% da altura visível (`85dvh`), rolagem vertical própria, filete superior de 1px no lugar do filete esquerdo, cantos retos e espaço inferior para a área segura do aparelho. Nessa variante o painel MUST NOT usar o deslize de 24px da direita. A escolha da posição MUST acontecer no cliente pela media query, e fora do navegador (SSR) o painel MUST assumir a variante lateral. Fechar no ×, com toque fora ou com Esc MUST continuar valendo; o painel MUST NOT depender de gesto de arrastar nem de bibliotecas de drawer.
+
 Cada tabela MUST ter um título (rótulo Karla), filete superior, rolagem horizontal própria quando não cabe (sem rolagem horizontal da página), cabeçalho em Karla 700 11px maiúsculo com filete inferior, e células em Cormorant 15px com quebra de linha preservada. A primeira coluna e a linha destacada MUST usar peso 700. A linha destacada MUST ter fundo `#FFFFFF` e filete inferior tinta; as demais, fundo transparente e filete `rgba(13,13,13,.1)`.
 
 #### Scenario: Fechar com Esc
@@ -17,12 +19,28 @@ Cada tabela MUST ter um título (rótulo Karla), filete superior, rolagem horizo
 - **THEN** o diálogo tem nome acessível "Força"
 
 #### Scenario: Painel largo com tabela
-- **WHEN** o painel abre para "Potência de Sangue"
+- **WHEN** o painel abre para "Potência de Sangue" numa tela com mais de 640px
 - **THEN** o painel tem 760px de largura e a tabela rola na horizontal em telas estreitas
 
 #### Scenario: Painel estreito sem tabela
-- **WHEN** o painel abre para "Força"
+- **WHEN** o painel abre para "Força" numa tela com mais de 640px
 - **THEN** o painel tem 400px de largura
+
+#### Scenario: Painel de baixo em tela estreita
+- **WHEN** a tela casa com `(max-width: 640px)` e o painel abre para "Força"
+- **THEN** o painel sobe da borda inferior com largura total, altura máxima de 85dvh e filete superior, sem as classes de 400px nem o deslize da direita
+
+#### Scenario: Tabela no painel de baixo
+- **WHEN** a tela casa com `(max-width: 640px)` e o painel abre para "Potência de Sangue"
+- **THEN** o painel ocupa a largura total (sem 760px) e a tabela rola na horizontal dentro dele, sem rolagem horizontal da página
+
+#### Scenario: Exatamente 640px
+- **WHEN** a janela tem exatamente 640px de largura e o painel abre
+- **THEN** o painel abre de baixo
+
+#### Scenario: Fechar tocando fora na tela estreita
+- **WHEN** a tela casa com `(max-width: 640px)`, o painel está aberto e o usuário toca no fundo escurecido
+- **THEN** o painel fecha
 
 ### Requirement: Nível atual destacado
 Cada linha da lista de níveis SHALL mostrar o marcador (pontos `•`, número ou símbolo) e o texto. A linha que corresponde ao valor atual do personagem MUST ter fundo `#FFFFFF` e filete tinta; as demais, fundo transparente e filete `rgba(13,13,13,.1)`.
@@ -125,7 +143,7 @@ O conteúdo do painel SHALL ser montado por uma função pura a partir do tipo, 
 - **THEN** o kicker é "Defeito" e os níveis são os textos próprios de Inimigo
 
 ### Requirement: Gatilhos do painel
-O painel SHALL abrir a partir de: o nome de cada atributo e habilidade (ficha e assistente); cada selo de especialidade na seção Habilidades da aba Ficha; um botão **?** de 40×40px ao lado do nome de cada disciplina; a linha de cada poder na aba Disciplinas; o nome de cada poder nos cartões dos passos 5 e 6 do assistente; um botão **?** em cada linha de vantagem/defeito do passo 7; o nome de cada vantagem e defeito no painel "Vantagens & Defeitos" da aba Registros (passando tipo e pontos atuais); os rótulos dos blocos Fome, Humanidade, Vitalidade, Força de Vontade, Ressonância e Potência de Sangue (este último no rodapé preto da aba Registros); os títulos da Perdição e da Compulsão do clã no passo 1 do assistente; o rótulo da Geração no passo 1; e os rótulos "Vitalidade" e "Força de Vontade" da linha de derivados do passo 2 do assistente, com o selo "Máximo N" calculado a partir dos atributos atuais do formulário. O passo 5 MUST NOT ter gatilhos de Geração nem de Potência de Sangue. Todo gatilho MUST ser um `<button>` acessível por teclado, e um gatilho dentro de um cartão selecionável MUST NOT alternar a seleção do cartão.
+O painel SHALL abrir a partir de: o nome de cada atributo e habilidade (ficha e assistente); cada selo de especialidade na seção Habilidades da aba Ficha; um botão **?** de 40×40px ao lado do nome de cada disciplina; a linha de cada poder na aba Disciplinas; o nome de cada poder nos cartões dos passos 5 e 6 do assistente; um botão **?** em cada linha de vantagem/defeito do passo 7; o nome de cada vantagem e defeito no painel "Vantagens & Defeitos" da aba Resumo (passando tipo e pontos atuais); os rótulos dos blocos Fome, Humanidade, Vitalidade, Força de Vontade, Ressonância e Potência de Sangue (este último no rodapé preto da aba Resumo); os títulos da Perdição e da Compulsão do clã no passo 1 do assistente; o rótulo da Geração no passo 1; e os rótulos "Vitalidade" e "Força de Vontade" da linha de derivados do passo 2 do assistente, com o selo "Máximo N" calculado a partir dos atributos atuais do formulário. O passo 5 MUST NOT ter gatilhos de Geração nem de Potência de Sangue. Todo gatilho MUST ser um `<button>` acessível por teclado, e um gatilho dentro de um cartão selecionável MUST NOT alternar a seleção do cartão.
 
 #### Scenario: Abrir pelo nome
 - **WHEN** o usuário clica em "Manipulação" na aba Ficha
@@ -135,7 +153,7 @@ O painel SHALL abrir a partir de: o nome de cada atributo e habilidade (ficha e 
 - **WHEN** o usuário clica no selo "Direito" abaixo de Erudição na aba Ficha
 - **THEN** o painel da especialidade "Direito" abre sem alterar os pontos de Erudição
 
-#### Scenario: Nome do mérito na aba Registros
+#### Scenario: Nome do mérito na aba Resumo
 - **WHEN** o usuário clica em "Recursos" (3 pontos) no painel Vantagens & Defeitos
 - **THEN** o painel lateral abre pela direita com o kicker "Vantagem", o selo "3 pontos", os textos de Recursos para cada ponto e a linha "•••" destacada, sem alterar os pontos
 
@@ -155,8 +173,8 @@ O painel SHALL abrir a partir de: o nome de cada atributo e habilidade (ficha e 
 - **WHEN** o usuário clica no rótulo "Geração" no passo 1
 - **THEN** o painel da Geração abre e o seletor de Geração não muda
 
-#### Scenario: Potência de Sangue na aba Registros
-- **WHEN** o usuário clica em "Potência de Sangue" no rodapé preto da aba Registros
+#### Scenario: Potência de Sangue na aba Resumo
+- **WHEN** o usuário clica em "Potência de Sangue" no rodapé preto da aba Resumo
 - **THEN** o painel da Potência de Sangue abre com a tabela do livro e a linha do personagem destacada
 
 #### Scenario: Nome do poder em cartão selecionado
@@ -203,5 +221,4 @@ O painel MUST NOT ter nota nem formulário, inclusive para a especialidade do Pr
 #### Scenario: Especialidade do Predador
 - **WHEN** o Predador é "Extorsionário", a ficha tem Intimidação 3 e o painel abre para a especialidade "Chantagem" do Predador
 - **THEN** o selo é "Intimidação 3", a descrição é a de foco em Intimidação, e não há nota do Predador nem campo "Nome da especialidade"
-
 

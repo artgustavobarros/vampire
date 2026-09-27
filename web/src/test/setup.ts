@@ -5,6 +5,18 @@ import type { fakeApi as FakeApi } from "./fake-api";
 
 let api: typeof FakeApi | undefined;
 
+// o jsdom não tem matchMedia; por padrão nenhuma query casa (tela de desktop)
+window.matchMedia = (query: string) => ({
+  addEventListener: () => undefined,
+  addListener: () => undefined,
+  dispatchEvent: () => false,
+  matches: false,
+  media: query,
+  onchange: null,
+  removeEventListener: () => undefined,
+  removeListener: () => undefined,
+});
+
 // importados só aqui, para respeitar o `vi.mock` de cada arquivo de teste
 beforeAll(async () => {
   const [{ fakeApi }, { connectSession }] = await Promise.all([

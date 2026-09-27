@@ -1,8 +1,5 @@
-# vampire-actions Specification
+## MODIFIED Requirements
 
-## Purpose
-Ações de regra da ficha: Rouse Check, dormir e curar, cura agravada, alimentação com Ressonância da presa, frenesi, surto de sangue e alerta de Fome.
-## Requirements
 ### Requirement: Diálogo de regras
 As ações de regra SHALL abrir um diálogo modal com rótulo superior (kicker), título, texto, nota opcional e uma lista de botões de ação, fechando pelo botão de cancelar/fechar. No estágio de registro da alimentação, a lista de botões MUST ser trocada pelo formulário de alimentação, que traz os próprios botões de confirmar e cancelar. O resultado de cada ação MUST ser aplicado à ficha e salvo.
 
@@ -13,47 +10,6 @@ As ações de regra SHALL abrir um diálogo modal com rótulo superior (kicker),
 #### Scenario: Cancelar a alimentação depois de mexer no formulário
 - **WHEN** o usuário muda o "Saciar", marca uma Ressonância e clica "Cancelar"
 - **THEN** o diálogo fecha, a Fome e a Ressonância da ficha não mudam, e ao reabrir o formulário volta ao estado inicial
-
-### Requirement: Rouse Check
-O usuário SHALL poder registrar um Rouse Check informando se passou ou falhou.
-
-#### Scenario: Passou
-- **WHEN** o usuário escolhe "Passei"
-- **THEN** a Fome não muda e a nota diz "Fome permanece em N. Sem alteração."
-
-#### Scenario: Falhou
-- **WHEN** o usuário escolhe "Falhei" com Fome 2
-- **THEN** a Fome passa a 3 e a nota diz "Fome sobe para 3."
-
-#### Scenario: Falhou chegando a 5
-- **WHEN** o usuário falha com Fome 4 e o aviso de frenesi está ativo
-- **THEN** a Fome passa a 5 e a nota avisa sobre Frenesi de Fome e o teste de Determinação
-
-#### Scenario: Limite de Fome
-- **WHEN** o usuário falha com Fome 5
-- **THEN** a Fome permanece 5
-
-### Requirement: Dormir e acordar
-O usuário SHALL poder encerrar a noite. Com a regra de cura ao dormir ativa, dormir MUST curar dano superficial de Vitalidade igual ao valor de recuperação da Potência de Sangue atual, restaurar Força de Vontade superficial igual ao maior entre Autocontrole e Determinação, e somar 1 a noites vividas. Depois MUST oferecer o Rouse Check de despertar.
-
-#### Scenario: Dormir com dano
-- **WHEN** o personagem tem 2 superficiais em Vitalidade, Potência 1 e dorme
-- **THEN** 1 superficial é curado, a Força de Vontade é restaurada conforme a regra, noites vividas aumenta em 1 e o diálogo "Hora de acordar" oferece "Fazer Rouse Check"
-
-#### Scenario: Nada a curar
-- **WHEN** não há dano superficial em nenhuma trilha
-- **THEN** a nota diz "Nada a curar nesta noite."
-
-### Requirement: Cura de dano agravado
-O usuário SHALL poder curar 1 dano agravado informando quantos dos três Rouse Checks falharam (0 a 3); cada falha soma 1 de Fome (máx. 5).
-
-#### Scenario: Cura com uma falha
-- **WHEN** há dano agravado na Vitalidade, Fome 1, e o usuário escolhe "1 falhou"
-- **THEN** a última caixa agravada vira superficial e a Fome passa a 2
-
-#### Scenario: Sem dano agravado
-- **WHEN** não há caixas agravadas
-- **THEN** apenas a Fome é ajustada e a nota informa "Nenhum dano agravado marcado na vitalidade."
 
 ### Requirement: Alimentação
 O usuário SHALL registrar alimentação num formulário de uma tela, com kicker "Alimentação", título "Registrar alimentação" e texto "Fome atual: N.". O formulário MUST ter:
@@ -96,24 +52,6 @@ Ao confirmar, a Fome MUST cair pelo valor de "Saciar", sem nunca ficar abaixo de
 - **WHEN** a Fome é 0, o usuário marca "Colérica" com "Aguçada" e clica "Registrar ressonância"
 - **THEN** a Fome continua 0 e a ficha grava a Ressonância "Colérica" com intensidade "Aguçada"
 
-### Requirement: Teste de Frenesi
-O usuário SHALL escolher a provocação (fome/sangue à vista dif. 2, provocação/fúria dif. 3, terror dif. 4), ver a reserva (Autocontrole + Determinação) e registrar se resistiu ou sucumbiu, sem alterar a ficha.
-
-#### Scenario: Sucumbir
-- **WHEN** o usuário escolhe "Provocação ou fúria" e depois "Sucumbi ao frenesi"
-- **THEN** o resultado "Frenesi resolvido" explica as restrições do frenesi por uma cena
-
-### Requirement: Surto de Sangue
-A ação Surto de Sangue SHALL abrir o Rouse Check com a nota do bônus de surto da Potência atual, no formato "Surto de Sangue: <bônus em minúscula> ao teste.", usando o texto da tabela de Potência de Sangue do livro.
-
-#### Scenario: Surto na Potência 1
-- **WHEN** o usuário aciona "Rouse + surto" com Potência 1
-- **THEN** o Rouse Check abre com a nota "Surto de Sangue: adicione 2 dados ao teste."
-
-#### Scenario: Surto na Potência 0
-- **WHEN** o usuário aciona "Rouse + surto" com uma ficha de 15ª Geração
-- **THEN** o Rouse Check abre com a nota "Surto de Sangue: adicione 1 dado ao teste."
-
 ### Requirement: Aba Ações
 A aba Ações SHALL mostrar Vitalidade, Força de Vontade e Humanidade (com contagem de manchas) e os cartões de ação Alimentar-se, Teste de Frenesi (sangue) e Surto de Sangue (sangue), cada um com descrição e botão.
 
@@ -121,21 +59,9 @@ A aba Ações SHALL mostrar Vitalidade, Força de Vontade e Humanidade (com cont
 - **WHEN** o usuário clica "Registrar" no cartão Alimentar-se
 - **THEN** o diálogo "Registrar alimentação" abre
 
-### Requirement: Alerta de Fome
-Quando a Fome mudar e chegar a 5 ou a 0, o app SHALL exibir um alerta em tela cheia com kicker, título e texto adequados, fechado por "Entendido" ou clique fora.
-
-#### Scenario: Fome chega a 5
-- **WHEN** a Fome passa de 4 para 5 por qualquer ação
-- **THEN** o alerta de Fome 5 aparece
-
-#### Scenario: Sem mudança
-- **WHEN** a Fome já era 5 e continua 5
-- **THEN** nenhum alerta novo aparece
-
 ### Requirement: Regras como funções puras
 As regras (máximos de trilhas, marcação e transbordo de dano, cura ao dormir, cura agravada, alimentação com Fome e Ressonância, Potência por geração, cotas de atributos e habilidades) SHALL ser implementadas como funções puras em TypeScript, sem dependência de React, cobertas por testes unitários.
 
 #### Scenario: Transbordo de dano superficial
 - **WHEN** uma trilha de 4 caixas está com 4 superficiais e recebe mais 1 superficial
 - **THEN** a primeira caixa superficial vira agravada
-
