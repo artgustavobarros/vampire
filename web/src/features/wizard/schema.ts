@@ -1,13 +1,18 @@
 import { z } from "zod";
-import { findClan } from "#/data/clans";
+import { clanBaneText, findClan, isAutoBaneText } from "#/data/clans";
 import { sameDiscipline } from "#/data/disciplines";
-import { SKILL_DISTRIBUTIONS } from "#/data/distributions";
+import {
+  DEFAULT_DISTRIBUTION,
+  SKILL_DISTRIBUTIONS,
+} from "#/data/distributions";
 import { GENERATIONS } from "#/data/generations";
 import { findPredator } from "#/data/predators";
 import { ATTRIBUTES, REQUIRED_SPECIALTY_SKILLS } from "#/data/traits";
 import type { Discipline, Merit, Sheet } from "#/lib/types";
 import { potencyFromGeneration } from "#/rules/generation";
 import {
+  disciplineBlock,
+  predatorBlock,
   predatorChoiceStatus,
   predatorDiscipline,
   predatorPower,
@@ -83,7 +88,7 @@ export function sheetToWizard(applied: Sheet): WizardValues {
     cronica: sheet.cronica ?? "",
     desejo: sheet.desejo ?? "",
     disc,
-    dist: sheet.dist ?? "",
+    dist: sheet.dist || DEFAULT_DISTRIBUTION.name,
     espec: { ...sheet.espec },
     especLivre: sheet.especLivre ?? "",
     geracao: sheet.geracao ?? "",
@@ -124,7 +129,7 @@ function cleanSpecialties(
 export function wizardToPatch(
   values: WizardValues,
   fields: readonly WizardKey[],
-  sheet: Pick<Sheet, "disc">
+  sheet: Pick<Sheet, "disc" | "perdicao">
 ): Partial<Sheet> {
   const patch: Partial<Sheet> = {};
   const target = patch as Record<string, unknown>;
@@ -133,6 +138,10 @@ export function wizardToPatch(
   }
   if (fields.includes("espec")) {
     patch.espec = cleanSpecialties(values.espec);
+  }
+  const clan = findClan(values.cla);
+  if (fields.includes("cla") && clan && isAutoBaneText(sheet.perdicao)) {
+    patch.perdicao = clanBaneText(clan);
   }
   if (fields.includes("geracao")) {
     patch.potencia = potencyFromGeneration(values.geracao) || 0;
@@ -312,6 +321,8 @@ const step6 = z
     cla: z.string(),
     /** contexto: pontos e poderes do passo 5 decidem o poder do Predador */
     disc: z.array(discipline),
+    /** contexto: a Potência da Geração pode vetar o Predador */
+    geracao: z.string(),
     predador: z.string(),
     predDisc: z.string(),
     predEscolhas: z.record(z.string(), z.record(z.string(), z.number())),
@@ -320,7 +331,8 @@ const step6 = z
     predPoder: z.string(),
   })
   .superRefine((values, ctx) => {
-    const { cla, disc, predador, predEspec, predDisc, predEscolhas } = values;
+    const { cla, disc, geracao, predador, predEspec, predDisc, predEscolhas } =
+      values;
     if (isThinBlood(cla)) {
       return;
     }
@@ -332,6 +344,10 @@ const step6 = z
         path: ["predador"],
       });
       return;
+    }
+    const block = predatorBlock(p, { cla, geracao });
+    if (block) {
+      ctx.addIssue({ code: "custom", message: block, path: ["predador"] });
     }
     if (!p.specialties.includes(predEspec)) {
       ctx.addIssue({
@@ -346,12 +362,17 @@ const step6 = z
         path: ["predEspecNome"],
       });
     }
-    if (p.disciplines.includes(predDisc)) {
+    const option = p.disciplines.find((d) => d.nome === predDisc);
+    const optionBlock = option && disciplineBlock(option, cla);
+    if (optionBlock) {
+      ctx.addIssue({
+        code: "custom",
+        message: `${predDisc}: ${optionBlock}`,
+        path: ["predDisc"],
+      });
+    } else if (option) {
       const disciplina = predatorDiscipline(cla, disc, predDisc);
-      if (
-        disciplina.elegiveis.length &&
-        !predatorPower(disciplina, values.predPoder)
-      ) {
+      if (!predatorPower(disciplina, values.predPoder)) {
         ctx.addIssue({
           code: "custom",
           message: `Escolha um poder de ${predDisc}`,
@@ -420,7 +441,7 @@ export const STEP_SCHEMAS = [
 const CONTEXT_FIELDS: Partial<Record<number, readonly WizardKey[]>> = {
   4: ["skills"],
   5: ["cla"],
-  6: ["cla", "disc"],
+  6: ["cla", "disc", "geracao"],
   7: ["cla"],
 };
 

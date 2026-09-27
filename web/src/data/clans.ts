@@ -12,7 +12,7 @@ export const CLANS: readonly Clan[] = [
   {
     bane: "Temperamento Violento",
     baneText:
-      "O Sangue dos Brujah fervilhe com fúria malcontida, que explode sob a menor provocação.",
+      "O Sangue dos Brujah fervilha com fúria malcontida, que explode sob a menor provocação.",
     compulsion: "Rebelião",
     compulsionText:
       "Se posiciona contra qualquer um ou qualquer coisa que lhe pareça representar o status quo na situação.",
@@ -22,7 +22,7 @@ export const CLANS: readonly Clan[] = [
   {
     bane: "Traços Bestiais",
     baneText:
-      "Quando em frenesi ganham um ou mais de um aspecto animalesco: um traço físico, um odor o um comportamento.",
+      "Quando em frenesi ganham um ou mais de um aspecto animalesco: um traço físico, um odor ou um comportamento.",
     compulsion: "Impulsos Ferais",
     compulsionText:
       "Retorna a um estado animal a um ponto onde a fala se torna difícil, as roupas desconfortáveis e os argumentos são mais bem-resolvidos com garras e presas.",
@@ -35,13 +35,13 @@ export const CLANS: readonly Clan[] = [
       "Todos são amaldiçoados com pelo menos um tipo de transtorno mental.",
     compulsion: "Delírio",
     compulsionText:
-      "Experimenta o que podem ser verdades ou presságios, mas que os outros chama de delírios trazidos à tona pela Fome",
+      "Experimenta o que podem ser verdades ou presságios, mas que os outros chamam de delírios trazidos à tona pela Fome.",
     disciplines: ["Auspícios", "Dominação", "Ofuscação"],
     name: "Malkaviano",
   },
   {
     bane: "Repulsivo",
-    baneText: "Eles são vistos como grotestos e quase sempre aterrorizantes.",
+    baneText: "Eles são vistos como grotescos e quase sempre aterrorizantes.",
     compulsion: "Criptofilia",
     compulsionText:
       "Ele é consumido por uma fome de segredos quase tão forte quanto sua sede de sangue.",
@@ -61,20 +61,20 @@ export const CLANS: readonly Clan[] = [
   {
     bane: "Sangue Deficiente",
     baneText:
-      "O Vitae Tremere não tem mais a capacide de criar Laços de Sangue com outros Membros.",
+      "O Vitae Tremere não tem mais a capacidade de criar Laços de Sangue com outros Membros.",
     compulsion: "Perfeccionismo",
     compulsionText:
-      "Nada a não ser o melhor satisfaz. Qualquer outra coisa provova uma profunda sensaçãõ de falha.",
+      "Nada a não ser o melhor satisfaz. Qualquer outra coisa provoca uma profunda sensação de falha.",
     disciplines: ["Auspícios", "Dominação", "Feitiçaria de Sangue"],
     name: "Tremere",
   },
   {
     bane: "Paladar Refinado",
     baneText:
-      "Quando bebe sangue de qualquer mortal que não seja da sua preferência, ele precisa fazer um grande esforço de vontade para que o sangue não folte na forma de vômito escarlate.",
+      "Quando bebe sangue de qualquer mortal que não seja da sua preferência, ele precisa fazer um grande esforço de vontade para que o sangue não volte na forma de vômito escarlate.",
     compulsion: "Arrogância",
     compulsionText:
-      "A necessidade que tem de governas aflora. Nada pode impedi-lo de assumir o controle de uma situação.",
+      "A necessidade que tem de governar aflora. Nada pode impedi-lo de assumir o controle de uma situação.",
     disciplines: ["Dominação", "Fortitude", "Presença"],
     name: "Ventrue",
   },
@@ -128,7 +128,7 @@ export const CLANS: readonly Clan[] = [
   {
     bane: "Preso à Terra",
     baneText:
-      "Precisa dormir cercado por terra do seu Dominação, ou não recupera nada.",
+      "Precisa dormir cercado por terra do seu domínio natal, ou não recupera nada.",
     compulsion: "Cobiça",
     compulsionText:
       "Tem de possuir e controlar o que considera seu, sem dividir.",
@@ -173,4 +173,15 @@ export function findClan(name: string | undefined): Clan | undefined {
       (key === "Sangue Fraco" && c.name === "Sangue-ralo") ||
       (key === "Sangue-ralo" && c.name === "Sangue Fraco")
   );
+}
+
+/** Texto da Perdição gravado na ficha ao escolher o clã. */
+export function clanBaneText(clan: Clan): string {
+  return `${clan.bane} — ${clan.baneText}`;
+}
+
+/** Vazio ou igual ao texto automático de algum clã (não editado pelo jogador). */
+export function isAutoBaneText(text: string | undefined): boolean {
+  const value = (text ?? "").trim();
+  return !value || CLANS.some((c) => clanBaneText(c) === value);
 }

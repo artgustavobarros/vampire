@@ -1,4 +1,5 @@
 import { describe, expect, it } from "vitest";
+import { clanBaneText, findClan } from "#/data/clans";
 import { blankSheet } from "#/lib/sheet";
 import type { Sheet } from "#/lib/types";
 import { applyPredator } from "#/rules/predator";
@@ -16,6 +17,14 @@ import { completeSheet } from "./test-fixtures";
 
 const values = (over: Partial<Sheet> = {}): WizardValues =>
   sheetToWizard(completeSheet(over));
+
+const bane = (name: string): string => {
+  const clan = findClan(name);
+  if (!clan) {
+    throw new Error(`clã desconhecido: ${name}`);
+  }
+  return clanBaneText(clan);
+};
 
 /** Mensagens de erro do passo, por caminho ("espec.Ofícios"). */
 function issues(step: number, v: WizardValues): Record<string, string> {
@@ -57,7 +66,7 @@ describe("schemas do assistente", () => {
   });
 
   it("passo 3: distribuição escolhida e completa", () => {
-    expect(issues(3, values({ dist: "" }))).toHaveProperty("dist");
+    expect(issues(3, values({ dist: "Inexistente" }))).toHaveProperty("dist");
     const skills = { ...completeSheet().skills, Persuasão: 2 };
     expect(issues(3, values({ skills }))).toEqual({
       skills: "Nível 3: falta 1. Nível 2: sobra 1.",
@@ -198,26 +207,57 @@ describe("schemas do assistente", () => {
     expect(issues(6, values({ disc, predPoder: nivel3 }))).toEqual({
       predPoder: "Escolha um poder de Potência",
     });
-    // sem catálogo, o poder não é exigido
+    // Disciplina antiga fora das opções conta como não escolhida
     expect(
       issues(
         6,
         values({
           predador: "Sereia",
           predDisc: "Fascinação",
-          predEspec: "Persuasão (Seduzir)",
+          predEspec: "Persuasão (Sedução)",
           predPoder: "",
         })
       )
-    ).toEqual({});
+    ).toEqual({ predDisc: "Escolha uma disciplina" });
+  });
+
+  it("passo 6: Predador vetado pelo clã ou pela Geração", () => {
+    const fazendeiro = {
+      predador: "Fazendeiro",
+      predDisc: "Animalismo",
+      predEspec: "Sobrevivência (Caça)",
+      predEspecNome: "Caça",
+      predPoder: "Sentir a Fera",
+    };
+    expect(issues(6, values(fazendeiro))).toEqual({});
+    expect(issues(6, values({ ...fazendeiro, cla: "Ventrue" }))).toMatchObject({
+      predador: "Ventrue não pode ser Fazendeiro",
+    });
+    expect(issues(6, values({ ...fazendeiro, geracao: "7ª" }))).toEqual({
+      predador: "Exige Potência de Sangue 2 ou menos",
+    });
+  });
+
+  it("passo 6: Feitiçaria de Sangue só para Tremere e Banu Haqim", () => {
+    const saqueador = {
+      predador: "Saqueador",
+      predDisc: "Feitiçaria de Sangue",
+      predEspec: "Manha (Mercado Negro)",
+      predEspecNome: "Mercado Negro",
+      predPoder: "Vitae Corrosiva",
+    };
+    expect(issues(6, values(saqueador))).toEqual({
+      predDisc: "Feitiçaria de Sangue: só Tremere e Banu Haqim",
+    });
+    expect(issues(6, values({ ...saqueador, cla: "Banu Haqim" }))).toEqual({});
   });
 
   it("passo 6: escolhas do Predador completas", () => {
     const osiris = {
       predador: "Osíris",
-      predDisc: "Domínio",
-      predEspec: "Ocultismo (culto escolhido)",
-      predPoder: "Compelir",
+      predDisc: "Presença",
+      predEspec: "Ocultismo (Tradição Específica)",
+      predPoder: "Fascínio",
     };
     expect(
       issues(
@@ -225,7 +265,7 @@ describe("schemas do assistente", () => {
         values({
           ...osiris,
           predEscolhas: {
-            "inimigos-perseguido": { Inimigos: 2 },
+            "inimigo-mitico": { Inimigo: 2 },
             "rebanho-fama": { Fama: 1, Rebanho: 1 },
           },
         })
@@ -239,7 +279,7 @@ describe("schemas do assistente", () => {
         values({
           ...osiris,
           predEscolhas: {
-            "inimigos-perseguido": { Perseguido: 2 },
+            "inimigo-mitico": { "Defeito Mítico": 2 },
             "rebanho-fama": { Rebanho: 3 },
           },
         })
@@ -334,7 +374,7 @@ describe("firstIncompleteStep", () => {
   });
 
   it("para no primeiro passo inválido", () => {
-    expect(firstIncompleteStep(completeSheet({ dist: "" }))).toBe(3);
+    expect(firstIncompleteStep(completeSheet({ dist: "Inexistente" }))).toBe(3);
   });
 
   it("ficha completa vai até o passo 8", () => {
@@ -355,6 +395,13 @@ describe("mapeamento ficha ↔ formulário", () => {
       { nivel: 0, nome: "", powers: [] },
     ]);
     expect(v.nome).toBe("");
+  });
+
+  it("ficha sem distribuição usa Faz-tudo; a gravada é mantida", () => {
+    expect(sheetToWizard(blankSheet()).dist).toBe("Faz-tudo");
+    expect(sheetToWizard(completeSheet({ dist: "Especialista" })).dist).toBe(
+      "Especialista"
+    );
   });
 
   it("lê a ficha sem o Predador aplicado", () => {
@@ -384,6 +431,7 @@ describe("mapeamento ficha ↔ formulário", () => {
       conceito: "c",
       cronica: "cr",
       desejo: "d",
+      perdicao: bane("Brujah"),
       potencia: 1,
       senhor: "s",
     });
@@ -396,9 +444,40 @@ describe("mapeamento ficha ↔ formulário", () => {
     expect(wizardToPatch(v, STEP_FIELDS[0], completeSheet())).toEqual({
       cla: "Brujah",
       geracao: "9ª",
+      perdicao: bane("Brujah"),
       potencia: 2,
       senhor: "",
     });
+  });
+
+  it("troca de clã substitui a Perdição automática", () => {
+    const sheet = completeSheet({ perdicao: bane("Brujah") });
+    const v = values({ cla: "Gangrel" });
+    expect(wizardToPatch(v, STEP_FIELDS[0], sheet).perdicao).toBe(
+      bane("Gangrel")
+    );
+  });
+
+  it("Sangue-ralo grava o texto do catálogo", () => {
+    const v = values({ cla: "Sangue-ralo" });
+    expect(wizardToPatch(v, STEP_FIELDS[0], completeSheet()).perdicao).toBe(
+      bane("Sangue-ralo")
+    );
+  });
+
+  it("preserva a Perdição editada pelo jogador", () => {
+    const sheet = completeSheet({ perdicao: "Minha maldição" });
+    const v = values({ cla: "Gangrel" });
+    expect(wizardToPatch(v, STEP_FIELDS[0], sheet)).not.toHaveProperty(
+      "perdicao"
+    );
+  });
+
+  it("clã inválido não grava a Perdição", () => {
+    const v = values({ cla: "" });
+    expect(
+      wizardToPatch(v, STEP_FIELDS[0], completeSheet())
+    ).not.toHaveProperty("perdicao");
   });
 
   it("descarta especialidades vazias", () => {

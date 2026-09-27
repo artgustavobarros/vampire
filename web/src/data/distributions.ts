@@ -24,5 +24,7 @@ export const SKILL_DISTRIBUTIONS: readonly SkillDistribution[] = [
   },
 ];
 
-/** O standalone usa "Equilibrado" quando nenhuma distribuição foi escolhida. */
-export const [, DEFAULT_DISTRIBUTION] = SKILL_DISTRIBUTIONS;
+/** Distribuição usada quando a ficha ainda não tem nenhuma escolhida. */
+export const DEFAULT_DISTRIBUTION = SKILL_DISTRIBUTIONS.find(
+  (d) => d.name === "Faz-tudo"
+) as SkillDistribution;

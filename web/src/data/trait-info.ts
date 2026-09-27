@@ -1,6 +1,5 @@
 // Descrições próprias, não do livro. Revisar com a mesa.
 // Portado de "Mudanças desde o último standalone" (painel lateral de descrição).
-// Formatação no painel: **negrito**, *itálico*, \n quebra a linha e \n\n abre parágrafo.
 // Não marque a frase de rolagem ("Atributo + Disciplina") das descrições de poder: ela é extraída por regex.
 
 export type StateKind =
@@ -32,7 +31,7 @@ export const ATTR_INFO: Readonly<
   Record<string, readonly [string, readonly string[]]>
 > = {
   Autocontrole: [
-    "O Autocontrole permite qeu você permaneça calmo, controle suas emoções e tranquilize os outros. Também representa sua capacidade de manter a calma em tudo, de tiroteios a encontros íntimos. \n\nAutocontrole + Determinação resultam na sua Força de Vontade.",
+    "O Autocontrole permite que você permaneça calmo, controle suas emoções e tranquilize os outros. Também representa sua capacidade de manter a calma em tudo, de tiroteios a encontros íntimos. \n\nAutocontrole + Determinação resultam na sua Força de Vontade.",
     [
       "O menor insulto ou confronto pode levá-lo ao frenesi.",
       "Você pode subjugar seus instintos predatórios na maioria das situações não hostis.",
@@ -42,81 +41,81 @@ export const ATTR_INFO: Readonly<
     ],
   ],
   Carisma: [
-    "O Carisma mede seu charme natural, graça e *sex appeal*. Quando você tem este Atributo, ele atrai as pessoas para você, facilitando muito sua alimentação. \n\nO Carisma não depende de boa aparência, que é a sua própria Qualidade.",
+    "O Carisma mede seu charme natural, graça e sex appeal. Quando você tem este Atributo, ele atrai as pessoas para você, facilitando muito sua alimentação. \n\nO Carisma não depende de boa aparência, que é a sua própria Qualidade.",
     [
-      "Você pode falar claramente, embora pocucas pesoas tendam a ouvir.",
+      "Você pode falar claramente, embora poucas pessoas tendam a ouvir.",
       "Geralmente agradável, apesar de sua natureza não viva, você pode até fazer amigos.",
-      "As pessoas confiam em você implicatmente, por isso você faz amigos com facilidade.",
+      "As pessoas confiam em você implicitamente, por isso você faz amigos com facilidade.",
       "Você possui magnetismo pessoal significativo e atrai seguidores como moscas.",
       "Você pode liderar uma cidade em rebelião, se assim quiser.",
     ],
   ],
   Destreza: [
-    "A Destreza governa sua agilidade e elegância, a rapidez com que você se esquiva de uma estaca que mira seu coração e quanto controle motor fino você possui quando está contra o relógio",
+    "A Destreza governa sua agilidade e elegância, a rapidez com que você se esquiva de uma estaca que mira seu coração e quanto controle motor fino você possui quando está contra o relógio.",
     [
       "Você pode correr, mas se equilibrar e se esquivar são um desafio.",
       "Sua arrancada é sólida e, às vezes, você parece gracioso em seus movimentos.",
-      "Sua agilidade é impressionante e sua coordenação é tao boa quanot a de qualquer amador treinado",
-      "Você pode se destacar em acrobacias e se mover de uma mneira que poucos humanos conseguem.",
-      "Seus movimentos são fluidos e hipnóticos - quase sobre-humanos.",
+      "Sua agilidade é impressionante e sua coordenação é tão boa quanto a de qualquer amador treinado.",
+      "Você pode se destacar em acrobacias e se mover de uma maneira que poucos humanos conseguem.",
+      "Seus movimentos são fluidos e hipnóticos — quase sobre-humanos.",
     ],
   ],
   Determinação: [
     "A Determinação fornece foco e propósito. Ela mede sua concentração e fortitude mental. A Determinação impele vigílias que varam a noite e bloqueiam distrações. \n\nSua Força de Vontade é igual ao seu Autocontrole + Determinação.",
     [
       "Você só presta atenção nas coisas mais urgentes.",
-      "Você consegue se concentrar por um long período, contanto que não seja muito longo.",
+      "Você consegue se concentrar por um longo período, contanto que não seja muito longo.",
       "Distraí-lo exige mais esforço do que a maioria das pessoas está disposta a fazer.",
-      "Voc~e pode superar obstáculos e chegar a uma dedução empregando nada mais do que força-bruta mental.",
+      "Você pode superar obstáculos e chegar a uma dedução empregando nada mais do que força-bruta mental.",
       "Você consegue pensar em meio a um tiroteio ou vigiar a porta de uma orgia de sangue e depois limpar cada gota ou projétil derramado.",
     ],
   ],
   Força: [
-    "A Força determina o tamanho de um mortal que você pode levantar, o quão forte você pode atingi-lo e o quanto de força você pode obrigar seu corpo mortor a exercer.",
+    "A Força determina o tamanho de um mortal que você pode levantar, o quão forte você pode atingi-lo e o quanto de força você pode obrigar seu corpo morto a exercer.",
     [
-      "Você pode esmagar facilmente uma lavinha de cerveja.",
+      "Você pode esmagar facilmente uma latinha de cerveja.",
       "Você é fisicamente mediano.",
       "Você pode ser capaz de arrombar uma porta de madeira.",
-      "Você é uma espécime de físico privilegiado, provavelmente com uma musculatura vistosa.",
-      "Você é um verdadeiro pináculo de força e provavlmente é capaz de arrombar uma porta corta-fogo de metal, rasgar uma cerca de arame ou estourar um portão trnacado por correntes.",
+      "Você é um espécime de físico privilegiado, provavelmente com uma musculatura vistosa.",
+      "Você é um verdadeiro pináculo de força e provavelmente é capaz de arrombar uma porta corta-fogo de metal, rasgar uma cerca de arame ou estourar um portão trancado por correntes.",
     ],
   ],
   Inteligência: [
-    "A Inteligência mede sua capacidade de pensar, pesquisar e aplicar a lógica. Você pode lembrar e analisar informações de livros ou de seus sentidos. Nenhum enimga ou mistério pode iludir os verdadeiramente inteligentes.",
+    "A Inteligência mede sua capacidade de pensar, pesquisar e aplicar a lógica. Você pode lembrar e analisar informações de livros ou de seus sentidos. Nenhum enigma ou mistério pode iludir os verdadeiramente inteligentes.",
     [
-      "Você pode ler escrever com competência, embora alguns termos o confundam.",
+      "Você pode ler e escrever com competência, embora alguns termos o confundam.",
       "Você é inteligente o suficiente para perceber suas limitações.",
       "Você é brilhante, capaz de juntar pistas sem dificuldade.",
-      "Você provavelmente é consultado por membro do Clã Tremere por sua sabedoria.",
+      "Você provavelmente é consultado por membros do Clã Tremere por sua sabedoria.",
       'O termo "gênio" não abarca as profundezas e o alcance de seu intelecto.',
     ],
   ],
   Manipulação: [
-    "Manipulação é a sua capacidade de convecer os outros do seu ponto de vista, mentir de forma convincente e partir após enganar alguém sem que ninguém tenha notado.",
+    "Manipulação é a sua capacidade de convencer os outros do seu ponto de vista, mentir de forma convincente e partir após enganar alguém sem que ninguém tenha notado.",
     [
-      "Desde que seja honesto, você pode convencer as pessoas a fazer o qeu você quer.",
+      "Desde que seja honesto, você pode convencer as pessoas a fazer o que você quer.",
       "Sua capacidade de enganar supera a vontade dos simplórios e fracos de mente.",
       "Você nunca precisa pagar o preço total de nada.",
-      "Você poderia ser um líder de um culto - ou um político",
-      "Você poderia convencer o Príncipe a investir em propriedades no deserto, ou talvez até a cancelar uma Caçada de SAngue por sua cabeça.",
+      "Você poderia ser um líder de um culto — ou um político.",
+      "Você poderia convencer o Príncipe a investir em propriedades no deserto, ou talvez até a cancelar uma Caçada de Sangue por sua cabeça.",
     ],
   ],
   Raciocínio: [
-    'O Raciocínio é usado para pensar com rapidez e reagir corretamente com base em pouca informação. "Você ouve um som" é Raciocínio; "Você ouve dois guardas chegando" é Inteligência. O Raciocínio permite qeu você perceba uma emboscada ou responda de bate-pronto à Harpia no tribunal, em vez de pensar na melhor responsta apenas na noite seguinte.',
+    'O Raciocínio é usado para pensar com rapidez e reagir corretamente com base em pouca informação. "Você ouve um som" é Raciocínio; "Você ouve dois guardas chegando" é Inteligência. O Raciocínio permite que você perceba uma emboscada ou responda de bate-pronto à Harpia no tribunal, em vez de pensar na melhor resposta apenas na noite seguinte.',
     [
       "Você acaba entendendo, mas precisa de explicação.",
-      "Voc~e pode apostar a sorte no póquer ou pisar nos freios a tempo. Quase sempre.",
+      "Você pode apostar a sorte no pôquer ou pisar nos freios a tempo. Quase sempre.",
       "Você pode analisar uma situação e descobrir rapidamente a melhor rota de fuga.",
-      "Voc~e nunac é pego desprevenido e sempre tem uma resposta inteligente na ponta da língua.",
-      "Você poensa e responde mais rapidamente do que a maioria das pessoas pode compreender.",
+      "Você nunca é pego desprevenido e sempre tem uma resposta inteligente na ponta da língua.",
+      "Você pensa e responde mais rapidamente do que a maioria das pessoas pode compreender.",
     ],
   ],
   Vigor: [
-    "Sua resistência física. Vigor absorve danos físicos, como uma bala em alta velocidade ou a lâmina de um caçador, além de permitir que você não ce a esforço árduo. \n\nSeu Vigor + 3 resulta no seu valor de Vitalidade",
+    "Sua resistência física. Vigor absorve danos físicos, como uma bala em alta velocidade ou a lâmina de um caçador, além de permitir que você não ceda a esforço árduo. \n\nSeu Vigor + 3 resulta no seu valor de Vitalidade.",
     [
       "Mesmo esforços menores o deixam sem fôlego.",
       "Você pode levar uma surra, mas considera fazer as pazes.",
-      "Alguns dias da caminhada difícil com uma mochila pesada não são problema para você",
+      "Alguns dias de caminhada difícil com uma mochila pesada não são problema para você.",
       "Você pode vencer uma maratona ou aguentar grandes quantidades de dor, ao menos fisicamente.",
       "Mesmo se fosse um mortal, você nunca derramaria uma gota de suor.",
     ],
@@ -428,10 +427,13 @@ export const SKILL_INFO: Readonly<
 export const DISC_INFO: Readonly<Record<string, string>> = {
   "Alquimia de Sangue-fraco":
     "Fórmulas que imitam Disciplinas usando sangue fraco.",
+  "Alquimia de Sangue-ralo":
+    "Fórmulas que imitam Disciplinas usando sangue de sangue-ralo.",
   Animalismo: "Domínio sobre animais e sobre a Besta, a sua e a dos outros.",
   Auspícios:
     "Sentidos sobrenaturais: ver auras, ler pensamentos, pressentir o que vem.",
   Celeridade: "Velocidade e reflexos acima do humano.",
+  Dominação: "Controle da mente alheia pelo olhar e pela voz.",
   Domínio: "Controle da mente alheia pelo olhar e pela voz.",
   "Feitiçaria de Sangue": "Magia feita com vitae: rituais e poderes de sangue.",
   Fortitude: "Resistência sobrenatural a dano, dor e controle mental.",
@@ -441,6 +443,7 @@ export const DISC_INFO: Readonly<Record<string, string>> = {
   Potência: "Força física sobrenatural.",
   Presença: "Poder emocional: fascinar, aterrorizar, fazer-se amado.",
   Protean: "Mudança de forma: garras, fundir-se à terra, virar animal.",
+  Proteanismo: "Mudança de forma: garras, fundir-se à terra, virar animal.",
 };
 
 export const TRAIT_INFO: Readonly<Record<StateKind, TraitInfo>> = {
@@ -482,9 +485,9 @@ export const TRAIT_INFO: Readonly<Record<StateKind, TraitInfo>> = {
     [
       ["Colérico", "Celeridade, Potência"],
       ["Melancólico", "Fortitude, Oblívio"],
-      ["Fleumático", "Auspícios, Domínio"],
+      ["Fleumático", "Auspícios, Dominação"],
       ["Sanguíneo", "Feitiçaria de Sangue, Presença"],
-      ["Animal", "Animalismo, Protean"],
+      ["Animal", "Animalismo, Proteanismo"],
     ],
     "A intensidade define por quanto tempo e quanto o bônus vale.",
   ],
@@ -499,7 +502,7 @@ export const TRAIT_INFO: Readonly<Record<StateKind, TraitInfo>> = {
       ],
       [
         "✕",
-        "Agravado. Para mortais, um personagem com Mediciona pode converter dano Agravado na sua Trilha de Vitalidade para dano Superficial. Ele deve obter sucesso em um teste simples de Inteligência + Medicina; a Dificuldade é igual ao dano Agravado total do paciente. Tentativas de um personagem curar-se a si próprio somam + 1 à Dificuldade. \n A quantidade máxima de pontos de dano Agravado que um personagem pode remover é igual à metade do seu valor na Habilidade Medicina, arredondado para cima.\n Vampiros normalmente podem curar 1 nível de dano Agravado à Vitalidade por noite Inflamando o Sangue.",
+        "Agravado. Para mortais, um personagem com Medicina pode converter dano Agravado na sua Trilha de Vitalidade para dano Superficial. Ele deve obter sucesso em um teste simples de Inteligência + Medicina; a Dificuldade é igual ao dano Agravado total do paciente. Tentativas de um personagem curar-se a si mesmo somam + 1 à Dificuldade. \n A quantidade máxima de pontos de dano Agravado que um personagem pode remover é igual à metade do seu valor na Habilidade Medicina, arredondado para cima.\n Vampiros normalmente podem curar 1 nível de dano Agravado à Vitalidade por noite Inflamando o Sangue.",
       ],
     ],
     "Quando todas as caixas estão marcadas, você cai em torpor.",
@@ -511,11 +514,11 @@ export const TRAIT_INFO: Readonly<Record<StateKind, TraitInfo>> = {
     [
       [
         "/",
-        "Superficial. No  início de uma sessão, tanto vampiros quanto mortais podem remover uma quantidade máxima de níveis de dano Superficial da sua trilha de Força de Vontade igual ao seu valor de Autocontrole ou Determinação (o que for maior).",
+        "Superficial. No início de uma sessão, tanto vampiros quanto mortais podem remover uma quantidade máxima de níveis de dano Superficial da sua trilha de Força de Vontade igual ao seu valor de Autocontrole ou Determinação (o que for maior).",
       ],
       [
         "✕",
-        "Agravado. No início da sessão, um personagem qeu tenha agido de acordo com sua Ambição pode curar 1 nível de dano Agravado à Força de Vontade.\nNo entanto, as consequências podem continuar.",
+        "Agravado. No início da sessão, um personagem que tenha agido de acordo com sua Ambição pode curar 1 nível de dano Agravado à Força de Vontade.\nNo entanto, as consequências podem continuar.",
       ],
     ],
     "Gaste um ponto para rerrolar até três dados comuns.",

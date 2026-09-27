@@ -1,10 +1,15 @@
 import { Controller, useFieldArray, useWatch } from "react-hook-form";
-import { Field } from "#/components/ui/field";
-import { Input } from "#/components/ui/input";
 import { DotRating } from "#/components/vtm/dot-rating";
-import { InfoButton } from "#/components/vtm/info-trigger";
+import { InfoTrigger } from "#/components/vtm/info-trigger";
 import { EmptyState } from "#/components/vtm/text";
-import type { MeritKind } from "#/lib/types";
+import {
+  findMerit,
+  type MeritTemplate,
+  meritGroupLabel,
+  meritPointOptions,
+  meritRangeLabel,
+  sameMeritName,
+} from "#/data/merits";
 import { cn } from "#/lib/utils";
 import {
   effectiveMeritKind,
@@ -14,23 +19,22 @@ import {
   meritStatus,
 } from "#/rules/wizard";
 import { useWizardForm } from "./form-fields";
+import {
+  MERIT_ACTION as ACTION,
+  KIND_BG,
+  KIND_LABEL,
+  KindBadge,
+  MeritCombobox,
+} from "./merit-combobox";
 
-const ACTION =
-  "font-label font-semibold text-xs uppercase leading-none tracking-widest";
+const FREE_POINTS = [1, 2, 3, 4, 5] as const;
 
-const KIND_LABEL: Record<MeritKind, string> = {
-  defeito: "Defeito",
-  "defeito-sr": "Defeito SR",
-  "qualidade-sr": "Qualidade SR",
-  vantagem: "Vantagem",
-};
-
-const KIND_BG: Record<MeritKind, string> = {
-  defeito: "bg-blood",
-  "defeito-sr": "bg-blood",
-  "qualidade-sr": "bg-moss",
-  vantagem: "bg-moss",
-};
+/** Item do catálogo pelo nome (aceita sufixo "(detalhe)"); nomes livres ficam fora. */
+function catalogMerit(nome: string): MeritTemplate | undefined {
+  const hit = findMerit(nome);
+  const base = nome.replace(/\s*\([^)]*\)/g, "");
+  return hit && sameMeritName(hit.name, base) ? hit : undefined;
+}
 
 const RULE =
   "Distribua 7 pontos em Vantagens e adquira 2 pontos de Defeitos além daqueles obtidos do seu Tipo de Predador.";
@@ -48,6 +52,7 @@ export function Step7Merits() {
   const kinds = meritKinds(cla);
   const status = meritStatus(meritos, cla);
   const { totals } = status;
+  const taken = new Set(meritos.map((m) => catalogMerit(m.nome)));
 
   return (
     <>
@@ -78,102 +83,90 @@ export function Step7Merits() {
       >
         {status.message}
       </div>
-      {fields.map((row, i) => (
-        <div
-          className="flex flex-wrap items-start gap-3 border-line-soft border-b py-2"
-          key={row.id}
-        >
-          <Controller
-            control={control}
-            name={`meritos.${i}.tipo`}
-            render={({ field }) => {
-              const tipo = effectiveMeritKind(field.value, cla);
-              return (
-                <button
-                  className={cn(
-                    ACTION,
-                    "mt-2 min-w-28 cursor-pointer whitespace-nowrap px-2 py-1 text-white",
-                    KIND_BG[tipo]
-                  )}
-                  onClick={() =>
-                    field.onChange(
-                      kinds[(kinds.indexOf(tipo) + 1) % kinds.length]
-                    )
-                  }
-                  title="Alternar tipo"
-                  type="button"
-                >
-                  {KIND_LABEL[tipo]}
-                </button>
-              );
-            }}
-          />
-          <Controller
-            control={control}
-            name={`meritos.${i}.nome`}
-            render={({ field, fieldState }) => (
-              <Field
-                className="min-w-35 flex-1"
-                data-invalid={fieldState.invalid}
-              >
-                <Input
-                  {...field}
-                  aria-invalid={fieldState.invalid}
-                  aria-label="Nome"
-                  placeholder="Nome"
-                />
-              </Field>
+      <MeritCombobox
+        isTaken={(m) => taken.has(m)}
+        onPick={append}
+        thin={thin}
+      />
+      {fields.map((row, i) => {
+        const nome = meritos[i]?.nome ?? row.nome;
+        const canon = catalogMerit(nome);
+        const allowed = canon ? meritPointOptions(canon) : FREE_POINTS;
+        const tipo = effectiveMeritKind(meritos[i]?.tipo ?? row.tipo, cla);
+        const pontos = meritos[i]?.pontos ?? 0;
+        return (
+          <div
+            className="flex flex-wrap items-center gap-x-4 gap-y-2 border-line-soft border-b py-3"
+            key={row.id}
+          >
+            {canon ? (
+              <KindBadge className="min-w-28 text-center" tipo={tipo} />
+            ) : (
+              <Controller
+                control={control}
+                name={`meritos.${i}.tipo`}
+                render={({ field }) => (
+                  <button
+                    className={cn(
+                      ACTION,
+                      "min-w-28 cursor-pointer whitespace-nowrap px-2 py-1 text-white",
+                      KIND_BG[tipo]
+                    )}
+                    onClick={() =>
+                      field.onChange(
+                        kinds[(kinds.indexOf(tipo) + 1) % kinds.length]
+                      )
+                    }
+                    title="Alternar tipo"
+                    type="button"
+                  >
+                    {KIND_LABEL[tipo]}
+                  </button>
+                )}
+              />
             )}
-          />
-          <Controller
-            control={control}
-            name={`meritos.${i}.pontos`}
-            render={({ field, fieldState }) => (
-              <Field className="mt-3 w-auto" data-invalid={fieldState.invalid}>
+            <div className="min-w-35 flex-1">
+              <InfoTrigger
+                className="block font-serif text-ink text-xl leading-tight"
+                target={{ key: nome, kind: "merit", pontos, tipo }}
+              >
+                {nome}
+              </InfoTrigger>
+              <div className={cn(ACTION, "mt-1 text-ink-soft normal-case")}>
+                {canon
+                  ? `${meritGroupLabel(canon.category)} · ${meritRangeLabel(allowed)}`
+                  : "Fora do catálogo"}
+              </div>
+            </div>
+            <Controller
+              control={control}
+              name={`meritos.${i}.pontos`}
+              render={({ field }) => (
                 <DotRating
-                  label={`Pontos de ${meritos[i]?.nome || "linha"}`}
+                  allowed={allowed}
+                  label={`Pontos de ${nome}`}
                   onChange={field.onChange}
                   size="sm"
                   value={field.value}
                 />
-              </Field>
-            )}
-          />
-          <InfoButton
-            aria-label={`Sobre ${meritos[i]?.nome || "esta linha"}`}
-            className="mt-1"
-            target={{
-              key: meritos[i]?.nome ?? "",
-              kind: "merit",
-              pontos: meritos[i]?.pontos ?? 0,
-              tipo: effectiveMeritKind(meritos[i]?.tipo ?? "vantagem", cla),
-            }}
-          />
-          <button
-            className={cn(ACTION, "mt-4 cursor-pointer text-ink/55")}
-            onClick={() => remove(i)}
-            type="button"
-          >
-            Remover
-          </button>
-        </div>
-      ))}
+              )}
+            />
+            <button
+              className={cn(ACTION, "cursor-pointer text-ink/55")}
+              onClick={() => remove(i)}
+              type="button"
+            >
+              Remover
+            </button>
+          </div>
+        );
+      })}
       {fields.length === 0 && (
         <EmptyState title="Nenhum mérito ou defeito">
-          Méritos custam pontos positivos; defeitos devolvem pontos. Adicione o
-          primeiro abaixo.
+          Busque acima e escolha no catálogo. Vantagens custam pontos; defeitos
+          devolvem pontos.
         </EmptyState>
       )}
-      <button
-        className={cn(
-          ACTION,
-          "mt-3 inline-block cursor-pointer border border-line px-3 py-2"
-        )}
-        onClick={() => append({ nome: "", pontos: 1, tipo: "vantagem" })}
-        type="button"
-      >
-        Adicionar
-      </button>
     </>
   );
 }

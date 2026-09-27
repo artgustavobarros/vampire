@@ -14,7 +14,6 @@ import {
 } from "#/components/ui/sheet";
 import { cn } from "#/lib/utils";
 import { buildInfo, type InfoTable, type InfoTarget } from "./build-info";
-import { RichParagraphs, RichText } from "./rich-text";
 
 interface InfoApi {
   open: (target: InfoTarget) => void;
@@ -96,8 +95,8 @@ export function InfoProvider({ children }: { children: ReactNode }) {
                 asChild
                 className="mt-4 font-serif text-ink text-lg"
               >
-                <div>
-                  <RichParagraphs text={info.desc} />
+                <div className="whitespace-pre-line leading-relaxed">
+                  {info.desc}
                 </div>
               </SheetDescription>
               {info.niveis.length ? (
@@ -125,8 +124,8 @@ export function InfoProvider({ children }: { children: ReactNode }) {
                         <span className="min-w-16 flex-none font-bold font-label text-base text-ink">
                           {l.n}
                         </span>
-                        <span className="min-w-0 flex-1 font-serif text-base">
-                          <RichText text={l.txt} />
+                        <span className="min-w-0 flex-1 whitespace-pre-line font-serif text-base">
+                          {l.txt}
                         </span>
                       </li>
                     ))}
@@ -137,8 +136,8 @@ export function InfoProvider({ children }: { children: ReactNode }) {
                 <InfoTableView key={tb.titulo} table={tb} />
               ))}
               {info.nota ? (
-                <div className="mt-6 font-serif text-base text-ink-soft">
-                  <RichParagraphs text={info.nota} />
+                <div className="mt-6 whitespace-pre-line font-serif text-base text-ink-soft">
+                  {info.nota}
                 </div>
               ) : null}
             </>
@@ -181,7 +180,7 @@ function InfoTableView({ table }: { table: InfoTable }) {
                 {row.cells.map((cell, k) => (
                   <td
                     className={cn(
-                      "border-b p-2 font-serif text-[15px] text-ink leading-[1.4]",
+                      "whitespace-pre-line border-b p-2 font-serif text-[15px] text-ink leading-[1.4]",
                       row.current
                         ? "border-ink bg-field"
                         : "border-line-soft bg-transparent",
@@ -189,7 +188,7 @@ function InfoTableView({ table }: { table: InfoTable }) {
                     )}
                     key={table.colunas[k]}
                   >
-                    <RichText text={cell} />
+                    {cell}
                   </td>
                 ))}
               </tr>

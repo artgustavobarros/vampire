@@ -1,6 +1,8 @@
 import { describe, expect, it } from "vitest";
-import { DISCIPLINES } from "#/data/disciplines";
-import { findPredator, type Predator } from "#/data/predators";
+import { DISCIPLINES, POWERS } from "#/data/disciplines";
+import { findMerit } from "#/data/merits";
+import { findPredator, PREDATORS, type Predator } from "#/data/predators";
+import { SKILLS } from "#/data/traits";
 import { blankSheet } from "#/lib/sheet";
 import type { DamageMark, Merit, Power, Sheet } from "#/lib/types";
 import { bloodSurgeNote, healAggravated, rouseCheck, sleep } from "./actions";
@@ -16,6 +18,8 @@ import { adjustHumanity, stains, toggleStain } from "./humanity";
 import { hungerAlertFor } from "./hunger";
 import {
   applyPredator,
+  disciplineBlock,
+  predatorBlock,
   predatorChoiceStatus,
   predatorDiscipline,
   predatorMerits,
@@ -231,6 +235,14 @@ describe("assistente", () => {
       sheet({ dist: "Equilibrado", skills })
     );
     expect(lines[0]).toEqual({ current: 2, done: false, level: 3, target: 3 });
+  });
+  it("sem distribuição, o progresso usa Faz-tudo", () => {
+    const lines = skillDistributionProgress(sheet());
+    expect(lines.map((l) => [l.level, l.target])).toEqual([
+      [3, 1],
+      [2, 8],
+      [1, 10],
+    ]);
   });
   describe("checagem da distribuição", () => {
     /** Preenche as habilidades na ordem de SKILLS conforme `plan` (nível → quantidade). */
@@ -593,7 +605,7 @@ describe("Predador", () => {
       {
         id: "segredo-evitado",
         message:
-          "Escolha uma opção: Defeito Segredo Obscuro •• (diabolista) ou Evitado ••",
+          "Escolha uma opção: Defeito Segredo Obscuro •• (diablerista) ou Evitado ••",
       },
     ]);
     expect(
@@ -604,7 +616,7 @@ describe("Predador", () => {
     const osiris = pred("Osíris");
     expect(
       predatorChoiceStatus(osiris, {
-        "inimigos-perseguido": { Inimigos: 2 },
+        "inimigo-mitico": { Inimigo: 2 },
         "rebanho-fama": { Fama: 1, Rebanho: 1 },
       })
     ).toEqual([
@@ -615,7 +627,7 @@ describe("Predador", () => {
     ]);
     expect(
       predatorChoiceStatus(osiris, {
-        "inimigos-perseguido": { Inimigos: 1, Perseguido: 1 },
+        "inimigo-mitico": { "Defeito Mítico": 1, Inimigo: 1 },
         "rebanho-fama": { Fama: 1, Rebanho: 2 },
       })
     ).toEqual([]);
@@ -623,9 +635,9 @@ describe("Predador", () => {
 
   it("méritos fixos e escolhidos", () => {
     expect(predatorMerits(pred("Sereia"), {})).toEqual([
-      { nome: "Belíssimo", origem: "predador", pontos: 2, tipo: "vantagem" },
+      { nome: "Bonito", origem: "predador", pontos: 2, tipo: "vantagem" },
       {
-        nome: "Inimigo (amante preterido)",
+        nome: "Inimigo (amante desprezado ou parceiro ciumento)",
         origem: "predador",
         pontos: 1,
         tipo: "defeito",
@@ -633,14 +645,125 @@ describe("Predador", () => {
     ]);
     expect(
       predatorMerits(pred("Osíris"), {
-        "inimigos-perseguido": { Inimigos: 2, Perseguido: 0 },
+        "inimigo-mitico": { "Defeito Mítico": 0, Inimigo: 2 },
         "rebanho-fama": { Fama: 1, Rebanho: 2 },
       })
     ).toEqual([
       { nome: "Rebanho", origem: "predador", pontos: 2, tipo: "vantagem" },
       { nome: "Fama", origem: "predador", pontos: 1, tipo: "vantagem" },
-      { nome: "Inimigos", origem: "predador", pontos: 2, tipo: "defeito" },
+      { nome: "Inimigo", origem: "predador", pontos: 2, tipo: "defeito" },
     ]);
+  });
+
+  it("méritos de mesmo nome e tipo somam", () => {
+    expect(
+      predatorMerits(pred("Alçapão"), {
+        "lacaios-rebanho-refugio": { Refúgio: 1 },
+        "refugio-defeito": { "Refúgio Assustador": 1 },
+      })
+    ).toEqual([
+      { nome: "Refúgio", origem: "predador", pontos: 2, tipo: "vantagem" },
+      {
+        nome: "Refúgio Assustador",
+        origem: "predador",
+        pontos: 1,
+        tipo: "defeito",
+      },
+    ]);
+  });
+
+  it("catálogo tem os 16 tipos do Livro Básico e do Players Guide", () => {
+    expect(PREDATORS.map((p) => p.name)).toEqual([
+      "Gato de Rua",
+      "Extorsionário",
+      "Sereia",
+      "Saqueador",
+      "Sanguessuga",
+      "Doméstico",
+      "Consensualista",
+      "Fazendeiro",
+      "Osíris",
+      "João Pestana",
+      "Rainha da Cena",
+      "Ladrão de Túmulos",
+      "Ceifador",
+      "Montero",
+      "Perseguidor",
+      "Alçapão",
+    ]);
+  });
+
+  it("especialidades, Disciplinas e méritos batem com os catálogos", () => {
+    // méritos que só o Predador usa e ainda não estão em data/merits.ts
+    const fora = new Set([
+      "Sabujo de Sangue",
+      "Predador Óbvio",
+      "Refúgio Assustador",
+      "Refúgio Assombrado",
+      "Rejeitado",
+      "Defeito Mítico",
+    ]);
+    for (const p of PREDATORS) {
+      for (const spec of p.specialties) {
+        expect(SKILLS, `${p.name}: ${spec}`).toContain(
+          splitPredatorSpecialty(spec)?.skill
+        );
+      }
+      expect(p.disciplines).toHaveLength(2);
+      for (const d of p.disciplines) {
+        expect(DISCIPLINES, `${p.name}: ${d.nome}`).toContain(
+          d.nome === "Proteanismo" ? "Protean" : d.nome
+        );
+        expect(POWERS[d.nome]?.length, `${p.name}: ${d.nome}`).toBeGreaterThan(
+          0
+        );
+      }
+      const nomes = p.adjustments.flatMap((a) => {
+        if (a.kind === "merito") {
+          return [a.nome];
+        }
+        return a.kind === "escolha" ? a.opcoes.map((o) => o.nome) : [];
+      });
+      for (const nome of nomes) {
+        expect(
+          fora.has(nome) || Boolean(findMerit(nome)),
+          `${p.name}: ${nome}`
+        ).toBe(true);
+      }
+    }
+  });
+
+  it("Predador vetado por clã e Potência de Sangue", () => {
+    const ventrue = { cla: "Ventrue", geracao: "12ª" };
+    expect(predatorBlock(pred("Fazendeiro"), ventrue)).toBe(
+      "Ventrue não pode ser Fazendeiro"
+    );
+    expect(predatorBlock(pred("Saqueador"), ventrue)).toBe(
+      "Ventrue não pode ser Saqueador"
+    );
+    expect(predatorBlock(pred("Sereia"), ventrue)).toBeNull();
+    expect(
+      predatorBlock(pred("Fazendeiro"), { cla: "Brujah", geracao: "7ª" })
+    ).toBe("Exige Potência de Sangue 2 ou menos");
+    expect(
+      predatorBlock(pred("Fazendeiro"), { cla: "Brujah", geracao: "9ª" })
+    ).toBeNull();
+    for (const p of PREDATORS) {
+      expect(predatorBlock(p, { cla: "Brujah", geracao: "12ª" })).toBeNull();
+    }
+  });
+
+  it("Feitiçaria de Sangue só para Tremere e Banu Haqim", () => {
+    for (const name of ["Saqueador", "Osíris"]) {
+      const [feiticaria, outra] = pred(name).disciplines;
+      expect(feiticaria.nome).toBe("Feitiçaria de Sangue");
+      expect(disciplineBlock(feiticaria, "Brujah")).toBe(
+        "só Tremere e Banu Haqim"
+      );
+      expect(disciplineBlock(feiticaria, "Tremere")).toBeNull();
+      expect(disciplineBlock(feiticaria, "Banu Haqim")).toBeNull();
+      expect(disciplineBlock(outra, "Brujah")).toBeNull();
+    }
   });
 
   it("ponto em Disciplina existente e Humanidade", () => {
@@ -666,9 +789,9 @@ describe("Predador", () => {
 
   it("Disciplina nova entra com 1 ponto", () => {
     const s = applyPredator(
-      brujah({ predador: "Sereia", predDisc: "Fascinação" })
+      brujah({ predador: "Sereia", predDisc: "Fortitude" })
     );
-    expect(s.disc.at(-1)).toEqual({ nivel: 1, nome: "Fascinação", powers: [] });
+    expect(s.disc.at(-1)).toEqual({ nivel: 1, nome: "Fortitude", powers: [] });
     expect(s.predBonus?.novaDisciplina).toBe(true);
   });
 
@@ -722,7 +845,7 @@ describe("Predador", () => {
   it("remover desfaz o que foi aplicado", () => {
     for (const [predador, predDisc] of [
       ["Gato de Rua", "Potência"],
-      ["Sereia", "Fascinação"],
+      ["Sereia", "Fortitude"],
     ]) {
       const base = brujah({ predador, predDisc });
       const back = removePredator(applyPredator(base));
@@ -804,13 +927,13 @@ describe("Predador", () => {
       brujah({
         cla: "Ventrue",
         predador: "Extorsionário",
-        predDisc: "Domínio",
+        predDisc: "Dominação",
         predPoder: "Compelir",
       })
     );
     expect(s.disc.at(-1)).toMatchObject({
       nivel: 1,
-      nome: "Domínio",
+      nome: "Dominação",
       powers: [{ nivel: 1, nome: "Compelir" }],
     });
   });
@@ -837,7 +960,7 @@ describe("Predador", () => {
     const meritos: Merit[] = [
       { nome: "Recursos", pontos: 7, tipo: "vantagem" },
       { nome: "Inimigo", pontos: 2, tipo: "defeito" },
-      { nome: "Belíssimo", origem: "predador", pontos: 2, tipo: "vantagem" },
+      { nome: "Bonito", origem: "predador", pontos: 2, tipo: "vantagem" },
     ];
     expect(meritTotals(meritos, "Brujah")).toMatchObject({
       defeitos: 2,

@@ -45,6 +45,34 @@ describe("DotRating", () => {
     expect(pressed()).toBe(2);
   });
 
+  function Allowed({ start, allowed }: { allowed: number[]; start: number }) {
+    const [v, setV] = useState(start);
+    return (
+      <DotRating allowed={allowed} label="Bonito" onChange={setV} value={v} />
+    );
+  }
+
+  it("custo fixo: pontos acima tracejados e valor travado", () => {
+    render(<Allowed allowed={[2]} start={2} />);
+    expect(screen.getByRole("button", { name: "Bonito 3" })).toBeDisabled();
+    expect(screen.getByRole("button", { name: "Bonito 5" })).toBeDisabled();
+    fireEvent.click(screen.getByRole("button", { name: "Bonito 2" }));
+    expect(pressed()).toBe(2);
+  });
+
+  it("faixa não desce abaixo do mínimo", () => {
+    render(<Allowed allowed={[1, 2, 3, 4, 5]} start={1} />);
+    fireEvent.click(screen.getByRole("button", { name: "Bonito 1" }));
+    expect(pressed()).toBe(1);
+  });
+
+  it("faixa parcial aceita o topo e desativa o resto", () => {
+    render(<Allowed allowed={[1, 2]} start={1} />);
+    fireEvent.click(screen.getByRole("button", { name: "Bonito 2" }));
+    expect(pressed()).toBe(2);
+    expect(screen.getByRole("button", { name: "Bonito 3" })).toBeDisabled();
+  });
+
   it("somente leitura não tem botões", () => {
     render(<DotRating count={10} label="Potência" value={2} />);
     expect(screen.queryAllByRole("button")).toHaveLength(0);

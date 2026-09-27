@@ -5,6 +5,7 @@ import {
   type MeritOption,
   type Predator,
   type PredatorAdjustment,
+  type PredatorDisciplineOption,
 } from "#/data/predators";
 import type {
   Discipline,
@@ -13,6 +14,7 @@ import type {
   PredatorBonus,
   Sheet,
 } from "#/lib/types";
+import { potencyFromGeneration } from "./generation";
 import { addPower, isThinBlood, toPower } from "./wizard";
 
 type Choice = Extract<PredatorAdjustment, { kind: "escolha" }>;
@@ -24,7 +26,7 @@ const clamp = (value: number, min: number, max: number) =>
 const meritName = ({ nome, detalhe }: MeritOption) =>
   detalhe ? `${nome} (${detalhe})` : nome;
 
-/** Rótulo de uma opção de escolha ("Segredo Obscuro (diabolista)"). */
+/** Rótulo de uma opção de escolha ("Segredo Obscuro (diablerista)"). */
 export const choiceOptionLabel = meritName;
 
 const choicesOf = (predator: Predator): Choice[] =>
@@ -57,6 +59,35 @@ function choiceMessage(choice: Choice) {
   return `Distribua ${choice.pontos} pontos entre ${names}`;
 }
 
+/**
+ * Motivo de o Predador não poder ser escolhido pelo clã e pela Geração, ou
+ * `null`. A Potência é a da Geração: no assistente o Predador não foi aplicado.
+ */
+export function predatorBlock(
+  predator: Predator,
+  sheet: Pick<Sheet, "cla" | "geracao">
+): string | null {
+  if (sheet.cla && predator.clasProibidos?.includes(sheet.cla)) {
+    return `${sheet.cla} não pode ser ${predator.name}`;
+  }
+  const max = predator.potenciaMaxima;
+  if (max !== undefined && (potencyFromGeneration(sheet.geracao) ?? 0) > max) {
+    return `Exige Potência de Sangue ${max} ou menos`;
+  }
+  return null;
+}
+
+/** Motivo de a opção de Disciplina não valer para o clã, ou `null`. */
+export function disciplineBlock(
+  option: PredatorDisciplineOption,
+  cla: string | undefined
+): string | null {
+  if (!option.clas || option.clas.includes(cla ?? "")) {
+    return null;
+  }
+  return `só ${option.clas.join(" e ")}`;
+}
+
 /** Escolhas de ajuste do Predador que ainda faltam, com a mensagem de cada uma. */
 export function predatorChoiceStatus(
   predator: Predator,
@@ -67,30 +98,28 @@ export function predatorChoiceStatus(
     .map((c) => ({ id: c.id, message: choiceMessage(c) }));
 }
 
-/** Linhas de mérito dos ajustes fixos e das opções escolhidas. */
+/** Linhas de mérito dos ajustes fixos e das opções escolhidas; nome e tipo iguais somam. */
 export function predatorMerits(
   predator: Predator,
   escolhas: PredatorChoices | undefined
 ): Merit[] {
   const out: Merit[] = [];
+  const add = (nome: string, tipo: Merit["tipo"], pontos: number) => {
+    const same = out.find((m) => m.nome === nome && m.tipo === tipo);
+    if (same) {
+      same.pontos += pontos;
+    } else {
+      out.push({ nome, origem: "predador", pontos, tipo });
+    }
+  };
   for (const a of predator.adjustments) {
     if (a.kind === "merito") {
-      out.push({
-        nome: meritName(a),
-        origem: "predador",
-        pontos: a.pontos,
-        tipo: a.tipo,
-      });
+      add(meritName(a), a.tipo, a.pontos);
     } else if (a.kind === "escolha") {
       for (const o of a.opcoes) {
         const pontos = escolhas?.[a.id]?.[o.nome] || 0;
         if (pontos > 0) {
-          out.push({
-            nome: meritName(o),
-            origem: "predador",
-            pontos,
-            tipo: a.tipo,
-          });
+          add(meritName(o), a.tipo, pontos);
         }
       }
     }

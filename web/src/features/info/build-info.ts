@@ -3,9 +3,11 @@ import { CLAN_FULL } from "#/data/clan-rules";
 import { findClan } from "#/data/clans";
 import {
   canonicalDiscipline,
+  findPower,
   POWERS,
   type PowerTemplate,
 } from "#/data/disciplines";
+import { findMerit } from "#/data/merits";
 import {
   ATTR_INFO,
   DISC_INFO,
@@ -237,9 +239,7 @@ function powerInfo(
   target: Extract<InfoTarget, { kind: "poder" }>
 ): InfoContent {
   const name = target.key.trim();
-  const discName = canonicalDiscipline(target.disc.trim());
-  const list = POWERS[discName] ?? POWERS[target.disc.trim()] ?? [];
-  const hit = list.find((p) => p.name.toLowerCase() === name.toLowerCase());
+  const hit = findPower(target.disc, name);
   const split = hit ? splitRoll(hit.description, hit.duration) : null;
   const rows = powerRows(hit, split);
   const niveis = rows.length ? levels(rows, "") : [];
@@ -315,29 +315,58 @@ function bloodInfo(
   };
 }
 
+function meritKicker(tipo: MeritKind): string {
+  if (tipo === "defeito" || tipo === "defeito-sr") {
+    return "Defeito";
+  }
+  return "Vantagem";
+}
+
+function meritNote(tipo: MeritKind): string {
+  if (tipo === "qualidade-sr" || tipo === "defeito-sr") {
+    return "Característica exclusiva de Sangue-ralo (balanceamento 1:1).";
+  }
+  if (tipo === "defeito") {
+    return "Defeitos devolvem pontos para gastar em vantagens.";
+  }
+  return "Vantagens custam os pontos marcados.";
+}
+
+function meritLevels(
+  levelsText: readonly string[] | undefined,
+  defeito: boolean,
+  pontos: number
+) {
+  const rows = levelsText ?? (defeito ? MERIT_SCALE_D : MERIT_SCALE_V);
+  return dotLevels(rows, pontos);
+}
+
 function meritInfo(
   target: Extract<InfoTarget, { kind: "merit" }>
 ): InfoContent {
+  const canon = findMerit(target.key);
   const name = target.key.trim().toLowerCase();
   const hit = MERIT_INFO.find(([prefix]) => name.startsWith(prefix));
-  const tipo = hit?.[1] ?? target.tipo;
+  const tipo = hit?.[1] ?? canon?.tipo ?? target.tipo;
   const defeito = tipo === "defeito" || tipo === "defeito-sr";
+  const levelsText = hit?.[4] ?? canon?.levels;
+  const fallbackDesc = defeito
+    ? "Defeito fora do catálogo. Combine o efeito com o Narrador."
+    : "Vantagem fora do catálogo. Combine o efeito com o Narrador.";
+  const desc = hit?.[3] ?? canon?.description ?? fallbackDesc;
+  const kicker = meritKicker(tipo);
+  const niveis = meritLevels(levelsText, defeito, target.pontos);
+  const fallbackTitle = defeito ? "Defeito sem nome" : "Vantagem sem nome";
+  const titulo = target.key.trim() || canon?.name || fallbackTitle;
+
   return {
     atual: points(target.pontos, "Sem pontos"),
-    desc:
-      hit?.[3] ??
-      `${defeito ? "Defeito" : "Vantagem"} fora do catálogo. Combine o efeito com o Narrador.`,
-    kicker: defeito ? "Defeito" : "Vantagem",
-    niveis: dotLevels(
-      hit?.[4] ?? (defeito ? MERIT_SCALE_D : MERIT_SCALE_V),
-      target.pontos
-    ),
+    desc,
+    kicker,
+    niveis,
     nivelTit: "O que cada ponto significa",
-    nota: defeito
-      ? "Defeitos devolvem pontos para gastar em vantagens."
-      : "Vantagens custam os pontos marcados.",
-    titulo:
-      target.key.trim() || (defeito ? "Defeito sem nome" : "Vantagem sem nome"),
+    nota: meritNote(tipo),
+    titulo,
   };
 }
 

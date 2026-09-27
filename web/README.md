@@ -48,3 +48,14 @@ src/
 ```
 
 O design segue `design/reference/template.html`: tokens de cor e fonte em `src/styles.css`.
+
+## Referências e Fontes Canônicas
+
+Os dados de regras, disciplinas, poderes, clãs e tipos de predadores implementados nesta aplicação são baseados nos livros oficiais da 5ª Edição de *Vampiro: A Máscara* (Galápagos Jogos / World of Darkness) e alinhados com os projetos da comunidade:
+
+- **[WoD5E-Developers / wod5e](https://github.com/WoD5E-Developers/wod5e)**: Sistema comunitário de World of Darkness 5e para Foundry VTT (motor de regras, fichas e taxonomia de dados).
+- **[vtm5e-compendio-ptbr](https://github.com/pixshadoow-beep/vtm5e-compendio-ptbr)**: Compêndio oficial completo em Português Brasileiro (PT-BR) para o sistema `wod5e` no Foundry VTT (extraído estritamente das publicações da Galápagos Jogos).
+- **[albacrux / vtm5_regras_e_matrizes](https://github.com/albacrux/vtm5_regras_e_matrizes)**: Matrizes e referências canônicas de termos e paradas de dados V5 em PT-BR.
+
+> **Aviso Legal (Dark Pack):** Partes dos materiais utilizados são propriedade intelectual de copyright e marcas registradas da Paradox Interactive AB e são usadas de acordo com a política *Dark Pack*.
+

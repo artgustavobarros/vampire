@@ -57,12 +57,12 @@ describe("painel de descrição", () => {
     );
   });
 
-  it("formata negrito, itálico e parágrafos da descrição", async () => {
+  it("exibe a descrição e quebras de linha", async () => {
     render(
       <InfoProvider>
         <InfoTrigger
           target={{
-            desc: "Exige um **Rouse Check**.\n\nA *Besta* acorda.",
+            desc: "Exige um Rouse Check.\n\nA Besta acorda.",
             disc: "Serpentis",
             key: "Olhar da Serpente",
             kind: "poder",
@@ -78,13 +78,9 @@ describe("painel de descrição", () => {
     const dialog = await screen.findByRole("dialog", {
       name: "Olhar da Serpente",
     });
-    expect(dialog.querySelector("strong")).toHaveTextContent("Rouse Check");
-    expect(dialog.querySelector("em")).toHaveTextContent("Besta");
-    expect(dialog.textContent).not.toContain("*");
-    expect(dialog).toHaveAccessibleDescription(
-      "Exige um Rouse Check. A Besta acorda."
-    );
+    expect(dialog).toHaveTextContent("Exige um Rouse Check.");
+    expect(dialog).toHaveTextContent("A Besta acorda.");
     const desc = dialog.querySelector('[data-slot="sheet-description"]');
-    expect(desc?.querySelectorAll("p")).toHaveLength(2);
+    expect(desc?.textContent).toBe("Exige um Rouse Check.\n\nA Besta acorda.");
   });
 });

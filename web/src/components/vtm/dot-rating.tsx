@@ -2,6 +2,8 @@ import { cn } from "#/lib/utils";
 import { nextDotValue } from "#/rules/dots";
 
 interface DotRatingProps {
+  /** valores aceitos; pontos acima do maior ficam tracejados e desativados */
+  allowed?: readonly number[];
   className?: string;
   count?: number;
   label: string;
@@ -13,6 +15,8 @@ interface DotRatingProps {
 }
 
 const SIZES = { lg: "size-10", md: "size-6", sm: "size-5" } as const;
+const OFF = "border-dashed border-ink/25 bg-transparent";
+
 const TONES = {
   blood: { fill: "bg-blood", ring: "border-blood bg-field" },
   ink: { fill: "bg-ink", ring: "border-ink bg-field" },
@@ -21,6 +25,7 @@ const TONES = {
 
 /** Pontos circulares do standalone. Clicar no valor atual diminui 1. */
 export function DotRating({
+  allowed,
   value,
   onChange,
   count = 5,
@@ -31,6 +36,8 @@ export function DotRating({
 }: DotRatingProps) {
   const t = TONES[tone];
   const dots = Array.from({ length: count }, (_, i) => i + 1);
+  const top = allowed ? Math.max(...allowed) : count;
+  const off = (n: number) => n > top;
   if (!onChange) {
     return (
       <span
@@ -40,10 +47,14 @@ export function DotRating({
       >
         {dots.map((n) => (
           <span
-            className={cn("block rounded-full border p-1", SIZES[size], t.ring)}
+            className={cn(
+              "block rounded-full border p-1",
+              SIZES[size],
+              off(n) ? OFF : t.ring
+            )}
             key={n}
           >
-            {value >= n && (
+            {value >= n && !off(n) && (
               <span className={cn("block size-full rounded-full", t.fill)} />
             )}
           </span>
@@ -61,15 +72,21 @@ export function DotRating({
           aria-label={`${label} ${n}`}
           aria-pressed={value >= n}
           className={cn(
-            "block shrink-0 cursor-pointer rounded-full border p-1 focus-visible:outline-2 focus-visible:outline-ink focus-visible:outline-offset-1",
+            "block shrink-0 cursor-pointer rounded-full border p-1 focus-visible:outline-2 focus-visible:outline-ink focus-visible:outline-offset-1 disabled:cursor-default",
             SIZES[size],
-            t.ring
+            off(n) ? OFF : t.ring
           )}
+          disabled={off(n)}
           key={n}
-          onClick={() => onChange(nextDotValue(value, n))}
+          onClick={() => {
+            const next = nextDotValue(value, n);
+            if (allowed === undefined || allowed.includes(next)) {
+              onChange(next);
+            }
+          }}
           type="button"
         >
-          {value >= n && (
+          {value >= n && !off(n) && (
             <span className={cn("block size-full rounded-full", t.fill)} />
           )}
         </button>

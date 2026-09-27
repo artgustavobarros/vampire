@@ -36,7 +36,7 @@ export function completeSheet(over: Partial<Sheet> = {}): Sheet {
     predador: "Gato de Rua",
     predDisc: "Potência",
     predEscolhas: {},
-    predEspec: "Briga (Agarrar)",
+    predEspec: "Briga (Agarramento)",
     predEspecNome: "Agarrar",
     predPoder: "Força Prodigiosa",
     skills: {

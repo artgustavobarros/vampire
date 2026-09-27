@@ -17,8 +17,10 @@ const DISCIPLINE_CANONICAL: Record<string, string> = {
   "Alquimia de Sangue Fino": "Alquimia de Sangue-ralo",
   "Alquimia de Sangue-fraco": "Alquimia de Sangue-ralo",
   "Alquimia de Sangue-ralo": "Alquimia de Sangue-ralo",
+  "Alquimia Sangue-Ralo": "Alquimia de Sangue-ralo",
   Dominação: "Dominação",
   Domínio: "Dominação",
+  Metamorfose: "Proteanismo",
   Protean: "Proteanismo",
   Proteanismo: "Proteanismo",
 };
@@ -1780,3 +1782,45 @@ export const POWERS: Readonly<Record<string, readonly PowerTemplate[]>> = {
   Protean: PROTEAN_POWERS,
   Proteanismo: PROTEAN_POWERS,
 };
+
+export const POWER_ALIASES: Readonly<Record<string, string>> = {
+  "Desfazer a Fera": "Expulsar a Fera",
+  "Expelir a Fera": "Expulsar a Fera",
+  Fascinação: "Fascínio",
+  "Força Prodigiosa": "Salto Elevado",
+  "Ligar Famulus": "Famulus Enlaçado",
+  "Ligação com o Familiar": "Famulus Enlaçado",
+  "Salto Prodigioso": "Salto Elevado",
+  "Sussurro Ferino": "Sussurros Ferais",
+  "Toque Letal": "Corpo Letal",
+};
+
+export function findPower(
+  disc: string | undefined,
+  name: string | undefined
+): PowerTemplate | undefined {
+  if (!name) {
+    return undefined;
+  }
+  const trimmed = name.trim();
+  const lower = trimmed.toLowerCase();
+  if (disc) {
+    const canonical = canonicalDiscipline(disc);
+    const list = POWERS[canonical] ?? POWERS[disc.trim()] ?? [];
+    const hit = list.find((p) => p.name.toLowerCase() === lower);
+    if (hit) {
+      return hit;
+    }
+  }
+  for (const list of Object.values(POWERS)) {
+    const hit = list.find((p) => p.name.toLowerCase() === lower);
+    if (hit) {
+      return hit;
+    }
+  }
+  const aliasedName = POWER_ALIASES[trimmed] ?? POWER_ALIASES[lower];
+  if (aliasedName) {
+    return findPower(disc, aliasedName);
+  }
+  return undefined;
+}

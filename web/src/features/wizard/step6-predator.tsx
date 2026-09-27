@@ -11,12 +11,15 @@ import {
   findPredator,
   PREDATORS,
   type PredatorAdjustment,
+  type PredatorDisciplineOption,
 } from "#/data/predators";
 import { cn } from "#/lib/utils";
 import {
   choiceOptionLabel,
   choiceTotal,
+  disciplineBlock,
   type PredatorDiscipline,
+  predatorBlock,
   predatorDiscipline,
   predatorPower,
 } from "#/rules/predator";
@@ -32,11 +35,8 @@ function adjustmentTone(a: PredatorAdjustment): string {
     case "humanidade":
     case "potencia":
       return a.valor < 0 ? "border-l-blood" : "border-l-moss";
-    case "merito":
-    case "escolha":
-      return a.tipo === "defeito" ? "border-l-blood" : "border-l-moss";
     default:
-      return "border-l-blood";
+      return a.tipo === "defeito" ? "border-l-blood" : "border-l-moss";
   }
 }
 
@@ -45,10 +45,19 @@ const LABEL =
 
 export function Step6Predator() {
   const { control, setValue } = useWizardForm();
-  const [cla, predador, predEspecNome, predDisc, predPoder] = useWatch({
-    control,
-    name: ["cla", "predador", "predEspecNome", "predDisc", "predPoder"],
-  });
+  const [cla, geracao, predador, predEspecNome, predDisc, predPoder] = useWatch(
+    {
+      control,
+      name: [
+        "cla",
+        "geracao",
+        "predador",
+        "predEspecNome",
+        "predDisc",
+        "predPoder",
+      ],
+    }
+  );
   if (isThinBlood(cla)) {
     return (
       <div className="border border-line bg-wash p-4 text-base">
@@ -71,29 +80,47 @@ export function Step6Predator() {
           >
             <FieldLegend className="sr-only">Tipo de predador</FieldLegend>
             <div className="grid gap-2" style={autoFit(220)}>
-              {PREDATORS.map((p) => (
-                <SelectableCard
-                  key={p.name}
-                  onClick={() => {
-                    if (p.name !== field.value) {
-                      setValue("predEspec", "");
-                      setValue("predEspecNome", "");
-                      setValue("predDisc", "");
-                      setValue("predPoder", "");
-                      setValue("predEscolhas", {});
-                    }
-                    field.onChange(p.name);
-                  }}
-                  selected={field.value === p.name}
-                >
-                  <span className="block font-label font-semibold text-xs leading-none tracking-[.02em]">
-                    {p.name}
-                  </span>
-                  <span className="mt-1 block text-base leading-snug opacity-70">
-                    {p.description}
-                  </span>
-                </SelectableCard>
-              ))}
+              {PREDATORS.map((p) => {
+                const block = predatorBlock(p, { cla, geracao });
+                const selected = field.value === p.name;
+                return (
+                  <SelectableCard
+                    className={cn(
+                      block && "cursor-not-allowed",
+                      block && !selected && "opacity-50",
+                      block &&
+                        selected &&
+                        "border-blood bg-transparent text-ink"
+                    )}
+                    disabled={Boolean(block)}
+                    key={p.name}
+                    onClick={() => {
+                      if (p.name !== field.value) {
+                        setValue("predEspec", "");
+                        setValue("predEspecNome", "");
+                        setValue("predDisc", "");
+                        setValue("predPoder", "");
+                        setValue("predEscolhas", {});
+                      }
+                      field.onChange(p.name);
+                    }}
+                    selected={selected}
+                  >
+                    <span className="block font-label font-semibold text-xs leading-none tracking-[.02em]">
+                      {p.name}
+                    </span>
+                    {block ? (
+                      <span className="mt-1 block text-base text-blood leading-snug">
+                        {block}
+                      </span>
+                    ) : (
+                      <span className="mt-1 block text-base leading-snug opacity-70">
+                        {p.description}
+                      </span>
+                    )}
+                  </SelectableCard>
+                );
+              })}
             </div>
           </FieldSet>
         )}
@@ -234,7 +261,11 @@ function SpecialtyNamePanel({ predEspec }: { predEspec: string }) {
 }
 
 /** Cartões da Disciplina do Predador, com o contexto do clã, e o painel do poder. */
-function DisciplineGroup({ options }: { options: readonly string[] }) {
+function DisciplineGroup({
+  options,
+}: {
+  options: readonly PredatorDisciplineOption[];
+}) {
   const { control, setValue } = useWizardForm();
   const [cla, disc] = useWatch({ control, name: ["cla", "disc"] });
   return (
@@ -252,10 +283,12 @@ function DisciplineGroup({ options }: { options: readonly string[] }) {
             Disciplina — um ponto em uma
           </FieldLegend>
           <div className="flex flex-wrap gap-2">
-            {options.map((o) => {
+            {options.map((option) => {
+              const o = option.nome;
               const ctx = predatorDiscipline(cla, disc, o);
-              let note = "fora do clã · nível 1";
-              if (ctx.doCla) {
+              const block = disciplineBlock(option, cla);
+              let note = block ?? "fora do clã · nível 1";
+              if (!block && ctx.doCla) {
                 note = ctx.atual
                   ? `do clã · ${ctx.atual} → ${ctx.novo}`
                   : "do clã · nível 1";
@@ -268,8 +301,10 @@ function DisciplineGroup({ options }: { options: readonly string[] }) {
                     "min-w-34 text-left",
                     field.value === o
                       ? "border-moss bg-field"
-                      : "border-ink/20 bg-transparent"
+                      : "border-ink/20 bg-transparent",
+                    block && "cursor-not-allowed opacity-50"
                   )}
+                  disabled={Boolean(block)}
                   key={o}
                   onClick={() => {
                     if (o !== field.value) {
@@ -283,7 +318,7 @@ function DisciplineGroup({ options }: { options: readonly string[] }) {
                   <span
                     className={cn(
                       "mt-1 block font-label font-semibold text-xs tracking-[.02em]",
-                      ctx.doCla ? "text-ink-soft" : "text-blood"
+                      !block && ctx.doCla ? "text-ink-soft" : "text-blood"
                     )}
                   >
                     {note}
@@ -292,7 +327,9 @@ function DisciplineGroup({ options }: { options: readonly string[] }) {
               );
             })}
           </div>
-          {field.value && options.includes(field.value) && (
+          {options.some(
+            (o) => o.nome === field.value && !disciplineBlock(o, cla)
+          ) && (
             <PowerPanel
               cla={cla}
               ctx={predatorDiscipline(cla, disc, field.value)}
@@ -367,46 +404,39 @@ function PowerPanel({
       <p className="m-0 max-w-lg text-base text-ink-soft">
         {powerPanelText(ctx, nome, cla)}
       </p>
-      {ctx.elegiveis.length ? (
-        <Controller
-          control={control}
-          name="predPoder"
-          render={({ field, fieldState }) => {
-            const chosen = predatorPower(ctx, field.value);
-            return (
-              <FieldSet
-                className="gap-3 outline-none"
-                data-invalid={fieldState.invalid}
-                ref={field.ref}
-                tabIndex={-1}
-              >
-                <FieldLegend className="sr-only">
-                  Poder do Predador em {nome}
-                </FieldLegend>
-                <PowerSlot chosen={chosen} levelTitle={levelTitle} />
-                <div className="flex flex-wrap gap-2">
-                  {ctx.elegiveis.map((p) => (
-                    <PowerCard
-                      disc={nome}
-                      key={p.name}
-                      onToggle={() =>
-                        field.onChange(chosen?.name === p.name ? "" : p.name)
-                      }
-                      power={p}
-                      selected={chosen?.name === p.name}
-                    />
-                  ))}
-                </div>
-              </FieldSet>
-            );
-          }}
-        />
-      ) : (
-        <p className="m-0 text-base text-ink-soft">
-          Sem poderes catalogados para {nome}. Registre o poder na aba
-          Disciplinas depois.
-        </p>
-      )}
+      <Controller
+        control={control}
+        name="predPoder"
+        render={({ field, fieldState }) => {
+          const chosen = predatorPower(ctx, field.value);
+          return (
+            <FieldSet
+              className="gap-3 outline-none"
+              data-invalid={fieldState.invalid}
+              ref={field.ref}
+              tabIndex={-1}
+            >
+              <FieldLegend className="sr-only">
+                Poder do Predador em {nome}
+              </FieldLegend>
+              <PowerSlot chosen={chosen} levelTitle={levelTitle} />
+              <div className="flex flex-wrap gap-2">
+                {ctx.elegiveis.map((p) => (
+                  <PowerCard
+                    disc={nome}
+                    key={p.name}
+                    onToggle={() =>
+                      field.onChange(chosen?.name === p.name ? "" : p.name)
+                    }
+                    power={p}
+                    selected={chosen?.name === p.name}
+                  />
+                ))}
+              </div>
+            </FieldSet>
+          );
+        }}
+      />
     </div>
   );
 }

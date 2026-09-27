@@ -16,6 +16,7 @@ import {
 import { toast } from "sonner";
 import { afterEach, describe, expect, it } from "vitest";
 import { Toaster } from "#/components/ui/sonner";
+import { SKILLS } from "#/data/traits";
 import { InfoProvider } from "#/features/info/info-sheet";
 import { blankSheet } from "#/lib/sheet";
 import { writeSheet } from "#/lib/storage";
@@ -33,6 +34,8 @@ const BRUJAH = /^Brujah/;
 const EXPECTED_ARRAY = /expected array/;
 
 /** Monta `/criar` num roteador em memória, com a ficha e a entrada como stubs. */
+const BRUJAH_BANE = /^Temperamento Violento — ./;
+
 function renderWizard(sheet: Sheet, url: string) {
   writeSheet(EMAIL, sheet);
   usePlayerStore.getState().login(EMAIL);
@@ -73,13 +76,26 @@ const SANGUESSUGA = /^Sanguessuga/;
 const OSIRIS = /^Osíris/;
 const CONSENSUALISTA = /^Consensualista/;
 const FORTITUDE = /^Fortitude/;
-const SEREIA = /^Sereia/;
-const FASCINACAO = /^Fascinação/;
+const FAZENDEIRO = /^Fazendeiro/;
+const SAQUEADOR = /^Saqueador/;
+const FEITICARIA = /^Feitiçaria de Sangue/;
+const PRESENCA = /^Presença/;
 const EXTORSIONARIO = /^Extorsionário/;
-const DOMINIO = /^Domínio/;
+const DOMINACAO = /^Dominação/;
 const POTENCIA = /^Potência/;
+const FAZ_TUDO = /^Faz-tudo/;
+const ESPECIALISTA = /^Especialista/;
 
 const stored = () => useCharacterStore.getState().sheet;
+const search = () =>
+  screen.findByRole("combobox", { name: "Buscar vantagem ou defeito" });
+const type = (input: HTMLElement, value: string) =>
+  fireEvent.change(input, { target: { value } });
+const option = (name: string | RegExp) =>
+  within(screen.getByRole("listbox")).getByRole("option", { name });
+const RECURSOS = /^Recursos/;
+const BONITO = /^Bonito/;
+const MASCARA = /^Máscara/;
 const click = (target: string | RegExp | HTMLElement) =>
   fireEvent.click(
     target instanceof HTMLElement
@@ -156,6 +172,7 @@ describe("assistente com react-hook-form", () => {
       potencia: 1,
       senhor: "Aurélio",
     });
+    expect(stored().perdicao).toMatch(BRUJAH_BANE);
     expect(stored().attrs.Força).toBe(2);
     // o passo seguinte começa sem erros, mesmo depois do envio anterior
     click("Força 4");
@@ -204,22 +221,11 @@ describe("assistente com react-hook-form", () => {
     click("Concluir");
     expect(await screen.findByText("Página da ficha")).toBeInTheDocument();
     expect(stored()).toMatchObject({ criada: true, nome: "Ana Brava" });
+    expect(stored().perdicao).toMatch(BRUJAH_BANE);
     expect(stored().disc.map((d) => d.nome)).toEqual([
       "Potência",
       "Celeridade",
     ]);
-  });
-
-  it("mérito sem nome bloqueia o passo 7", async () => {
-    renderWizard(completeSheet({ meritos: [] }), "/criar?passo=7");
-    click(await screen.findByText("Adicionar"));
-    click("Continuar");
-    expect(await stepToast()).toHaveTextContent("Informe o nome.");
-    expect(screen.getByPlaceholderText("Nome")).toHaveAttribute(
-      "aria-invalid",
-      "true"
-    );
-    expect(screen.getByText("Passo 7 de 8")).toBeInTheDocument();
   });
 
   it("clique repetido em Continuar não empilha toasts", async () => {
@@ -247,6 +253,52 @@ describe("assistente com react-hook-form", () => {
     expect(screen.queryByText("Fora do formato: 1")).not.toBeInTheDocument();
     click("Continuar");
     expect(await screen.findByText("Passo 4 de 8")).toBeInTheDocument();
+  });
+
+  it("sem distribuição gravada, o passo 3 abre com Faz-tudo", async () => {
+    renderWizard(
+      completeSheet({ dist: undefined, skills: blankSheet().skills }),
+      "/criar?passo=3"
+    );
+    await screen.findByText("Passo 3 de 8");
+    expect(screen.getByRole("button", { name: FAZ_TUDO })).toHaveAttribute(
+      "aria-pressed",
+      "true"
+    );
+    expect(screen.getByText("Nível 3: 0 de 1")).toBeInTheDocument();
+    expect(screen.getByText("Nível 2: 0 de 8")).toBeInTheDocument();
+    expect(screen.getByText("Nível 1: 0 de 10")).toBeInTheDocument();
+  });
+
+  it("a distribuição gravada é respeitada no passo 3", async () => {
+    renderWizard(completeSheet({ dist: "Especialista" }), "/criar?passo=3");
+    await screen.findByText("Passo 3 de 8");
+    expect(screen.getByRole("button", { name: ESPECIALISTA })).toHaveAttribute(
+      "aria-pressed",
+      "true"
+    );
+    expect(screen.getByRole("button", { name: FAZ_TUDO })).toHaveAttribute(
+      "aria-pressed",
+      "false"
+    );
+  });
+
+  it("Faz-tudo completa sem tocar nos cartões grava a distribuição", async () => {
+    const skills = { ...blankSheet().skills };
+    SKILLS.forEach((name, i) => {
+      if (i < 1) {
+        skills[name] = 3;
+      } else if (i < 9) {
+        skills[name] = 2;
+      } else if (i < 19) {
+        skills[name] = 1;
+      }
+    });
+    renderWizard(completeSheet({ dist: undefined, skills }), "/criar?passo=3");
+    await screen.findByText("Passo 3 de 8");
+    click("Continuar");
+    expect(await screen.findByText("Passo 4 de 8")).toBeInTheDocument();
+    expect(stored().dist).toBe("Faz-tudo");
   });
 
   it("escolher a habilidade livre e digitar a especialidade avança", async () => {
@@ -478,7 +530,9 @@ describe("regras do clã nos passos 5 a 7", () => {
 
   it("selo do sangue-ralo cicla até Defeito SR", async () => {
     renderWizard(completeSheet({ cla: "Sangue Fraco" }), "/criar?passo=7");
-    const [badge] = await screen.findAllByTitle("Alternar tipo");
+    type(await search(), "Pacto antigo");
+    click(option("Adicionar “Pacto antigo” como vantagem"));
+    const [badge] = screen.getAllByTitle("Alternar tipo");
     click(badge);
     click(badge);
     click(badge);
@@ -486,6 +540,123 @@ describe("regras do clã nos passos 5 a 7", () => {
     expect(
       screen.getByText("0 qualidades · 1 defeitos de sangue-ralo")
     ).toBeInTheDocument();
+  });
+
+  describe("combobox do passo 7", () => {
+    const empty = () => completeSheet({ meritos: [] });
+
+    it("escolhe um antecedente pela busca", async () => {
+      renderWizard(empty(), "/criar?passo=7");
+      expect(
+        await screen.findByText("Nenhum mérito ou defeito")
+      ).toBeInTheDocument();
+      type(await search(), "recur");
+      click(option(RECURSOS));
+      expect(await search()).toHaveValue("");
+      expect(screen.queryByRole("listbox")).not.toBeInTheDocument();
+      expect(
+        screen.getByRole("button", { name: "Recursos" })
+      ).toBeInTheDocument();
+      expect(screen.getByText("Antecedentes · •–•••••")).toBeInTheDocument();
+      expect(
+        screen.getByRole("button", { name: "Pontos de Recursos 1" })
+      ).toHaveAttribute("aria-pressed", "true");
+      expect(screen.getByText("1/7 pts em vantagens")).toBeInTheDocument();
+    });
+
+    it("custo fixo trava os pontos", async () => {
+      renderWizard(empty(), "/criar?passo=7");
+      type(await search(), "bonito");
+      click(option(BONITO));
+      expect(screen.getByText("2/7 pts em vantagens")).toBeInTheDocument();
+      expect(
+        screen.getByRole("button", { name: "Pontos de Bonito 3" })
+      ).toBeDisabled();
+    });
+
+    it("aba Defeitos mostra só defeitos", async () => {
+      renderWizard(empty(), "/criar?passo=7");
+      click(await screen.findByRole("button", { name: "Defeitos" }));
+      fireEvent.focus(await search());
+      const options = within(screen.getByRole("listbox")).getAllByRole(
+        "option"
+      );
+      expect(options.length).toBeGreaterThan(0);
+      for (const o of options) {
+        expect(o).toHaveTextContent("Defeito");
+      }
+      expect(screen.getByText(`${options.length} opções`)).toBeInTheDocument();
+    });
+
+    it("busca sem acento", async () => {
+      renderWizard(empty(), "/criar?passo=7");
+      type(await search(), "mascara");
+      expect(option(MASCARA)).toBeInTheDocument();
+    });
+
+    it("opção na ficha não duplica", async () => {
+      renderWizard(completeSheet(), "/criar?passo=7");
+      type(await search(), "Recursos");
+      const hit = option(RECURSOS);
+      expect(hit).toHaveTextContent("Na ficha");
+      click(hit);
+      expect(screen.getAllByRole("button", { name: "Recursos" })).toHaveLength(
+        1
+      );
+    });
+
+    it("teclado: ↓ ↓ Enter escolhe a segunda opção", async () => {
+      renderWizard(empty(), "/criar?passo=7");
+      const input = await search();
+      fireEvent.focus(input);
+      const [, second] = within(screen.getByRole("listbox")).getAllByRole(
+        "option"
+      );
+      const name = second?.querySelector("span")?.textContent ?? "";
+      fireEvent.keyDown(input, { key: "ArrowDown" });
+      fireEvent.keyDown(input, { key: "ArrowDown" });
+      expect(input).toHaveAttribute("aria-activedescendant", second?.id);
+      fireEvent.keyDown(input, { key: "Enter" });
+      expect(screen.getByRole("button", { name })).toBeInTheDocument();
+    });
+
+    it("item fora do catálogo", async () => {
+      renderWizard(empty(), "/criar?passo=7");
+      type(await search(), "Dívida de sangue");
+      click(option("Adicionar “Dívida de sangue” como defeito"));
+      expect(screen.getByTitle("Alternar tipo")).toHaveTextContent("Defeito");
+      expect(screen.getByText("Fora do catálogo")).toBeInTheDocument();
+      expect(screen.getByText("1/2 pts em defeitos")).toBeInTheDocument();
+    });
+
+    it("nome abre o painel", async () => {
+      renderWizard(completeSheet(), "/criar?passo=7");
+      click(await screen.findByRole("button", { name: "Recursos" }));
+      expect(
+        await screen.findByRole("dialog", { name: "Recursos" })
+      ).toBeInTheDocument();
+    });
+
+    it("Qualidades SR só para Sangue Fraco", async () => {
+      renderWizard(empty(), "/criar?passo=7");
+      type(await search(), "Bebedor diurno");
+      expect(
+        within(screen.getByRole("listbox")).getAllByRole("option")
+      ).toHaveLength(2);
+    });
+
+    it("Sangue Fraco vê Qualidades SR em Vantagens", async () => {
+      renderWizard(
+        completeSheet({ cla: "Sangue Fraco", meritos: [] }),
+        "/criar?passo=7"
+      );
+      click(await screen.findByRole("button", { name: "Vantagens" }));
+      fireEvent.focus(await search());
+      const list = screen.getByRole("listbox");
+      expect(
+        within(list).getByRole("group", { name: "Sangue-ralo" })
+      ).toHaveTextContent("Qualidade SR");
+    });
   });
 
   it("cota 7/2 bloqueia o passo 7", async () => {
@@ -680,7 +851,7 @@ describe("rota /criar", () => {
   });
 
   it("não deixa pular passos pela URL", async () => {
-    renderWizard(completeSheet({ dist: "" }), "/criar?passo=6");
+    renderWizard(completeSheet({ dist: "Inexistente" }), "/criar?passo=6");
     expect(await screen.findByText("Passo 3 de 8")).toBeInTheDocument();
   });
 
@@ -725,13 +896,12 @@ describe("Predador aplicado na ficha", () => {
     (stored().meritos ?? [])
       .filter((m) => m.origem === "predador")
       .map((m) => m.nome);
-  const sereia = () =>
+  const gatoCeleridade = () =>
     applyPredator(
       completeSheet({
         criada: true,
-        predador: "Sereia",
-        predDisc: "Fascinação",
-        predEspec: "Persuasão (Seduzir)",
+        predDisc: "Celeridade",
+        predPoder: "Rapidez",
       })
     );
 
@@ -740,7 +910,7 @@ describe("Predador aplicado na ficha", () => {
     click(await screen.findByRole("button", { name: SANGUESSUGA }));
     click("Evitado");
     expect(pressed("Evitado")).toBe("true");
-    expect(pressed("Segredo Obscuro (diabolista)")).toBe("false");
+    expect(pressed("Segredo Obscuro (diablerista)")).toBe("false");
   });
 
   it("dividir limita os pontos ao total e bloqueia incompleto", async () => {
@@ -752,7 +922,7 @@ describe("Predador aplicado na ficha", () => {
     expect(pressed("Pontos em Fama 2")).toBe("false");
     click("Continuar");
     expect(await stepToast()).toHaveTextContent(
-      "Distribua 2 pontos entre Inimigos e Perseguido"
+      "Distribua 2 pontos entre Inimigo e Defeito Mítico"
     );
   });
 
@@ -763,7 +933,7 @@ describe("Predador aplicado na ficha", () => {
         disc: [
           {
             nivel: 2,
-            nome: "Domínio",
+            nome: "Dominação",
             powers: [{ nivel: 1, nome: "Compelir" }],
           },
           { nivel: 1, nome: "Presença", powers: [] },
@@ -776,12 +946,12 @@ describe("Predador aplicado na ficha", () => {
     const open = async () => {
       renderWizard(ventrue(), "/criar?passo=6");
       click(await screen.findByRole("button", { name: EXTORSIONARIO }));
-      click("Intimidação (Chantagem)");
+      click("Intimidação (Coerção)");
     };
 
     it("cartões mostram o contexto do clã", async () => {
       await open();
-      expect(screen.getByRole("button", { name: DOMINIO })).toHaveTextContent(
+      expect(screen.getByRole("button", { name: DOMINACAO })).toHaveTextContent(
         "do clã · 2 → 3"
       );
       expect(screen.getByRole("button", { name: POTENCIA })).toHaveTextContent(
@@ -807,14 +977,14 @@ describe("Predador aplicado na ficha", () => {
 
     it("do clã: até o novo nível, sem repetir o passo 5", async () => {
       await open();
-      click(DOMINIO);
+      click(DOMINACAO);
       expect(screen.getByText("Do clã")).toBeInTheDocument();
       expect(
-        screen.getByText("Nível 3 ou inferior · Domínio")
+        screen.getByText("Nível 3 ou inferior · Dominação")
       ).toBeInTheDocument();
       expect(
         screen.getByText(
-          "Você já tem 2 pontos em Domínio pelo clã. O Predador soma +1 e ela vai a 3. Escolha 1 poder novo de nível 3 ou inferior."
+          "Você já tem 2 pontos em Dominação pelo clã. O Predador soma +1 e ela vai a 3. Escolha 1 poder novo de nível 3 ou inferior."
         )
       ).toBeInTheDocument();
       expect(
@@ -854,24 +1024,60 @@ describe("Predador aplicado na ficha", () => {
       await open();
       click(POTENCIA);
       click("Incluir Toque Letal");
-      click(DOMINIO);
+      click(DOMINACAO);
       click(POTENCIA);
       expect(screen.getByText("1 poder sem escolha")).toBeInTheDocument();
     });
 
-    it("Disciplina sem catálogo não exige poder", async () => {
+    it("Feitiçaria de Sangue fora de Tremere e Banu Haqim fica desabilitada", async () => {
       renderWizard(completeSheet(), "/criar?passo=6");
-      click(await screen.findByRole("button", { name: SEREIA }));
-      click("Persuasão (Seduzir)");
-      click(FASCINACAO);
-      expect(
-        screen.getByText(
-          "Sem poderes catalogados para Fascinação. Registre o poder na aba Disciplinas depois."
-        )
-      ).toBeInTheDocument();
-      click("Continuar");
-      expect(await screen.findByText("Passo 7 de 8")).toBeInTheDocument();
+      click(await screen.findByRole("button", { name: OSIRIS }));
+      const feiticaria = screen.getByRole("button", { name: FEITICARIA });
+      expect(feiticaria).toBeDisabled();
+      expect(feiticaria).toHaveTextContent("só Tremere e Banu Haqim");
+      expect(screen.getByRole("button", { name: PRESENCA })).toBeEnabled();
     });
+
+    it("Feitiçaria de Sangue liberada para Banu Haqim", async () => {
+      renderWizard(
+        completeSheet({
+          cla: "Banu Haqim",
+          disc: [
+            { nivel: 2, nome: "Celeridade", powers: [] },
+            { nivel: 1, nome: "Ofuscação", powers: [] },
+          ],
+        }),
+        "/criar?passo=6"
+      );
+      click(await screen.findByRole("button", { name: SAQUEADOR }));
+      expect(screen.getByRole("button", { name: FEITICARIA })).toBeEnabled();
+    });
+  });
+
+  it("Predador vetado para o clã aparece desabilitado com o motivo", async () => {
+    renderWizard(
+      completeSheet({
+        cla: "Ventrue",
+        disc: [
+          { nivel: 2, nome: "Dominação", powers: [] },
+          { nivel: 1, nome: "Presença", powers: [] },
+        ],
+        predador: "Fazendeiro",
+      }),
+      "/criar?passo=6"
+    );
+    const fazendeiro = await screen.findByRole("button", { name: FAZENDEIRO });
+    expect(fazendeiro).toBeDisabled();
+    expect(fazendeiro).toHaveAttribute("aria-pressed", "true");
+    expect(fazendeiro).toHaveTextContent("Ventrue não pode ser Fazendeiro");
+    const saqueador = screen.getByRole("button", { name: SAQUEADOR });
+    expect(saqueador).toBeDisabled();
+    click(saqueador);
+    expect(saqueador).toHaveAttribute("aria-pressed", "false");
+    click("Continuar");
+    expect(await stepToast()).toHaveTextContent(
+      "Ventrue não pode ser Fazendeiro"
+    );
   });
 
   describe("nome da especialidade do Predador", () => {
@@ -881,33 +1087,33 @@ describe("Predador aplicado na ficha", () => {
         "/criar?passo=6"
       );
       click(await screen.findByRole("button", { name: EXTORSIONARIO }));
-      click("Ofícios (Armadilhas)");
+      click("Ladroagem (Segurança)");
     };
 
     it("escolher a especialidade preenche a sugestão", async () => {
       await open();
-      expect(screen.getByLabelText("Especialidade em Ofícios")).toHaveValue(
-        "Armadilhas"
+      expect(screen.getByLabelText("Especialidade em Ladroagem")).toHaveValue(
+        "Segurança"
       );
       expect(
         screen.getByText(
-          "Sugestão do Predador: Armadilhas. Renomeie se quiser; na ficha ela fica fixa."
+          "Sugestão do Predador: Segurança. Renomeie se quiser; na ficha ela fica fixa."
         )
       ).toBeInTheDocument();
     });
 
     it("trocar de especialidade repõe a sugestão; repetir não apaga", async () => {
       await open();
-      fireEvent.change(screen.getByLabelText("Especialidade em Ofícios"), {
-        target: { value: "Laços e arapucas" },
+      fireEvent.change(screen.getByLabelText("Especialidade em Ladroagem"), {
+        target: { value: "Cofres e alarmes" },
       });
-      click("Ofícios (Armadilhas)");
-      expect(screen.getByLabelText("Especialidade em Ofícios")).toHaveValue(
-        "Laços e arapucas"
+      click("Ladroagem (Segurança)");
+      expect(screen.getByLabelText("Especialidade em Ladroagem")).toHaveValue(
+        "Cofres e alarmes"
       );
-      click("Intimidação (Chantagem)");
+      click("Intimidação (Coerção)");
       expect(screen.getByLabelText("Especialidade em Intimidação")).toHaveValue(
-        "Chantagem"
+        "Coerção"
       );
     });
 
@@ -915,18 +1121,19 @@ describe("Predador aplicado na ficha", () => {
       await open();
       click(POTENCIA);
       click("Incluir Toque Letal");
+      click("Pontos em Contatos 1");
       click("Pontos em Recursos 2");
-      const field = screen.getByLabelText("Especialidade em Ofícios");
+      const field = screen.getByLabelText("Especialidade em Ladroagem");
       fireEvent.change(field, { target: { value: " " } });
       click("Continuar");
       expect(await stepToast()).toHaveTextContent(
         "Informe o nome da especialidade do Predador"
       );
-      fireEvent.change(field, { target: { value: " Laços e arapucas " } });
+      fireEvent.change(field, { target: { value: " Cofres e alarmes " } });
       click("Continuar");
       expect(await screen.findByText("Passo 7 de 8")).toBeInTheDocument();
-      expect(stored().predEspec).toBe("Ofícios (Armadilhas)");
-      expect(stored().predEspecNome).toBe("Laços e arapucas");
+      expect(stored().predEspec).toBe("Ladroagem (Segurança)");
+      expect(stored().predEspecNome).toBe("Cofres e alarmes");
     });
   });
 
@@ -970,21 +1177,19 @@ describe("Predador aplicado na ficha", () => {
   });
 
   it("concluir o refazer não duplica", async () => {
-    renderWizard(sereia(), "/criar?passo=8&refazer=true");
+    renderWizard(gatoCeleridade(), "/criar?passo=8&refazer=true");
     click(await screen.findByText("Concluir"));
     expect(await screen.findByText("Página da ficha")).toBeInTheDocument();
     expect(stored().humanidade).toBe(6);
-    expect(levels().filter(([n]) => n === "Fascinação")).toEqual([
-      ["Fascinação", 1],
+    expect(levels()).toEqual([
+      ["Potência", 2],
+      ["Celeridade", 2],
     ]);
-    expect(predatorMerits()).toEqual([
-      "Belíssimo",
-      "Inimigo (amante preterido)",
-    ]);
+    expect(predatorMerits()).toEqual(["Contatos (criminosos)"]);
   });
 
   it("trocar de Predador no refazer troca o que foi aplicado", async () => {
-    renderWizard(sereia(), "/criar?passo=6&refazer=true");
+    renderWizard(gatoCeleridade(), "/criar?passo=6&refazer=true");
     click(await screen.findByRole("button", { name: CONSENSUALISTA }));
     click("Medicina (Flebotomia)");
     click(FORTITUDE);
@@ -1000,21 +1205,21 @@ describe("Predador aplicado na ficha", () => {
     ]);
     expect(stored().disc[2].powers.map((p) => p.nome)).toEqual(["Resiliência"]);
     expect(stored().humanidade).toBe(8);
-    expect(predatorMerits()).toEqual(["Segredo Obscuro (violação da Máscara)"]);
+    expect(predatorMerits()).toEqual([
+      "Segredo Obscuro (Quebrador da Máscara)",
+      "Presa Excluída (sem consentimento)",
+    ]);
   });
 
   it("sair do refazer pelo passo 1 mantém o Predador aplicado", async () => {
-    renderWizard(sereia(), "/criar?passo=2&refazer=true");
+    renderWizard(gatoCeleridade(), "/criar?passo=2&refazer=true");
     click(await screen.findByText("Voltar"));
     await screen.findByText("Passo 1 de 8");
     expect(stored().predBonus).toBeUndefined();
     click("Voltar");
     expect(await screen.findByText("Página da ficha")).toBeInTheDocument();
     expect(stored().humanidade).toBe(6);
-    expect(levels()).toContainEqual(["Fascinação", 1]);
-    expect(predatorMerits()).toEqual([
-      "Belíssimo",
-      "Inimigo (amante preterido)",
-    ]);
+    expect(levels()).toContainEqual(["Celeridade", 2]);
+    expect(predatorMerits()).toEqual(["Contatos (criminosos)"]);
   });
 });
