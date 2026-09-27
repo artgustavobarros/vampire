@@ -30,7 +30,7 @@ export const Route = createRootRoute({
   shellComponent: RootDocument,
 });
 
-/** Tudo depende do localStorage: a abertura cobre a restauração da sessão no cliente. */
+/** A abertura cobre a restauração da sessão pela API, no cliente. */
 function RootComponent() {
   const booting = useBoot();
   return (

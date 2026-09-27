@@ -19,13 +19,13 @@ import { Toaster } from "#/components/ui/sonner";
 import { SKILLS } from "#/data/traits";
 import { InfoProvider } from "#/features/info/info-sheet";
 import { blankSheet } from "#/lib/sheet";
-import { writeSheet } from "#/lib/storage";
 import type { Sheet } from "#/lib/types";
 import { Route as CriarRoute } from "#/routes/criar";
 import { applyPredator } from "#/rules/predator";
-import { useCharacterStore } from "#/stores/character-store";
+import { flushSheet, useCharacterStore } from "#/stores/character-store";
 import { usePlayerStore } from "#/stores/player-store";
 import { resetStores } from "#/stores/test-utils";
+import { fakeApi } from "#/test/fake-api";
 import { completeSheet } from "./test-fixtures";
 
 const EMAIL = "ana@exemplo.com";
@@ -37,8 +37,7 @@ const EXPECTED_ARRAY = /expected array/;
 const BRUJAH_BANE = /^Temperamento Violento — ./;
 
 function renderWizard(sheet: Sheet, url: string) {
-  writeSheet(EMAIL, sheet);
-  usePlayerStore.getState().login(EMAIL);
+  fakeApi.login(sheet, EMAIL);
   const root = createRootRoute({
     component: () => (
       <InfoProvider>
@@ -877,14 +876,8 @@ describe("rota /criar", () => {
     fireEvent.change(nome, { target: { value: "Bruno" } });
     click("Concluir");
     expect(await screen.findByText("Página da ficha")).toBeInTheDocument();
-    const keys = Object.keys(localStorage).filter((k) =>
-      k.startsWith("vtm5.sheet.")
-    );
-    expect(keys).toEqual([`vtm5.sheet.${EMAIL}`]);
-    expect(JSON.parse(localStorage.getItem(keys[0]) ?? "{}")).toMatchObject({
-      criada: true,
-      nome: "Bruno",
-    });
+    await flushSheet();
+    expect(fakeApi.sheet(EMAIL)).toMatchObject({ criada: true, nome: "Bruno" });
   });
 });
 

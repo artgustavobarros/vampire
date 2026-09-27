@@ -153,8 +153,7 @@ export function WizardShell({
     } else if (refazer) {
       navigate({ params: { aba: "ficha" }, to: "/ficha/$aba" });
     } else {
-      logout();
-      navigate({ to: "/entrar" });
+      logout().then(() => navigate({ to: "/entrar" }));
     }
   };
 

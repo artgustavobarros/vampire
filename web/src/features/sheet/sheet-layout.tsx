@@ -97,9 +97,9 @@ export function SheetLayout() {
                 </button>
                 <button
                   className={cn(MENU_ITEM, "text-left text-blood")}
-                  onClick={() => {
+                  onClick={async () => {
                     setMenuOpen(false);
-                    logout();
+                    await logout();
                     navigate({ to: "/entrar" });
                   }}
                   type="button"

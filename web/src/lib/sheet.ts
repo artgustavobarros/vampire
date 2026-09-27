@@ -40,14 +40,18 @@ const isRecord = (value: unknown): value is Record<string, unknown> =>
 
 /**
  * Completa campos ausentes com os padrões e descarta disciplinas sem nome,
- * como o `loadUser` do standalone.
+ * como o `loadUser` do standalone. `null` vale como campo ausente: é assim
+ * que a gravação na API apaga um campo (o JSON não leva `undefined`).
  */
 export function normalizeSheet(raw: unknown): Sheet {
   const base = blankSheet();
   if (!isRecord(raw)) {
     return base;
   }
-  const sheet = { ...base, ...raw } as Sheet;
+  const present = Object.fromEntries(
+    Object.entries(raw).filter(([, value]) => value !== null)
+  );
+  const sheet = { ...base, ...present } as Sheet;
   sheet.attrs = {
     ...base.attrs,
     ...(isRecord(raw.attrs) ? raw.attrs : {}),

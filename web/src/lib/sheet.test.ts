@@ -26,6 +26,13 @@ describe("normalizeSheet", () => {
     expect(s.disc).toEqual([{ nivel: 2, nome: "Presença", powers: [] }]);
   });
 
+  it("trata null como campo ausente", () => {
+    const s = normalizeSheet({ fome: null, nome: "Ana", predBonus: null });
+    expect(s.fome).toBe(1);
+    expect(s.nome).toBe("Ana");
+    expect("predBonus" in s).toBe(false);
+  });
+
   it("devolve ficha em branco para lixo", () => {
     expect(normalizeSheet("x")).toEqual(blankSheet());
     expect(normalizeSheet(null)).toEqual(blankSheet());

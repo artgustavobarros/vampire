@@ -4,10 +4,16 @@ import { Button } from "#/components/ui/button";
 import { Input } from "#/components/ui/input";
 import { FieldLabel, Kicker } from "#/components/vtm/text";
 import { authenticate } from "#/lib/auth";
-import { notify } from "#/lib/toast";
 import { useCharacterStore } from "#/stores/character-store";
 import { usePlayerStore } from "#/stores/player-store";
 import { homeTarget } from "./home-path";
+
+function submitLabel(signup: boolean, pending: boolean): string {
+  if (pending) {
+    return signup ? "Criando…" : "Entrando…";
+  }
+  return signup ? "Criar conta" : "Entrar";
+}
 
 export function AuthCard({ mode }: { mode: "login" | "signup" }) {
   const navigate = useNavigate();
@@ -16,16 +22,21 @@ export function AuthCard({ mode }: { mode: "login" | "signup" }) {
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const [password2, setPassword2] = useState("");
+  const [pending, setPending] = useState(false);
 
   const edit =
     (set: (v: string) => void) => (e: { target: { value: string } }) =>
       set(e.target.value);
 
-  const submit = (e: FormEvent) => {
+  const submit = async (e: FormEvent) => {
     e.preventDefault();
-    const err = authenticate({ email, mode, name, password, password2 });
-    if (err) {
-      notify(err);
+    if (pending) {
+      return;
+    }
+    setPending(true);
+    const ok = await authenticate({ email, mode, name, password, password2 });
+    setPending(false);
+    if (!ok) {
       return;
     }
     setPassword("");
@@ -114,8 +125,8 @@ export function AuthCard({ mode }: { mode: "login" | "signup" }) {
           </>
         )}
         <div className="mt-6 flex flex-col gap-3">
-          <Button className="w-full" type="submit">
-            {signup ? "Criar conta" : "Entrar"}
+          <Button className="w-full" disabled={pending} type="submit">
+            {submitLabel(signup, pending)}
           </Button>
           <Button
             className="w-full"

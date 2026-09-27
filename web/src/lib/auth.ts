@@ -1,14 +1,17 @@
 import { exampleSheet } from "#/data/example-sheet";
+import { flushSheet } from "#/stores/character-store";
 import { usePlayerStore } from "#/stores/player-store";
-import { settings } from "./settings";
 import {
-  clearSession,
-  readAccounts,
-  writeAccounts,
-  writePlayerName,
-  writeSession,
-  writeSheet,
-} from "./storage";
+  ApiError,
+  getSheet,
+  login,
+  onUnauthorized,
+  putSheet,
+  setToken,
+  signup,
+} from "./api";
+import { settings } from "./settings";
+import { apiError, notify } from "./toast";
 
 export interface AuthInput {
   email: string;
@@ -19,13 +22,12 @@ export interface AuthInput {
 }
 
 const EMAIL = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+const MIN_PASSWORD = 6;
+/** quanto o "Sair" espera as mudanças pendentes irem para a API */
+const LOGOUT_WAIT = 2000;
 
-/** Entra ou cria a conta local. Devolve a mensagem de erro, ou `null` em caso de sucesso. */
-export function authenticate(
-  input: AuthInput,
-  options: { exampleData: boolean } = { exampleData: settings.dadosDeExemplo }
-): string | null {
-  const email = input.email.trim().toLowerCase();
+/** Mesmas regras e mensagens da API, sem ida e volta. */
+function validate(input: AuthInput, email: string): string | null {
   const { password } = input;
   if (!(email && password)) {
     return "Informe e-mail e senha.";
@@ -33,40 +35,99 @@ export function authenticate(
   if (!EMAIL.test(email)) {
     return "E-mail inválido.";
   }
-  const accounts = readAccounts();
-  if (input.mode === "signup") {
-    const name = (input.name ?? "").trim();
-    if (!name) {
-      return "Informe o nome.";
-    }
-    if (password !== input.password2) {
-      return "As senhas não conferem.";
-    }
-    if (accounts[email]) {
-      return 'E-mail já cadastrado. Use "Entrar".';
-    }
-    accounts[email] = password;
-    writePlayerName(email, name);
-    writeAccounts(accounts);
-    writeSession(email);
-    if (options.exampleData) {
-      writeSheet(email, exampleSheet());
-    }
-    usePlayerStore.getState().login(email);
+  if (input.mode === "login") {
     return null;
   }
-  if (!accounts[email]) {
-    return "E-mail não cadastrado neste dispositivo.";
+  if (!(input.name ?? "").trim()) {
+    return "Informe o nome.";
   }
-  if (accounts[email] !== password) {
-    return "Senha incorreta.";
+  if (password.length < MIN_PASSWORD) {
+    return "A senha precisa ter pelo menos 6 caracteres.";
   }
-  writeSession(email);
-  usePlayerStore.getState().login(email);
+  if (password !== input.password2) {
+    return "As senhas não conferem.";
+  }
   return null;
 }
 
-export function logout(): void {
-  clearSession();
+/** Entra ou cria a conta na API. Mostra os erros como toast e devolve se entrou. */
+export async function authenticate(
+  input: AuthInput,
+  options: { exampleData: boolean } = { exampleData: settings.dadosDeExemplo }
+): Promise<boolean> {
+  const email = input.email.trim().toLowerCase();
+  const invalid = validate(input, email);
+  if (invalid) {
+    notify(invalid);
+    return false;
+  }
+  const { password } = input;
+  try {
+    let sheet: unknown = null;
+    if (input.mode === "signup") {
+      const name = (input.name ?? "").trim();
+      const res = await signup({ email, name, password });
+      setToken(res.accessToken);
+      if (options.exampleData) {
+        ({ sheet } = await putSheet(exampleSheet()));
+      }
+      usePlayerStore.getState().login(res.user, sheet);
+      return true;
+    }
+    const res = await login({ email, password });
+    setToken(res.accessToken);
+    ({ sheet } = await getSheet());
+    usePlayerStore.getState().login(res.user, sheet);
+    return true;
+  } catch (err) {
+    setToken(null);
+    // 4xx é erro do formulário, com a mensagem pronta da API
+    if (err instanceof ApiError && err.status < 500) {
+      notify(err.message);
+    } else {
+      apiError(err);
+    }
+    return false;
+  }
+}
+
+function endSession(): void {
+  setToken(null);
   usePlayerStore.getState().logout();
+}
+
+/** Envia as mudanças pendentes (sem esperar mais que `LOGOUT_WAIT`) e sai. */
+export async function logout(): Promise<void> {
+  await Promise.race([
+    flushSheet(),
+    new Promise((resolve) => setTimeout(resolve, LOGOUT_WAIT)),
+  ]);
+  endSession();
+}
+
+let connected = false;
+
+/**
+ * Liga a sessão ao resto do app, uma vez no cliente: `401` em qualquer
+ * chamada autenticada encerra a sessão, e esconder ou fechar a página envia
+ * as mudanças pendentes.
+ */
+export function connectSession(): void {
+  if (connected) {
+    return;
+  }
+  connected = true;
+  onUnauthorized(() => {
+    endSession();
+    apiError({ status: 401 });
+  });
+  const flushNow = () => {
+    flushSheet({ keepalive: true });
+  };
+  window.addEventListener("pagehide", flushNow);
+  document.addEventListener("visibilitychange", () => {
+    if (document.visibilityState === "hidden") {
+      flushNow();
+    }
+  });
 }

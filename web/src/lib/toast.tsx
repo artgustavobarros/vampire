@@ -78,8 +78,8 @@ function messageOf(err: unknown): string {
     : "";
 }
 
-/** Traduz um erro de requisição (Response, Error ou {status, message}) em toast. */
-export function apiError(err: unknown, retry?: () => void): string {
+/** Mensagem para um erro de requisição (Response, Error ou {status, message}). */
+export function apiErrorMessage(err: unknown): string {
   const status = statusOf(err);
   const message = messageOf(err);
   let msg = "Não foi possível falar com o servidor. Verifique a conexão.";
@@ -96,7 +96,13 @@ export function apiError(err: unknown, retry?: () => void): string {
   } else if (message && !NETWORK_ERROR.test(message)) {
     msg = message;
   }
-  return notify(msg, {
+  return msg;
+}
+
+/** Traduz um erro de requisição em toast, com "Tentar de novo" quando há `retry`. */
+export function apiError(err: unknown, retry?: () => void): string {
+  const status = statusOf(err);
+  return notify(apiErrorMessage(err), {
     acao: retry ? "Tentar de novo" : undefined,
     onAcao: retry,
     titulo: status ? `Erro ${status}` : "Sem conexão",
