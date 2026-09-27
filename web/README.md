@@ -24,19 +24,15 @@ pnpm dlx ultracite@latest init --pm pnpm --linter biome --frameworks react
 
 ## Rodar localmente
 
-O app precisa da API no ar. Em outro terminal:
+O app precisa da API no ar. O jeito mais simples é subir tudo pelo Docker, na
+raiz do repositório (`docker compose up --build`); para desenvolver, veja o
+`README.md` da raiz. Com a API no ar, aqui:
 
 ```bash
-cd ../api
-docker compose up --build   # Postgres + API em http://localhost:3333/api
-```
-
-Depois, aqui:
-
-```bash
-pnpm install
+pnpm install      # na raiz: instala o workspace inteiro
 pnpm dev          # http://localhost:3000
-pnpm build && pnpm preview
+pnpm build        # servidor Node (Nitro) em .output/
+pnpm start        # roda a build em http://localhost:3000 (porta em PORT)
 ```
 
 Se a API estiver em outro endereço, copie `.env.example` para `.env` e ajuste

@@ -1,0 +1,11 @@
+node_modules
+dist
+.output
+coverage
+.env
+*.tsbuildinfo
+
+# scripts e textos soltos de extração em openspec/
+openspec/*.py
+openspec/*.txt
+__pycache__/

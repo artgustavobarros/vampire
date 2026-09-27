@@ -92,7 +92,19 @@ describe("contas na API", () => {
     expect(await authenticate({ email: "", mode: "login", password: "" })).toBe(
       false
     );
-    await expectToast("Informe e-mail e senha.");
+    await expectToast("Informe o e-mail.");
+    expect(
+      await authenticate({ email: "", mode: "login", password: "123456" })
+    ).toBe(false);
+    await expectToast("Informe o e-mail.");
+    expect(
+      await authenticate({ email: "x", mode: "login", password: "" })
+    ).toBe(false);
+    await expectToast("E-mail inválido.");
+    expect(
+      await authenticate({ email: "a@b.co", mode: "login", password: "" })
+    ).toBe(false);
+    await expectToast("Informe a senha.");
     expect(
       await authenticate({ email: "x", mode: "login", password: "1" })
     ).toBe(false);

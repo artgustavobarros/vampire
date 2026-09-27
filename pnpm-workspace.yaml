@@ -1,0 +1,12 @@
+packages:
+  - api
+  - web
+
+# exigido pelo `pnpm deploy` (api/Dockerfile) para usar o lockfile do workspace
+injectWorkspacePackages: true
+
+allowBuilds:
+  "@scarf/scarf": false
+  "@swc/core": true
+  esbuild: true
+  lightningcss: true

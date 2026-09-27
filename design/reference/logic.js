@@ -1,0 +1,1436 @@
+class Component extends DCLogic {
+  static ATTRS = [
+    ['Físicos', ['Força', 'Destreza', 'Vigor']],
+    ['Sociais', ['Carisma', 'Manipulação', 'Autocontrole']],
+    ['Mentais', ['Inteligência', 'Raciocínio', 'Determinação']]
+  ];
+  static SKILLS = [
+    ['Físicas', ['Armas Brancas', 'Armas de Fogo', 'Atletismo', 'Briga', 'Condução', 'Furtividade', 'Ladroagem', 'Ofícios', 'Sobrevivência']],
+    ['Sociais', ['Empatia com Animais', 'Etiqueta', 'Intimidação', 'Liderança', 'Manha', 'Performance', 'Persuasão', 'Sagacidade', 'Subterfúgio']],
+    ['Mentais', ['Ciência', 'Erudição', 'Finanças', 'Investigação', 'Medicina', 'Ocultismo', 'Percepção', 'Política', 'Tecnologia']]
+  ];
+  static PREDADORES = [
+    ['Gato de Rua', 'Caça pela força e leva o sangue à força.',
+      ['Briga (Agarrar)', 'Intimidação (Assalto)'], ['Celeridade', 'Potência'],
+      ['−1 de Humanidade', 'Contatos •• (criminosos)']],
+    ['Extorsionário', 'Troca proteção e favores por sangue.',
+      ['Intimidação (Chantagem)', 'Ofícios (Armadilhas)'], ['Domínio', 'Potência'],
+      ['3 pontos em Contatos', '−2 pontos entre Recursos e Escravos', 'Defeito Inimigo •• (polícia ou vítima)']],
+    ['Sereia', 'Seduz a presa antes de beber.',
+      ['Persuasão (Seduzir)', 'Subterfúgio (Sedução)'], ['Fascinação', 'Presença'],
+      ['−1 de Humanidade', 'Vantagem Belíssimo ••', 'Defeito Inimigo • (amante preterido)']],
+    ['Saqueador', 'Vive de bolsas de sangue e restos.',
+      ['Ladroagem (Arrombamento)', 'Manha (Mercado Negro)'], ['Fortitude', 'Ofuscação'],
+      ['Vantagem Estômago de Ferro •••', 'Defeito Inimigo •• (policial ou traficante)']],
+    ['Sanguessuga', 'Alimenta-se de outros vampiros.',
+      ['Briga (Vampiros)', 'Subterfúgio (Emboscada)'], ['Celeridade', 'Potência'],
+      ['−1 de Humanidade', '+1 de Potência de Sangue', 'Defeito Presa Excluída (mortais)', 'Defeito Segredo Obscuro •• (diabolista) ou Evitado ••']],
+    ['Doméstico', 'Bebe de família, amigos e vizinhos.',
+      ['Persuasão (Manipulação)', 'Subterfúgio (Cobrir Rastros)'], ['Animalismo', 'Domínio'],
+      ['3 pontos em Rebanho (família mortal)', 'Defeito Segredo Obscuro • (Doméstico)']],
+    ['Consensualista', 'Só se alimenta com consentimento.',
+      ['Medicina (Flebotomia)', 'Persuasão (Vítimas)'], ['Auspícios', 'Fortitude'],
+      ['+1 de Humanidade', 'Defeito Segredo Obscuro •• (violação da Máscara)']],
+    ['Fazendeiro', 'Alimenta-se de animais.',
+      ['Empatia com Animais (tipo escolhido)', 'Sobrevivência (Caça)'], ['Animalismo', 'Protean'],
+      ['+1 de Humanidade', 'Defeito Vegano •• (fome dobrada com sangue humano)', 'Exige Humanidade 8 ou mais']],
+    ['Osíris', 'Mantém um culto que se oferece.',
+      ['Ocultismo (culto escolhido)', 'Performance (cena escolhida)'], ['Fascinação', 'Domínio'],
+      ['3 pontos entre Rebanho e Fama', '2 pontos entre Inimigos e Perseguido']],
+    ['João Pestana', 'Bebe de quem dorme.',
+      ['Furtividade (Invasão)', 'Ladroagem (Arrombamento)'], ['Auspícios', 'Ofuscação'],
+      ['1 ponto em Recursos']],
+    ['Rainha da Cena', 'Domina uma subcultura e se serve dela.',
+      ['Etiqueta (cena escolhida)', 'Performance (cena escolhida)'], ['Domínio', 'Fascinação'],
+      ['Fama ••', 'Contatos •', 'Defeito Status Negativo • (fora da subcultura)']],
+    ['Ladrão de Túmulos', 'Sangue de cadáveres frescos.',
+      ['Medicina (Cadáveres)', 'Ocultismo (Rituais Fúnebres)'], ['Fortitude', 'Ofuscação'],
+      ['Rebanho •• (coveiros e enlutados)', 'Vantagem Estômago de Ferro •••', 'Defeito Assombrado ••']]
+  ];
+  static DIST = [
+    ['Faz-tudo', 'Um pouco de tudo, sem especialidade.', { 3: 1, 2: 8, 1: 10 }],
+    ['Equilibrado', 'Competência distribuída em várias frentes.', { 3: 3, 2: 5, 1: 7 }],
+    ['Especialista', 'Excelência em poucas coisas.', { 4: 1, 3: 3, 2: 3, 1: 3 }]
+  ];
+  static ESPEC_OBRIG = ['Ciência', 'Erudição', 'Ofícios', 'Performance'];
+  static CLANS = [
+    ['Brujah', ['Celeridade', 'Potência', 'Presença'], 'Temperamento Violento', 'Some a Gravidade da Perdição à dificuldade de testes para resistir a frenesi de fúria.', 'Rebeldia', 'Precisa contrariar quem manda ou desfazer o que acabou de aceitar.'],
+    ['Gangrel', ['Animalismo', 'Fortitude', 'Protean'], 'Traços Bestiais', 'Em frenesi ganha traços animais: cada um dá −1 em uma categoria de teste pela cena.', 'Selvageria', 'Perde a fala articulada e resolve tudo por instinto e violência.'],
+    ['Malkaviano', ['Auspícios', 'Domínio', 'Ofuscação'], 'Perspectiva Fraturada', 'Uma desordem sempre presente: em falha bestial ou frenesi, penalidade igual à Gravidade da Perdição.', 'Delírio', 'Alucinações e paranoia: −2 em testes sociais e de Percepção.'],
+    ['Nosferatu', ['Animalismo', 'Ofuscação', 'Potência'], 'Repulsivo', 'Aparência 0 e impossível se passar por humano; falha automática em disfarce.', 'Criptofilia', 'Só se move atrás de um segredo novo e não compartilha o que sabe.'],
+    ['Toreador', ['Auspícios', 'Celeridade', 'Presença'], 'Fixação Estética', 'Diante de algo feio ou de um ambiente sem beleza, perde dados iguais à Gravidade da Perdição.', 'Obsessão', 'Fica preso a uma coisa bela e ignora todo o resto.'],
+    ['Tremere', ['Auspícios', 'Domínio', 'Feitiçaria de Sangue'], 'Sangue Deficiente', 'Seu sangue não cria laços nem vínculos como devia; Vitae instável.', 'Perfeccionismo', 'Nada menos que impecável serve: −2 acumulável até um sucesso crítico.'],
+    ['Ventrue', ['Domínio', 'Fortitude', 'Presença'], 'Paladar Refinado', 'Só se alimenta de um tipo específico de presa; outro sangue é vomitado.', 'Arrogância', 'Precisa mandar na cena e ser obedecido, ou nada mais importa.'],
+    ['Lasombra', ['Domínio', 'Oblívio', 'Potência'], 'Imagem Distorcida', 'Não aparece em espelhos, câmeras e microfones sem falhar tecnologia por perto.', 'Crueldade', 'Não pode hesitar: qualquer recuo custa −2 até levar a coisa até o fim.'],
+    ['Banu Haqim', ['Celeridade', 'Feitiçaria de Sangue', 'Ofuscação'], 'Sede de Sangue', 'Provar sangue vampírico exige teste de frenesi de fome contra a Gravidade da Perdição.', 'Julgamento', 'Precisa punir quem violou o próprio código, mesmo sem plateia.'],
+    ['Ministério', ['Ofuscação', 'Presença', 'Protean'], 'Aversão à Luz', 'Luz forte machuca mais: dano extra e penalidades iguais à Gravidade da Perdição.', 'Transgressão', 'Tem que levar alguém a quebrar um tabu, ou quebrá-lo você mesmo.'],
+    ['Hecata', ['Auspícios', 'Fortitude', 'Oblívio'], 'Beijo Doloroso', 'Sua mordida é agonia: nunca causa êxtase e a vítima sempre resiste.', 'Morbidez', 'Só consegue pensar em morte e precisa entender como aquilo acabou.'],
+    ['Ravnos', ['Animalismo', 'Ofuscação', 'Presença'], 'Condenado a Vagar', 'Dormir duas vezes no mesmo lugar traz dano agravado ao acordar.', 'Tentar o Destino', 'Precisa escolher o caminho mais arriscado só para ver o que acontece.'],
+    ['Tzimisce', ['Animalismo', 'Domínio', 'Protean'], 'Preso à Terra', 'Precisa dormir cercado por terra do seu domínio, ou não recupera nada.', 'Cobiça', 'Tem de possuir e controlar o que considera seu, sem dividir.'],
+    ['Salubri', ['Auspícios', 'Domínio', 'Fortitude'], 'Caçados', 'O terceiro olho os marca e o sangue deles é cobiçado por outros clãs.', 'Empatia Afetiva', 'Sente a dor alheia como sua e precisa aliviá-la antes de agir.'],
+    ['Caitiff', ['Livre escolha'], 'Marginalizado', 'Sem clã nem Perdição fixa: subir Disciplinas custa mais e ninguém confia em você.', 'Nenhuma', 'Caitiff não tem Compulsão de clã.'],
+    ['Sangue Fraco', ['Alquimia de Sangue Fino'], 'Sangue Fino', 'Sem Perdição de clã, mas também sem Potência de Sangue e com méritos e falhas próprios.', 'Nenhuma', 'Sangue Fraco não tem Compulsão de clã.']
+  ];
+
+  static CLAN_FULL = {
+    'Brujah': {
+      bane: ['A fúria ferve logo abaixo da pele. Qualquer provocação pode virar frenesi, e o sangue Brujah resiste mal ao impulso de revidar.', [['Gatilho', 'Testes para resistir a frenesi de fúria.'], ['Rolagem', 'Retire {G} dados da parada para resistir (mínimo de 1 dado).'], ['Dura', 'Sempre ativa.']]],
+      comp: ['A Besta exige desafiar a autoridade. O vampiro precisa se opor a quem representa ordem ou expectativa na cena: líder, regra, costume.', [['Efeito', '−2 dados em todas as paradas que não sirvam para contrariar a ordem, a autoridade ou a expectativa de alguém.'], ['Termina', 'Quando ele desafia a autoridade de forma clara ou a cena termina.']]]
+    },
+    'Gangrel': {
+      bane: ['O frenesi deixa marcas animais no corpo: pelos, garras, olhos de fera, orelhas pontudas. As marcas podem durar além do frenesi.', [['Gatilho', 'Sempre que entra em frenesi.'], ['Efeito', 'Ganha {G} traços animais. Cada traço dá −1 em um Atributo (escolha na hora) até a próxima noite.'], ['Opção', 'Pode escolher entrar em frenesi de propósito (cavalgar a onda) e aceitar os traços.']]],
+      comp: ['A Besta toma a frente e o vampiro age como animal: rosna, fareja, desconfia de tudo e perde a fala articulada.', [['Efeito', '−3 dados em paradas de Manipulação e Inteligência.'], ['Termina', 'No fim da cena.']]]
+    },
+    'Malkaviano': {
+      bane: ['A mente é fraturada por uma perturbação permanente. Quando a Besta aparece, a loucura aparece junto e distorce os sentidos ou o juízo.', [['Gatilho', 'Falha bestial ou Compulsão de qualquer tipo.'], ['Efeito', '−{G} dados em uma categoria de paradas (Física, Social ou Mental), definida pelo Narrador conforme a perturbação.'], ['Dura', 'Até o fim da cena.']]],
+      comp: ['O véu entre verdade e delírio se rasga. O vampiro enxerga sinais, vozes e padrões que ninguém mais vê e age com base neles.', [['Efeito', '−2 dados em paradas de Destreza, Manipulação, Autocontrole e Raciocínio, e em testes para resistir a Auspícios.'], ['Termina', 'No fim da cena.']]]
+    },
+    'Nosferatu': {
+      bane: ['O corpo é deformado e monstruoso. Não há como se passar por humano sem ajuda sobrenatural.', [['Gatilho', 'Qualquer tentativa de parecer humano ou disfarçar a aparência sem Ofuscação.'], ['Rolagem', 'Retire {G} dados da parada de disfarce.'], ['Restrição', 'Não pode comprar a Vantagem Aparência (Belíssimo).']]],
+      comp: ['Segredos atraem o Nosferatu como sangue. Ele precisa descobrir algo escondido e não aceita desistir até conseguir.', [['Efeito', '−2 dados em todas as paradas que não sirvam para descobrir um segredo.'], ['Termina', 'Quando obtém um segredo ainda não conhecido ou a cena termina.']]]
+    },
+    'Toreador': {
+      bane: ['A beleza é necessidade. Ambientes feios, sujos ou sem graça distraem e sufocam o Toreador.', [['Gatilho', 'Estar num lugar feio ou sem beleza.'], ['Rolagem', 'Retire {G} dados das paradas de Disciplina.'], ['Dura', 'Enquanto estiver no lugar.']]],
+      comp: ['Algo belo prende toda a atenção do vampiro: uma pessoa, uma obra, uma cena. O resto do mundo some.', [['Efeito', '−2 dados em todas as paradas que não envolvam a fixação.'], ['Termina', 'Quando a fixação é satisfeita ou a cena termina.']]]
+    },
+    'Tremere': {
+      bane: ['Desde a queda da Pirâmide, o sangue Tremere perdeu força. Ele não cria Laços de Sangue como deveria.', [['Vampiros', 'Não consegue criar Laço de Sangue em outros vampiros.'], ['Mortais', 'Um mortal ou carniçal precisa beber {G} vezes a mais para ficar laçado.'], ['Dura', 'Sempre ativa.']]],
+      comp: ['Nada menos que o perfeito serve. O vampiro refaz, corrige e se irrita com qualquer resultado mediano.', [['Efeito', '−2 dados em todas as paradas. Repetir a mesma ação reduz a penalidade em 1 a cada tentativa.'], ['Termina', 'Quando obtém um sucesso crítico ou a cena termina.']]]
+    },
+    'Ventrue': {
+      bane: ['O paladar é exigente: só um tipo específico de presa satisfaz. Sangue de qualquer outra fonte é rejeitado pelo corpo.', [['Identificar', 'Raciocínio + Percepção (dificuldade 4 ou mais) para saber se a presa é do tipo certo.'], ['Beber fora do tipo', 'Gaste {G} pontos de Força de Vontade para manter o sangue; sem isso, vomita e não reduz a Fome.'], ['Dura', 'Sempre ativa.']]],
+      comp: ['O Ventrue precisa estar no comando. Alguém na cena tem de obedecer uma ordem dele.', [['Efeito', '−2 dados em todas as paradas que não sirvam para fazer alguém obedecer.'], ['Termina', 'Quando alguém cumpre uma ordem dele (sem uso de Domínio) ou a cena termina.']]]
+    },
+    'Lasombra': {
+      bane: ['O reflexo é distorcido e a tecnologia rejeita o vampiro. Espelhos, câmeras e microfones captam uma imagem ou voz deformada.', [['Gatilho', 'Usar tecnologia moderna ou tentar aparecer em gravações.'], ['Rolagem', 'Retire {G} dados de paradas de Tecnologia.'], ['Aparência', 'Reflexos e gravações ficam visivelmente distorcidos.']]],
+      comp: ['O fracasso é inaceitável. Depois de falhar, o vampiro só pensa em vencer, custe o que custar.', [['Gatilho', 'A próxima vez que falhar numa ação.'], ['Efeito', '−2 dados em todas as paradas até ter sucesso numa nova tentativa da ação que falhou.'], ['Termina', 'Com o sucesso ou no fim da cena.']]]
+    },
+    'Banu Haqim': {
+      bane: ['O sangue de outros vampiros é viciante. Provar Vitae acende uma sede quase impossível de controlar.', [['Gatilho', 'Reduzir ao menos 1 de Fome bebendo sangue de vampiro.'], ['Rolagem', 'Teste de frenesi de fome com dificuldade 2 + {G}.'], ['Falha', 'Entra em frenesi e tenta beber tudo.']]],
+      comp: ['O vampiro sente o dever de julgar. Alguém que violou as convicções dele precisa ser punido.', [['Efeito', '−2 dados em todas as paradas que não sirvam para punir o transgressor.'], ['Termina', 'Quando pune (beber 1 de Fome dele conta) ou a cena termina.']]]
+    },
+    'Ministério': {
+      bane: ['A luz é inimiga. Luz forte fere mais e cega mais do que a outros vampiros.', [['Luz forte', 'Retire {G} dados de todas as paradas sob luz intensa.'], ['Luz do sol', 'Some {G} ao dano agravado recebido da luz solar.'], ['Dura', 'Enquanto estiver exposto.']]],
+      comp: ['O vampiro precisa levar alguém a romper uma regra, um tabu ou uma convicção.', [['Efeito', '−2 dados em todas as paradas que não sirvam para induzir a transgressão.'], ['Termina', 'Quando alguém transgride (ou o próprio vampiro, com teste de Humanidade) ou a cena termina.']]]
+    },
+    'Hecata': {
+      bane: ['A mordida é agonia. O Beijo nunca dá prazer: a vítima sente só dor e luta para escapar.', [['Alimentação', 'A vítima resiste sempre; é preciso contê-la ou convencê-la antes.'], ['Rolagem', 'Paradas para se alimentar sem violência perdem {G} dados.'], ['Efeito', 'Cada gole causa dano superficial extra à vítima.']]],
+      comp: ['A morte ocupa todos os pensamentos. O vampiro precisa estudar, provocar ou testemunhar o fim de algo.', [['Efeito', '−2 dados em todas as paradas que não envolvam morte ou decadência.'], ['Termina', 'Quando algo morre ou se decompõe de forma significativa, ou a cena termina.']]]
+    },
+    'Ravnos': {
+      bane: ['O sol procura o Ravnos. Dormir duas vezes no mesmo lugar em sete noites queima o corpo.', [['Gatilho', 'Repousar no mesmo lugar mais de uma vez em sete noites.'], ['Rolagem', 'Role {G} dados ao acordar. Cada 6 ou mais causa 1 dano agravado.'], ['Dura', 'Todo despertar em que a regra for quebrada.']]],
+      comp: ['O vampiro precisa tentar o destino: escolher o caminho mais arriscado e ousado disponível.', [['Efeito', '−2 dados em todas as paradas de ações seguras ou sensatas.'], ['Termina', 'Quando realiza algo arriscado ou a cena termina.']]]
+    },
+    'Tzimisce': {
+      bane: ['O vampiro está preso a algo: sua terra, um grupo, um objeto. Precisa repousar junto do que é seu.', [['Gatilho', 'Repousar longe do vínculo escolhido.'], ['Efeito', 'Acorda com {G} de dano agravado em Força de Vontade.'], ['Dura', 'Todo despertar sem o vínculo.']]],
+      comp: ['A cobiça toma conta. O vampiro precisa possuir algo ou alguém que viu na cena.', [['Efeito', '−2 dados em todas as paradas que não sirvam para obter o objeto da cobiça.'], ['Termina', 'Quando possui o que deseja ou a cena termina.']]]
+    },
+    'Salubri': {
+      bane: ['O sangue Salubri é cobiçado e o terceiro olho denuncia o clã. Outros vampiros os caçam.', [['Terceiro olho', 'Abre ao usar Disciplinas e chora sangue; difícil de esconder.'], ['Quem bebe', 'Vampiros que provam sangue Salubri testam frenesi de fome com dificuldade 2 + {G}.'], ['Dura', 'Sempre ativa.']]],
+      comp: ['O vampiro sente a dor dos outros como sua e precisa aliviá-la.', [['Efeito', '−2 dados em todas as paradas que não sirvam para ajudar alguém que sofre.'], ['Termina', 'Quando alivia o sofrimento de alguém ou a cena termina.']]]
+    }
+  };
+  static ATTR_INFO = {
+    'Força': ['Potência física bruta: levantar, empurrar, golpear, arrombar.', ['Fraco. Carrega compras com esforço.', 'Médio. Uma pessoa comum, sem treino.', 'Forte. Treina com frequência; arromba uma porta simples.', 'Muito forte. Levanta o próprio peso com facilidade.', 'No limite humano. Derruba quase qualquer um.']],
+    'Destreza': ['Coordenação, reflexo e precisão do corpo e das mãos.', ['Desajeitado. Tropeça, derruba coisas.', 'Médio.', 'Ágil. Bom em esportes de precisão.', 'Treinado. Acrobata, atirador, dançarino.', 'Graça excepcional. Movimento quase perfeito.']],
+    'Vigor': ['Resistência a dor, cansaço e ferimento. Define a Vitalidade (Vigor + 3).', ['Frágil. Cansa e se machuca fácil.', 'Médio.', 'Resistente. Aguenta uma briga sem cair.', 'Duro. Resiste como um atleta de fundo.', 'Quase inquebrável para um corpo humano.']],
+    'Carisma': ['Presença e poder de atrair, inspirar e agradar.', ['Passa despercebido ou incomoda.', 'Agradável.', 'Faz amigos com facilidade.', 'Magnético. Atrai atenção onde entra.', 'Líder nato. As pessoas querem seguir você.']],
+    'Manipulação': ['Fazer os outros agirem como você quer, com ou sem a verdade.', ['Transparente. Mente mal.', 'Médio.', 'Convence sem esforço aparente.', 'Joga com as pessoas como peças.', 'Mestre. Quase ninguém percebe.']],
+    'Autocontrole': ['Calma sob pressão e domínio das emoções. Com Determinação, forma a Força de Vontade.', ['Explode à toa.', 'Médio.', 'Mantém a compostura em crises.', 'Frio como gelo.', 'Imperturbável. Nada tira você do eixo.']],
+    'Inteligência': ['Raciocínio lógico, memória e conhecimento acumulado.', ['Aprende devagar.', 'Médio.', 'Esperto. Aprende rápido.', 'Brilhante.', 'Gênio.']],
+    'Raciocínio': ['Rapidez de pensamento e reação ao inesperado.', ['Demora a reagir.', 'Médio.', 'Pensa rápido numa conversa ou numa briga.', 'Raramente é pego de surpresa.', 'Responde antes de a pergunta terminar.']],
+    'Determinação': ['Foco e persistência. Com Autocontrole, forma a Força de Vontade.', ['Desiste fácil.', 'Médio.', 'Termina o que começa.', 'Obstinado.', 'Inabalável.']]
+  };
+  static SKILL_SCALE = ['Novato. Conhece o básico.', 'Praticante. Usa com alguma frequência.', 'Competente. Nível profissional.', 'Especialista. Referência entre profissionais.', 'Mestre. Entre os melhores do mundo.'];
+  static SKILL_INFO = {
+    'Armas Brancas': ['Luta com facas, espadas, bastões e objetos improvisados.', 'Facas, Espadas, Bastões'],
+    'Armas de Fogo': ['Mira, uso e manutenção de pistolas, rifles e escopetas.', 'Pistolas, Rifles, Recarga rápida'],
+    'Atletismo': ['Correr, saltar, escalar, nadar e arremessar.', 'Corrida, Escalada, Parkour'],
+    'Briga': ['Combate desarmado: socos, chutes e agarrões.', 'Agarrar, Boxe, Briga de rua'],
+    'Condução': ['Dirigir em situações difíceis.', 'Perseguição, Motocicletas, Caminhões'],
+    'Furtividade': ['Mover-se sem ser visto ou ouvido; esconder-se.', 'Sombras, Multidões, Emboscada'],
+    'Ladroagem': ['Arrombar fechaduras, bater carteiras, burlar alarmes.', 'Fechaduras, Punga, Cofres'],
+    'Ofícios': ['Criar e consertar coisas com as mãos. Exige especialidade.', 'Marcenaria, Mecânica, Pintura'],
+    'Sobrevivência': ['Orientar-se, rastrear e abrigar-se fora da cidade.', 'Rastrear, Floresta, Abrigo'],
+    'Empatia com Animais': ['Ler, acalmar e treinar animais.', 'Cães, Cavalos, Ratos'],
+    'Etiqueta': ['Conhecer e seguir as regras de cada ambiente social.', 'Elysium, Alta sociedade, Corporativo'],
+    'Intimidação': ['Impor medo por presença, ameaça ou violência implícita.', 'Ameaças veladas, Interrogatório'],
+    'Liderança': ['Comandar, organizar e inspirar grupos.', 'Discursos, Táticas, Seguidores'],
+    'Manha': ['Conhecimento das ruas: gírias, contatos, mercado negro.', 'Drogas, Gangues, Mercado negro'],
+    'Performance': ['Atuar, cantar, dançar ou tocar. Exige especialidade.', 'Canto, Dança, Stand-up'],
+    'Persuasão': ['Convencer com argumento, charme ou negociação.', 'Negociação, Sedução, Retórica'],
+    'Sagacidade': ['Perceber intenções e emoções pelo comportamento.', 'Mentiras, Emoções, Motivações'],
+    'Subterfúgio': ['Mentir, disfarçar e enganar com convicção.', 'Mentira, Disfarce, Blefe'],
+    'Ciência': ['Conhecimento científico e método. Exige especialidade.', 'Química, Biologia, Física'],
+    'Erudição': ['Humanidades: história, arte, línguas. Exige especialidade.', 'História, Línguas, Arte'],
+    'Finanças': ['Dinheiro, contabilidade e mercado.', 'Lavagem, Bolsa, Contabilidade'],
+    'Investigação': ['Encontrar pistas e reconstruir o que aconteceu.', 'Cena de crime, Pesquisa, Perícia'],
+    'Medicina': ['Diagnóstico, primeiros socorros e cirurgia.', 'Primeiros socorros, Cirurgia, Venenos'],
+    'Ocultismo': ['Saber sobre o sobrenatural, ritos e lendas.', 'Magia, Lendas vampíricas, Fantasmas'],
+    'Percepção': ['Notar detalhes, perigos e o que está fora do lugar.', 'Emboscadas, Visão, Audição'],
+    'Política': ['Entender e mover poder, hierarquias e burocracia.', 'Camarilla, Prefeitura, Polícia'],
+    'Tecnologia': ['Computadores, redes e eletrônicos.', 'Hacking, Segurança, Celulares']
+  };
+  static DISC_INFO = {
+    'Animalismo': 'Domínio sobre animais e sobre a Besta, a sua e a dos outros.',
+    'Auspícios': 'Sentidos sobrenaturais: ver auras, ler pensamentos, pressentir o que vem.',
+    'Celeridade': 'Velocidade e reflexos acima do humano.',
+    'Domínio': 'Controle da mente alheia pelo olhar e pela voz.',
+    'Feitiçaria de Sangue': 'Magia feita com vitae: rituais e poderes de sangue.',
+    'Fortitude': 'Resistência sobrenatural a dano, dor e controle mental.',
+    'Oblívio': 'Manipulação das sombras e da energia dos mortos.',
+    'Ofuscação': 'Passar despercebido, sumir da mente dos outros, assumir outro rosto.',
+    'Potência': 'Força física sobrenatural.',
+    'Presença': 'Poder emocional: fascinar, aterrorizar, fazer-se amado.',
+    'Protean': 'Mudança de forma: garras, fundir-se à terra, virar animal.',
+    'Alquimia de Sangue Fino': 'Fórmulas que imitam Disciplinas usando sangue fraco.'
+  };
+  static TRAIT_INFO = {
+    fome: ['Estado', 'Fome', 'A necessidade de sangue. Cada ponto vira um dado de Fome nas rolagens: um 1 nesses dados pode virar falha bestial, e um 10 pode virar crítico confuso.',
+      [['1', 'Saciado, mas já sente o chamado.'], ['2', 'Incomodado. O cheiro de sangue distrai.'], ['3', 'Faminto. Difícil ignorar uma ferida aberta.'], ['4', 'Voraz. Resistir à Besta fica mais difícil.'], ['5', 'No limite. Qualquer provocação vira frenesi.']],
+      'Sobe com o Rouse Check. Desce quando você se alimenta.'],
+    humanidade: ['Estado', 'Humanidade', 'O quanto do mortal ainda resta. Quanto mais baixa, mais a Besta fala por você.',
+      [['1', 'À beira de perder-se para sempre.'], ['2', 'Quase só Besta.'], ['3', 'Monstro com boas maneiras.'], ['4', 'Cruel. A violência vem fácil.'], ['5', 'Distante. Mortais viram meios.'], ['6', 'Frio. Justifica o que antes evitaria.'], ['7', 'A média dos Membros. A máscara ainda é natural.'], ['8', 'Humano. Sente culpa real.'], ['9', 'Compassivo. Ainda cora e se aquece.'], ['10', 'Santo. Quase ninguém chega aqui.']],
+      'Manchas vêm de violar seus Princípios. No fim da sessão, cada mancha pode custar um ponto.'],
+    vitalidade: ['Rastreador', 'Vitalidade', 'Quanto dano o corpo aguenta antes de cair. Máximo: Vigor + 3.',
+      [['/', 'Superficial. Cura com sangue ao despertar ou com Rouse Check.'], ['✕', 'Agravado. Vem de fogo, sol e presas; demora muito mais a curar.']],
+      'Quando todas as caixas estão marcadas, você cai em torpor.'],
+    vontade: ['Rastreador', 'Força de Vontade', 'Reserva de determinação. Máximo: Autocontrole + Determinação.',
+      [['/', 'Superficial. Volta com descanso e ao cumprir Desejos.'], ['✕', 'Agravado. Vem de trauma e de agir contra si mesmo.']],
+      'Gaste um ponto para rerrolar até três dados comuns.'],
+    ressonancia: ['Sangue', 'Ressonância', 'O sabor emocional do sangue da presa. Cada humor fortalece certas Disciplinas enquanto dura.',
+      [['Colérico', 'Celeridade, Potência'], ['Melancólico', 'Fortitude, Oblívio'], ['Fleumático', 'Auspícios, Domínio'], ['Sanguíneo', 'Feitiçaria de Sangue, Presença'], ['Animal', 'Animalismo, Protean']],
+      'A intensidade define por quanto tempo e quanto o bônus vale.'],
+    potencia: ['Sangue', 'Potência de Sangue', 'A força da vitae, definida pela Geração. Aumenta o surto de sangue, a cura e os poderes, mas deixa presas fracas menos satisfatórias.',
+      [], 'Não se compra com pontos na criação: decorre da Geração.']
+  };
+  static MERIT_INFO = [
+    ['aliad', 'V', 'Aliados', 'Mortais que ajudam você por lealdade, não por dinheiro.'],
+    ['contat', 'V', 'Contatos', 'Pessoas que passam informação ou prestam pequenos serviços.'],
+    ['fama', 'V', 'Fama', 'Reconhecimento público entre mortais. Abre portas e atrapalha a Máscara.'],
+    ['influ', 'V', 'Influência', 'Peso dentro de uma instituição ou comunidade.'],
+    ['rebanh', 'V', 'Rebanho', 'Mortais de quem você se alimenta com segurança.'],
+    ['recurs', 'V', 'Recursos', 'Dinheiro, bens e renda.'],
+    ['refúg', 'V', 'Refúgio', 'Onde você dorme de dia. Os pontos medem segurança, tamanho e segredo.'],
+    ['refug', 'V', 'Refúgio', 'Onde você dorme de dia. Os pontos medem segurança, tamanho e segredo.'],
+    ['lacai', 'V', 'Lacaios', 'Servos leais que cumprem ordens sem perguntar.'],
+    ['escrav', 'V', 'Lacaios', 'Servos leais que cumprem ordens sem perguntar.'],
+    ['másc', 'V', 'Máscara', 'Identidade mortal falsa e documentada.'],
+    ['masc', 'V', 'Máscara', 'Identidade mortal falsa e documentada.'],
+    ['mawla', 'V', 'Mawla', 'Um Membro mais velho que aconselha e protege você.'],
+    ['status', 'V', 'Status', 'Posição reconhecida na sociedade vampírica da cidade.'],
+    ['linguís', 'V', 'Linguística', 'Idiomas além do nativo, um por ponto.'],
+    ['belíss', 'V', 'Belíssimo', 'Aparência marcante que ajuda em testes sociais.'],
+    ['estômago', 'V', 'Estômago de Ferro', 'Tolera sangue de bolsa, velho ou de má qualidade.'],
+    ['inimig', 'D', 'Inimigo', 'Alguém trabalha ativamente contra você.'],
+    ['segredo', 'D', 'Segredo Obscuro', 'Algo que, se revelado, destrói sua reputação ou pior.'],
+    ['persegu', 'D', 'Perseguido', 'Algo ou alguém caça você.'],
+    ['evitad', 'D', 'Evitado', 'Outros Membros evitam ser vistos com você.'],
+    ['vegan', 'D', 'Vegano', 'Sangue humano não sacia como deveria.'],
+    ['presa', 'D', 'Presa Excluída', 'Um tipo de presa que você não pode ou não quer usar.'],
+    ['assomb', 'D', 'Assombrado', 'Uma presença sobrenatural acompanha você.']
+  ];
+  static MERIT_SCALE_V = ['Menor. Ajuda pontual, pouca influência.', 'Modesto. Confiável para favores pequenos.', 'Sólido. Recurso real e recorrente.', 'Forte. Muda o rumo de uma história.', 'Máximo. Poder raro, cobiçado por outros.'];
+  static MERIT_SCALE_D = ['Incômodo menor.', 'Problema recorrente.', 'Ameaça séria.', 'Pode arruinar você.', 'Risco de morte final.'];
+  static DISCS = ['Animalismo', 'Auspícios', 'Celeridade', 'Domínio', 'Feitiçaria de Sangue', 'Fortitude', 'Oblívio', 'Ofuscação', 'Potência', 'Presença', 'Protean'];
+  static GERACOES = [
+    ['16ª', 0], ['15ª', 0], ['14ª', 0], ['13ª', 1], ['12ª', 1], ['11ª', 1],
+    ['10ª', 1], ['9ª', 2], ['8ª', 2], ['7ª', 3], ['6ª', 3], ['5ª', 4], ['4ª', 5]
+  ];
+  static GER_TABELA = [['4ª', [4], 5], ['5ª', [5], 4], ['6ª', [6], 3], ['7ª', [7], 3], ['8ª', [8], 2], ['9ª', [9], 2], ['10ª–11ª', [10, 11], 1], ['12ª–13ª', [12, 13], 1], ['14ª–16ª', [14, 15, 16], 0]];
+  static potDeGeracao(g) {
+    const n = parseInt(String(g || '').replace(/[^0-9]/g, ''), 10);
+    if (!n) return null;
+    const row = Component.GERACOES.find(x => parseInt(x[0], 10) === n);
+    if (row) return row[1];
+    if (n > 16) return 0;
+    if (n < 4) return 5;
+    return null;
+  }
+  static POWERS = {
+    'Animalismo': [
+      [1, 'Sussurro Ferino', 'Comunica-se com animais. Manipulação + Animalismo vs. resistência do animal.', false, 'Sem custo de sangue', 'Uma cena'],
+      [1, 'Sentir a Fera', 'Sente hostilidade e Fome sobrenatural por perto. Resolução + Animalismo.', false, 'Sem custo de sangue', 'Instantânea'],
+      [2, 'Chamado Selvagem', 'Convoca animais da região. Carisma + Animalismo, dificuldade pela raridade.', true, 'Um Rouse Check', 'Uma cena'],
+      [3, 'Aliado Animal', 'Vincula um animal como companheiro permanente.', true, 'Um Rouse Check por vínculo', 'Permanente'],
+      [3, 'Aquietar a Fera', 'Suprime frenesi ou emoção violenta em outra criatura. Carisma + Animalismo.', true, 'Um Rouse Check', 'Uma cena'],
+      [4, 'Subjugar a Fera', 'Força a Besta de um vampiro à submissão ou ao terror. Manipulação + Animalismo.', true, 'Um Rouse Check', 'Uma cena'],
+      [4, 'Bestialidade Ampliada', 'Concede a um animal capacidades sobrenaturais.', true, 'Um Rouse Check', 'Uma noite'],
+      [5, 'Animais Ampliados', 'Aumenta permanentemente os atributos de aliados animais.', true, 'Um Rouse Check', 'Permanente'],
+      [5, 'Possessão Animal', 'Assume o controle total do corpo de um animal.', true, 'Dois Rouse Checks', 'Uma cena']
+    ],
+    'Auspícios': [
+      [1, 'Sentidos da Besta', 'Percebe perigo iminente. Resolução + Auspícios contra Subterfúgio.', false, 'Sem custo de sangue', 'Passiva'],
+      [1, 'Consciência Ampliada', 'Detecta o sobrenatural no ambiente. Percepção + Auspícios.', false, 'Sem custo de sangue', 'Uma cena'],
+      [2, 'Sentir o Invisível', 'Percebe presenças ocultas por poderes sobrenaturais.', false, 'Sem custo de sangue', 'Passiva'],
+      [2, 'Premonição', 'Recebe vislumbres do futuro imediato. Resolução + Auspícios.', true, 'Um Rouse Check', 'Instantânea'],
+      [3, 'Toque do Espírito', 'Lê a história de um objeto pelo toque. Inteligência + Auspícios.', true, 'Um Rouse Check', 'Instantânea'],
+      [3, 'Compartilhar os Sentidos', 'Usa os sentidos de outra criatura à distância.', true, 'Um Rouse Check', 'Uma cena'],
+      [4, 'Telepatia', 'Lê pensamentos superficiais ou projeta os próprios. Resolução + Auspícios.', true, 'Um Rouse Check', 'Uma cena'],
+      [5, 'Clarividência', 'Projeta a percepção para um local conhecido e distante.', true, 'Um Rouse Check', 'Uma cena'],
+      [5, 'Possessão', 'Toma o corpo de um mortal. Resolução + Auspícios vs. Determinação + Autocontrole.', true, 'Dois Rouse Checks', 'Até ser rompida']
+    ],
+    'Celeridade': [
+      [1, 'Graça Felina', 'Equilíbrio automático em qualquer superfície estreita.', false, 'Sem custo de sangue', 'Passiva'],
+      [1, 'Reflexos Rápidos', 'Bônus de iniciativa e reação. Sem custo.', false, 'Sem custo de sangue', 'Passiva'],
+      [2, 'Fluidez', 'Adiciona Celeridade a testes de esquiva e Destreza.', true, 'Um Rouse Check', 'Uma cena'],
+      [2, 'Velocidade Sobrenatural', 'Corre a velocidades impossíveis por uma cena.', true, 'Um Rouse Check', 'Uma cena'],
+      [3, 'Fôlego Interminável', 'Movimento veloz sem exaustão; ignora penalidades de deslocamento.', true, 'Um Rouse Check', 'Uma cena'],
+      [3, 'Golpe Veloz', 'Age em ordem de iniciativa privilegiada em combate corpo a corpo.', true, 'Um Rouse Check', 'Um turno'],
+      [4, 'Desvio de Projéteis', 'Desvia ou aparra armas de projétil. Destreza + Celeridade.', true, 'Um Rouse Check', 'Um turno'],
+      [5, 'Velocidade Fulminante', 'Executa várias ações completas no mesmo turno.', true, 'Dois Rouse Checks', 'Um turno']
+    ],
+    'Domínio': [
+      [1, 'Compelir', 'Uma ordem curta de uma palavra, obedecida por reflexo. Carisma + Domínio.', true, 'Um Rouse Check', 'Uma ação'],
+      [2, 'Enfeitiçar', 'Cria devoção temporária em um mortal; exige contato visual. Manipulação + Domínio.', true, 'Um Rouse Check', 'Uma cena'],
+      [2, 'Sussurro Persuasivo', 'Reescreve memórias recentes do alvo. Manipulação + Domínio.', true, 'Um Rouse Check', 'Permanente'],
+      [3, 'A Palavra Perdida', 'Impede o alvo de falar ou pensar em determinado assunto.', true, 'Um Rouse Check', 'Uma cena'],
+      [3, 'Esquecimento', 'Apaga ou substitui memórias inteiras. Manipulação + Domínio.', true, 'Um Rouse Check', 'Permanente'],
+      [4, 'Condicionamento', 'Torna o alvo permanentemente suscetível ao seu Domínio.', true, 'Um Rouse Check por sessão', 'Permanente'],
+      [4, 'Fantasma', 'Implanta ordens que se ativam em condições futuras.', true, 'Um Rouse Check', 'Até ser disparada'],
+      [5, 'Domínio em Massa', 'Aplica um comando a todos os mortais presentes.', true, 'Dois Rouse Checks', 'Uma cena'],
+      [5, 'Terminal Decree', 'Ordens podem causar dano direto ou autodestruição do alvo.', true, 'Dois Rouse Checks', 'Instantânea']
+    ],
+    'Feitiçaria de Sangue': [
+      [1, 'Corrupção do Sangue', 'Corrompe o sangue de um alvo à distância. Inteligência + Feitiçaria.', true, 'Um Rouse Check', 'Instantânea'],
+      [1, 'Sentido do Sangue', 'Detecta vampiros e sangue vitae nas proximidades.', false, 'Sem custo de sangue', 'Uma cena'],
+      [2, 'Extinguir a Vitae', 'Queima o sangue do alvo, aumentando sua Fome.', true, 'Um Rouse Check', 'Instantânea'],
+      [2, 'Vitae Emasculada', 'Torna o próprio sangue inútil para outros vampiros.', true, 'Um Rouse Check', 'Uma noite'],
+      [3, 'Sangue do Escorpião', 'Transforma o próprio sangue em veneno.', true, 'Um Rouse Check', 'Uma cena'],
+      [3, 'Aliar-se ao Sangue', 'Cria laços forçados de sangue à distância.', true, 'Um Rouse Check', 'Permanente'],
+      [4, 'Roubo de Vitae', 'Drena sangue do alvo sem contato físico. Determinação + Feitiçaria.', true, 'Um Rouse Check', 'Instantânea'],
+      [4, 'Bruxaria Sanguínea', 'Ritual de destruição a distância sobre alvo com sangue conhecido.', true, 'Um Rouse Check', 'Instantânea'],
+      [5, 'Chicote de Sangue', 'Solidifica o próprio sangue em arma cortante.', true, 'Um Rouse Check', 'Uma cena'],
+      [5, 'Baal', 'Faz o sangue do alvo ferver, causando dano agravado.', true, 'Dois Rouse Checks', 'Instantânea']
+    ],
+    'Fortitude': [
+      [1, 'Resiliência', 'Adiciona a Fortitude à absorção de dano superficial. Passivo.', false, 'Sem custo de sangue', 'Passiva'],
+      [1, 'Inabalável', 'Ignora penalidades de dano ao resistir a coerção.', false, 'Sem custo de sangue', 'Passiva'],
+      [2, 'Obstinado', 'Converte penalidade social ou mental em Força de Vontade gasta.', true, 'Um Rouse Check', 'Uma cena'],
+      [2, 'Alma de Aço', 'Reduz dano agravado com um teste de Fortitude.', true, 'Um Rouse Check', 'Um turno'],
+      [3, 'Escudo Mental', 'Adiciona Fortitude à resistência contra poderes mentais.', false, 'Sem custo de sangue', 'Passiva'],
+      [3, 'Pele de Ferro', 'Absorve dano agravado de armas físicas.', true, 'Um Rouse Check', 'Um turno'],
+      [4, 'Sangue Escudo', 'Absorve dano por outra pessoa próxima.', true, 'Um Rouse Check', 'Um turno'],
+      [5, 'Fortalecer o Interior', 'Recupera dano agravado durante a cena.', true, 'Um Rouse Check por nível de dano', 'Uma cena'],
+      [5, 'Imunidade Prolongada', 'Resiste brevemente ao fogo e à luz do sol.', true, 'Um Rouse Check', 'Um turno']
+    ],
+    'Oblívio': [
+      [1, 'Vista Cadavérica', 'Vê e ouve o outro lado do véu; percebe fantasmas.', true, 'Um Rouse Check', 'Uma cena'],
+      [1, 'Sombra Palpável', 'Manipula sombras próximas para escurecer o ambiente.', false, 'Sem custo de sangue', 'Uma cena'],
+      [2, 'Manto de Sombras', 'Envolve-se em escuridão sobrenatural.', false, 'Sem custo de sangue', 'Uma cena'],
+      [2, 'Braços de Ahriman', 'Ergue tentáculos de sombra que agarram alvos.', true, 'Um Rouse Check', 'Uma cena'],
+      [3, 'Toque do Oblívio', 'Envelhece e apodrece o que toca. Destreza + Oblívio.', true, 'Um Rouse Check', 'Instantânea'],
+      [3, 'Sombra do Aniquilador', 'A própria sombra ataca de forma independente.', true, 'Um Rouse Check', 'Uma cena'],
+      [4, 'Necrose', 'Provoca decomposição em tecido vivo ou morto-vivo.', true, 'Um Rouse Check', 'Instantânea'],
+      [4, 'Aprisionar Alma', 'Retém um espírito ou fantasma sob controle.', true, 'Um Rouse Check', 'Uma noite'],
+      [5, 'Túnel de Sombras', 'Viaja pelas sombras entre dois pontos escuros.', true, 'Dois Rouse Checks', 'Instantânea'],
+      [5, 'Passo Tenebroso', 'Atravessa o véu para o lado dos mortos.', true, 'Um Rouse Check', 'Uma cena']
+    ],
+    'Ofuscação': [
+      [1, 'Manto de Sombras', 'Passa desapercebido em ambientes com cobertura. Passivo.', false, 'Sem custo de sangue', 'Uma cena'],
+      [1, 'Presença Silenciosa', 'Movimenta-se sem produzir som ou rastro.', false, 'Sem custo de sangue', 'Uma cena'],
+      [2, 'Presença Insuspeita', 'Torna-se irrelevante à percepção alheia mesmo em movimento.', true, 'Um Rouse Check', 'Uma cena'],
+      [2, 'Rosto Emprestado', 'Assume aparência de outra pessoa vista. Manipulação + Ofuscação.', true, 'Um Rouse Check', 'Uma cena'],
+      [3, 'Máscara dos Mil Rostos', 'Cria uma identidade visual falsa e estável.', true, 'Um Rouse Check', 'Permanente'],
+      [3, 'Fantasma no Espelho', 'Não aparece em espelhos, fotos ou gravações.', true, 'Um Rouse Check', 'Passiva'],
+      [4, 'Véu Coletivo', 'Estende a ocultação a um grupo próximo.', true, 'Um Rouse Check', 'Uma cena'],
+      [4, 'Aparição', 'Projeta uma imagem falsa de si em outro lugar.', true, 'Um Rouse Check', 'Uma cena'],
+      [5, 'Manto do Cainita', 'Oculta-se mesmo sob observação direta e sob luz.', true, 'Dois Rouse Checks', 'Uma cena'],
+      [5, 'Imposição Cega', 'Remove um objeto ou pessoa da percepção de todos.', true, 'Um Rouse Check', 'Uma cena']
+    ],
+    'Potência': [
+      [1, 'Toque Letal', 'Converte dano superficial de ataques desarmados em agravado.', true, 'Um Rouse Check', 'Um turno'],
+      [1, 'Força Prodigiosa', 'Adiciona Potência a testes de Força não violentos.', false, 'Sem custo de sangue', 'Passiva'],
+      [2, 'Salto Prodigioso', 'Salta distâncias impossíveis. Força + Potência.', true, 'Um Rouse Check', 'Um salto'],
+      [2, 'Punho de Ferro', 'Adiciona Potência ao dano corpo a corpo.', true, 'Um Rouse Check', 'Uma cena'],
+      [3, 'Golpe Brutal', 'Dobra o dano em um ataque bem-sucedido.', true, 'Um Rouse Check', 'Um ataque'],
+      [3, 'Arremesso', 'Lança objetos ou pessoas a grandes distâncias.', true, 'Um Rouse Check', 'Um turno'],
+      [4, 'Vigor Sobre-Humano', 'Adiciona Potência a todos os testes de Força por uma cena.', true, 'Um Rouse Check', 'Uma cena'],
+      [5, 'Punho da Cólera', 'Destrói estruturas e armaduras com um único golpe.', true, 'Um Rouse Check', 'Um ataque'],
+      [5, 'Ataque Impossível', 'Desfere um golpe que não pode ser esquivado nem bloqueado.', true, 'Um Rouse Check', 'Um ataque']
+    ],
+    'Presença': [
+      [1, 'Presença Imponente', 'Aterroriza ou atrai a atenção de todos no ambiente. Carisma + Presença.', true, 'Um Rouse Check', 'Uma cena'],
+      [1, 'Olhar Terrível', 'Provoca medo imediato em um alvo. Carisma + Intimidação.', true, 'Um Rouse Check', 'Uma cena'],
+      [2, 'Fascinação', 'Torna-se objeto de atenção e simpatia de um grupo.', true, 'Um Rouse Check', 'Uma cena'],
+      [3, 'Encanto Irresistível', 'Adiciona Presença a testes sociais de persuasão.', true, 'Um Rouse Check', 'Uma cena'],
+      [3, 'Ordem Entusiasmada', 'Faz um grupo agir com fervor a seu favor.', true, 'Um Rouse Check', 'Uma cena'],
+      [4, 'Convocação', 'Chama alguém conhecido de qualquer distância.', true, 'Um Rouse Check', 'Até o encontro'],
+      [4, 'Majestade', 'Impede que qualquer um erga a mão contra você.', true, 'Um Rouse Check', 'Uma cena'],
+      [5, 'Estrela da Noite', 'Todos ao redor priorizam sua vontade acima da própria.', true, 'Dois Rouse Checks', 'Uma cena'],
+      [5, 'Fúria Coletiva', 'Incita uma multidão à violência ou ao pânico.', true, 'Um Rouse Check', 'Uma cena']
+    ],
+    'Protean': [
+      [1, 'Olhos da Besta', 'Vê perfeitamente na escuridão total.', false, 'Sem custo de sangue', 'Uma cena'],
+      [1, 'Presas Ferozes', 'Presas e garras causam dano agravado.', true, 'Um Rouse Check', 'Uma cena'],
+      [2, 'Forma de Fera', 'Assume a forma de um animal predador.', true, 'Um Rouse Check', 'Até ser desfeita'],
+      [3, 'Forma de Névoa', 'Dissolve-se em névoa; imune a dano físico.', true, 'Um Rouse Check', 'Uma cena'],
+      [3, 'Fusão com a Terra', 'Funde-se ao solo para descansar protegido.', true, 'Um Rouse Check', 'Até o anoitecer'],
+      [4, 'Metamorfose', 'Altera livremente a própria estrutura corporal.', true, 'Um Rouse Check', 'Uma cena'],
+      [5, 'Forma Mítica', 'Assume uma forma monstruosa com atributos ampliados.', true, 'Dois Rouse Checks', 'Uma cena'],
+      [5, 'Mudança de Massa', 'Altera tamanho e densidade do próprio corpo.', true, 'Um Rouse Check', 'Uma cena']
+    ],
+    'Alquimia de Sangue Fino': [
+      [1, 'Desperta o Sangue Adormecido', 'Fórmula que simula temporariamente um poder de sangue puro.', true, 'Um Rouse Check', 'Uma cena'],
+      [2, 'Envenenar a Máquina', 'Fórmula que corrompe tecnologia e maquinário.', true, 'Um Rouse Check', 'Instantânea'],
+      [3, 'Sangue Falso', 'Fórmula que imita a vitae de um clã específico.', true, 'Um Rouse Check', 'Uma noite'],
+      [4, 'Roubar a Vida', 'Fórmula que transfere vitalidade de um mortal.', true, 'Um Rouse Check', 'Instantânea'],
+      [5, 'Levar ao Túmulo', 'Fórmula capaz de matar sem deixar vestígio.', true, 'Dois Rouse Checks', 'Instantânea']
+    ]
+  };
+  static BP = {
+    0: { level: 0, bloodSurge: 'Adicione 1 dado', mend: 1, mendAmount: '1 ponto de dano Superficial por Checagem de Sangue', powerBonus: 'Nenhum', rouseReroll: 'Nenhum', baneSeverity: 0, feedingPenalty: 'Nenhum efeito', feedingList: ['Nenhum efeito'] },
+    1: { level: 1, bloodSurge: 'Adicione 2 dados', mend: 1, mendAmount: '1 ponto de dano Superficial por Checagem de Sangue', powerBonus: 'Nenhum', rouseReroll: 'Nível 1', baneSeverity: 2, feedingPenalty: 'Nenhum efeito', feedingList: ['Nenhum efeito'] },
+    2: { level: 2, bloodSurge: 'Adicione 2 dados', mend: 2, mendAmount: '2 pontos de dano Superficial por Checagem de Sangue', powerBonus: 'Adicione 1 dado', rouseReroll: 'Nível 1', baneSeverity: 2, feedingPenalty: 'Sangue animal ou ensacado sacia meia Fome', feedingList: ['Sangue animal ou ensacado sacia meia Fome'] },
+    3: { level: 3, bloodSurge: 'Adicione 3 dados', mend: 2, mendAmount: '2 pontos de dano Superficial por Checagem de Sangue', powerBonus: 'Adicione 1 dado', rouseReroll: 'Nível 2 e abaixo', baneSeverity: 3, feedingPenalty: 'Sangue animal ou ensacado não sacia nenhuma Fome', feedingList: ['Sangue animal ou ensacado não sacia nenhuma Fome'] },
+    4: { level: 4, bloodSurge: 'Adicione 3 dados', mend: 3, mendAmount: '3 pontos de dano Superficial por Checagem de Sangue', powerBonus: 'Adicione 2 dados', rouseReroll: 'Nível 2 e abaixo', baneSeverity: 3, feedingPenalty: 'Sangue animal ou ensacado não sacia nenhuma Fome. Sacia 1 a menos de Fome por humano', feedingList: ['Sangue animal ou ensacado não sacia nenhuma Fome', 'Sacia 1 a menos de Fome por humano'] },
+    5: { level: 5, bloodSurge: 'Adicione 4 dados', mend: 3, mendAmount: '3 pontos de dano Superficial por Checagem de Sangue', powerBonus: 'Adicione 2 dados', rouseReroll: 'Nível 3 e abaixo', baneSeverity: 4, feedingPenalty: 'Sangue animal ou ensacado não sacia nenhuma Fome. Sacia 1 a menos de Fome por humano. Precisa drenar e matar um humano para reduzir a Fome abaixo de 2', feedingList: ['Sangue animal ou ensacado não sacia nenhuma Fome', 'Sacia 1 a menos de Fome por humano', 'Precisa drenar e matar um humano para reduzir a Fome abaixo de 2'] },
+    6: { level: 6, bloodSurge: 'Adicione 4 dados', mend: 3, mendAmount: '3 pontos de dano Superficial por Checagem de Sangue', powerBonus: 'Adicione 3 dados', rouseReroll: 'Nível 3 e abaixo', baneSeverity: 4, feedingPenalty: 'Sangue animal ou ensacado não sacia nenhuma Fome. Sacia 2 a menos de Fome por humano. Precisa drenar e matar um humano para reduzir a Fome abaixo de 2', feedingList: ['Sangue animal ou ensacado não sacia nenhuma Fome', 'Sacia 2 a menos de Fome por humano', 'Precisa drenar e matar um humano para reduzir a Fome abaixo de 2'] },
+    7: { level: 7, bloodSurge: 'Adicione 5 dados', mend: 3, mendAmount: '3 pontos de dano Superficial por Checagem de Sangue', powerBonus: 'Adicione 3 dados', rouseReroll: 'Nível 4 e abaixo', baneSeverity: 5, feedingPenalty: 'Sangue animal ou ensacado não sacia nenhuma Fome. Sacia 2 a menos de Fome por humano. Precisa drenar e matar um humano para reduzir a Fome abaixo de 2', feedingList: ['Sangue animal ou ensacado não sacia nenhuma Fome', 'Sacia 2 a menos de Fome por humano', 'Precisa drenar e matar um humano para reduzir a Fome abaixo de 2'] },
+    8: { level: 8, bloodSurge: 'Adicione 5 dados', mend: 4, mendAmount: '4 pontos de dano Superficial por Checagem de Sangue', powerBonus: 'Adicione 4 dados', rouseReroll: 'Nível 4 e abaixo', baneSeverity: 5, feedingPenalty: 'Sangue animal ou ensacado não sacia nenhuma Fome. Sacia 2 a menos de Fome por humano. Precisa drenar e matar um humano para reduzir a Fome abaixo de 3', feedingList: ['Sangue animal ou ensacado não sacia nenhuma Fome', 'Sacia 2 a menos de Fome por humano', 'Precisa drenar e matar um humano para reduzir a Fome abaixo de 3'] },
+    9: { level: 9, bloodSurge: 'Adicione 6 dados', mend: 4, mendAmount: '4 pontos de dano Superficial por Checagem de Sangue', powerBonus: 'Adicione 4 dados', rouseReroll: 'Nível 5 e abaixo', baneSeverity: 6, feedingPenalty: 'Sangue animal ou ensacado não sacia nenhuma Fome. Sacia 2 a menos de Fome por humano. Precisa drenar e matar um humano para reduzir a Fome abaixo de 3', feedingList: ['Sangue animal ou ensacado não sacia nenhuma Fome', 'Sacia 2 a menos de Fome por humano', 'Precisa drenar e matar um humano para reduzir a Fome abaixo de 3'] },
+    10: { level: 10, bloodSurge: 'Adicione 6 dados', mend: 5, mendAmount: '5 pontos de dano Superficial por Checagem de Sangue', powerBonus: 'Adicione 5 dados', rouseReroll: 'Nível 5 e abaixo', baneSeverity: 6, feedingPenalty: 'Sangue animal ou ensacado não sacia nenhuma Fome. Sacia 3 a menos de Fome por humano. Precisa drenar e matar um humano para reduzir a Fome abaixo de 3', feedingList: ['Sangue animal ou ensacado não sacia nenhuma Fome', 'Sacia 3 a menos de Fome por humano', 'Precisa drenar e matar um humano para reduzir a Fome abaixo de 3'] }
+  };
+  static IDENT = [
+    ['nome', 'Nome', 'ex. Vitória Salles'], ['conceito', 'Conceito', 'ex. detetive caído'],
+    ['cronica', 'Crônica', 'ex. Noites de São Paulo'], ['predador', 'Predador', 'ex. Sereia'],
+    ['ambicao', 'Ambição', 'ex. controlar o porto'], ['cla', 'Clã', 'ex. Ventrue'],
+    ['senhor', 'Senhor', 'ex. Aurélio Braga'], ['desejo', 'Desejo', 'ex. uma noite em paz'], ['geracao', 'Geração', 'ex. 12ª']
+  ];
+  static LONGF = [
+    ['principios', 'Princípios da Crônica'], ['perdicao', 'Perdição do Clã'],
+    ['vantagens', 'Vantagens & Defeitos']
+  ];
+  static BIOF = [
+    ['idadeReal', 'Idade Verdadeira'], ['idadeAparente', 'Idade Aparente'],
+    ['nascimento', 'Data de Nascimento'], ['morte', 'Data de Morte'],
+    ['aparencia', 'Aparência'], ['tracos', 'Traços Distintivos']
+  ];
+
+  state = {
+    booting: true, authBusy: false,
+    screen: 'auth', authMode: 'login', authUser: '', authPass: '', authPass2: '', authName: '', authErr: '',
+    user: null, tab: 'ficha', wizStep: 1, modal: null, stage: null,
+    modalNote: '', frenDif: 0, fomeAlerta: null, dmgKey: 'vit', dmgLevel: 1, openPoder: '', addOpen: false, add: {}, addErr: '', toasts: [], narrow: false, info: null, sheet: Component.blank()
+  };
+
+  static blank() {
+    const attrs = {}; Component.ATTRS.forEach(g => g[1].forEach(t => { attrs[t] = 1; }));
+    const skills = {}; Component.SKILLS.forEach(g => g[1].forEach(t => { skills[t] = 0; }));
+    return {
+      criada: false, attrs, skills, fome: 1, humanidade: 7, manchas: 0, potencia: 1,
+      vit: [], fdv: [], disc: [],
+      conv: [{ c: '', p: '' }, { c: '', p: '' }, { c: '', p: '' }],
+      sessoes: [{ data: '', xp: '', resumo: '' }], notas: '', ressonancia: '',
+      xpTotal: '', xpGasto: '', noites: 0
+    };
+  }
+
+  componentDidMount() {
+    try {
+      const u = localStorage.getItem('vtm5.session');
+      if (u) this.loadUser(u);
+    } catch (e) { }
+    this.bootTimer = setTimeout(() => this.setState({ booting: false }), 600);
+    this.onResize = () => { const n = window.innerWidth < 640; if (n !== this.state.narrow) this.setState({ narrow: n }); };
+    this.onResize();
+    window.addEventListener('resize', this.onResize);
+    this.onKey = e => { if (e.key === 'Escape' && this.state.info) this.setState({ info: null }); };
+    window.addEventListener('keydown', this.onKey);
+    this.toastFn = (msg, opts) => this.toast(msg, opts);
+    window.vtmToast = this.toastFn;
+    window.vtmApiError = (err, retry) => this.apiError(err, retry);
+  }
+
+  componentWillUnmount() {
+    clearTimeout(this.bootTimer); clearTimeout(this.authTimer);
+    (this.toastTimers || []).forEach(clearTimeout);
+    window.removeEventListener('resize', this.onResize);
+    window.removeEventListener('keydown', this.onKey);
+    if (window.vtmToast === this.toastFn) delete window.vtmToast;
+  }
+
+  toast(msg, opts) {
+    const o = opts || {};
+    const tom = o.tom || 'erro';
+    const id = Date.now() + Math.random();
+    const t = {
+      id, msg, tom,
+      titulo: o.titulo || (tom === 'ok' ? 'Feito' : tom === 'info' ? 'Aviso' : 'Algo deu errado'),
+      acao: o.acao || '', onAcao: o.onAcao || null
+    };
+    this.setState(st => ({ toasts: st.toasts.filter(x => x.msg !== msg).concat(t).slice(-3) }));
+    const ms = o.duracao != null ? o.duracao : (tom === 'erro' ? 6000 : 3500);
+    if (ms > 0) {
+      this.toastTimers = this.toastTimers || [];
+      this.toastTimers.push(setTimeout(() => this.closeToast(id), ms));
+    }
+    return id;
+  }
+
+  openInfo(kind, key, extra) {
+    this.setState({ info: Object.assign({ kind, key }, extra || {}) });
+  }
+
+  buildInfo(s) {
+    const inf = this.state.info;
+    if (!inf) return null;
+    const lvl = (arr, cur) => arr.map(([n, txt]) => ({ n, txt, bg: String(cur) === String(n) ? '#FFFFFF' : 'transparent', bd: String(cur) === String(n) ? '#0D0D0D' : 'rgba(13,13,13,.1)' }));
+    const dotsLvl = (arr, cur) => lvl(arr.map((t, i) => ['•'.repeat(i + 1), t]), cur ? '•'.repeat(cur) : '');
+    if (inf.kind === 'attr') {
+      const d = Component.ATTR_INFO[inf.key] || ['', []];
+      const grp = (Component.ATTRS.find(g => g[1].includes(inf.key)) || [''])[0];
+      const v = (s.attrs || {})[inf.key] || 0;
+      return { kicker: 'Atributo ' + grp.toLowerCase().replace(/s$/, ''), titulo: inf.key, desc: d[0], atual: v ? v + (v === 1 ? ' ponto' : ' pontos') : 'Sem pontos', nivelTit: 'O que cada ponto significa', niveis: dotsLvl(d[1], v), nota: '' };
+    }
+    if (inf.kind === 'skill') {
+      const d = Component.SKILL_INFO[inf.key] || ['', ''];
+      const grp = (Component.SKILLS.find(g => g[1].includes(inf.key)) || [''])[0];
+      const v = (s.skills || {})[inf.key] || 0;
+      return { kicker: 'Habilidade ' + grp.toLowerCase().replace(/s$/, ''), titulo: inf.key, desc: d[0], atual: v ? v + (v === 1 ? ' ponto' : ' pontos') : 'Sem treino', nivelTit: 'O que cada ponto significa', niveis: dotsLvl(Component.SKILL_SCALE, v), nota: d[1] ? 'Especialidades comuns: ' + d[1] + '.' : '' };
+    }
+    if (inf.kind === 'disc') {
+      const nome = (inf.key || '').trim();
+      const cat = Component.POWERS[nome] || [];
+      const v = inf.nivel || 0;
+      const niveis = [1, 2, 3, 4, 5].map(n => [String(n), cat.filter(p => p[0] === n).map(p => p[1]).join(', ') || 'Sem poderes catalogados neste nível.']);
+      return { kicker: 'Disciplina', titulo: nome || 'Disciplina sem nome', desc: Component.DISC_INFO[nome] || 'Disciplina fora do catálogo. Registre os poderes à mão.', atual: v ? 'Nível ' + v : 'Sem pontos', nivelTit: 'Poderes por nível', niveis: lvl(niveis, v), nota: 'Você só pode escolher poderes até o seu nível na Disciplina.' };
+    }
+    if (inf.kind === 'poder') {
+      const cat = Component.POWERS[(inf.disc || '').trim()] || [];
+      const hit = cat.find(p => p[1].toLowerCase() === (inf.key || '').trim().toLowerCase());
+      const rollM = hit && hit[2].match(/([A-ZÁ-Ú][a-zà-ú]+ \+ [A-ZÁ-Ú][a-zà-ú]+(?: de [A-ZÁ-Ú][a-zà-ú]+)?(?: (?:vs\.|contra) [^.;]+)?)/);
+      const roll = rollM ? rollM[1] : (hit ? (hit[5] === 'Passiva' ? 'Sem teste: efeito passivo, sempre ativo.' : 'Sem teste: o efeito acontece ao ativar.') : '');
+      const niveis = hit ? lvl([['Rolagem', roll], ['Custo', hit[4]], ['Duração', hit[5]]], '') : [];
+      const descP = hit ? hit[2].replace(/\s*[A-ZÁ-Ú][a-zà-ú]+ \+ [A-ZÁ-Ú][^.]*\.\s*$/, '').trim() || hit[2] : '';
+      return { kicker: (inf.disc || 'Poder') + ' · nível ' + (hit ? hit[0] : inf.nivel || 1), titulo: inf.key || 'Poder sem nome', desc: hit ? descP : (inf.desc || 'Poder fora do catálogo. A descrição é a que você registrou.'), atual: '', nivelTit: niveis.length ? 'Rolagem, custo e duração' : '', niveis, nota: hit && hit[3] ? 'Este poder exige Rouse Check.' : '' };
+    }
+    if (inf.kind === 'merit') {
+      const nm = (inf.key || '').trim().toLowerCase();
+      const hit = Component.MERIT_INFO.find(m => nm.startsWith(m[0]));
+      const tipo = hit ? hit[1] : (inf.tipo || 'V');
+      const v = inf.pts || 0;
+      return { kicker: tipo === 'D' ? 'Defeito' : 'Vantagem', titulo: inf.key || (tipo === 'D' ? 'Defeito sem nome' : 'Vantagem sem nome'), desc: hit ? hit[3] : (tipo === 'D' ? 'Defeito fora do catálogo. Combine o efeito com o Narrador.' : 'Vantagem fora do catálogo. Combine o efeito com o Narrador.'), atual: v ? v + (v === 1 ? ' ponto' : ' pontos') : 'Sem pontos', nivelTit: 'O que cada ponto significa', niveis: dotsLvl(tipo === 'D' ? Component.MERIT_SCALE_D : Component.MERIT_SCALE_V, v), nota: tipo === 'D' ? 'Defeitos devolvem pontos para gastar em vantagens.' : 'Vantagens custam os pontos marcados.' };
+    }
+    if (inf.kind === 'geracao' || inf.kind === 'potencia') {
+      const pot = this.potencia();
+      const gN = parseInt(String(s.geracao || '').replace(/[^0-9]/g, ''), 10);
+      const HL = '#FFFFFF', F1 = "400 15px/1.4 'Cormorant Garamond',serif", F2 = "700 15px/1.4 'Cormorant Garamond',serif";
+      const mk = (cells, on) => cells.map((txt, k) => ({ txt: String(txt), bg: on ? HL : 'transparent', bd: on ? '#0D0D0D' : 'rgba(13,13,13,.1)', font: on || k === 0 ? F2 : F1 }));
+      const gerTab = { tit: 'Geração e Potência de Sangue inicial', grid: 'minmax(96px,1fr) minmax(160px,2fr)', minW: '0', head: ['Geração', 'Potência de Sangue inicial'], cells: [].concat(...Component.GER_TABELA.map(([lab, ns, p]) => mk([lab, p], ns.indexOf(gN) >= 0))) };
+      const bpTab = { tit: 'Potência de Sangue', grid: '64px repeat(5, minmax(88px,1fr)) minmax(180px,2fr)', minW: '700px', head: ['Potência', 'Surto de Sangue', 'Dano recuperado (por Checagem de Sangue)', 'Bônus de poder de Disciplina', 'Rerrolagem de Checagem para Disciplinas', 'Gravidade da Perdição', 'Penalidade de alimentação'], cells: [].concat(...Object.keys(Component.BP).map(k => { const b = Component.BP[k]; return mk([b.level, b.bloodSurge, b.mendAmount.replace(' por Checagem de Sangue', ''), b.powerBonus, b.rouseReroll, b.baneSeverity, b.feedingList.join('\n')], b.level === pot); })) };
+      const ger = inf.kind === 'geracao';
+      return { kicker: 'Sangue', titulo: ger ? 'Geração' : 'Potência de Sangue', desc: ger ? 'A distância entre você e Caim. Você é sempre uma Geração acima do seu senhor, e cada Abraço dilui o sangue. A Geração define a Potência de Sangue inicial: ' + (gN ? 'a ' + s.geracao + ' começa com Potência ' + pot + '.' : 'escolha a Geração para ver a sua.') + '' : 'A força da vitae. Não se escolhe na criação: vem da Geração.', atual: (s.geracao ? s.geracao + ' Geração · ' : '') + 'Potência ' + pot, nivelTit: '', niveis: [], tabelas: [bpTab], nota: gN ? 'Linha destacada: Potência ' + pot + ', a inicial da ' + s.geracao + ' Geração.' : 'Escolha a Geração no passo 1 para destacar a sua Potência inicial.' };
+    }
+    if (inf.kind === 'bane' || inf.kind === 'comp') {
+      const clan = Component.CLANS.find(c => c[0] === inf.key) || [];
+      const full = (Component.CLAN_FULL[inf.key] || {})[inf.kind] || [clan[inf.kind === 'bane' ? 3 : 5] || '', []];
+      const sev = (Component.BP[s.potencia || 0] || Component.BP[0]).baneSeverity;
+      const rows = full[1].map(([l, t]) => [l, t.replace(/\{G\}/g, String(sev))]);
+      return inf.kind === 'bane'
+        ? { kicker: 'Perdição · ' + inf.key, titulo: clan[2] || 'Perdição', desc: full[0], atual: full[1].length ? 'Gravidade ' + sev : '', nivelTit: rows.length ? 'Regra e rolagem' : '', niveis: lvl(rows, ''), nota: rows.length ? 'A Gravidade da Perdição vem da Potência de Sangue (atual: ' + (s.potencia || 0) + ').' : '' }
+        : { kicker: 'Compulsão · ' + inf.key, titulo: clan[4] || 'Compulsão', desc: full[0], atual: '', nivelTit: rows.length ? 'Regra e rolagem' : '', niveis: lvl(rows, ''), nota: rows.length ? 'Compulsões surgem numa falha bestial (1 em dado de Fome numa falha). Você pode escolher a Compulsão do clã ou rolar na tabela geral.' : '' };
+    }
+    const t = Component.TRAIT_INFO[inf.kind];
+    if (t) {
+      const cur = inf.kind === 'fome' ? (s.fome || 0) : inf.kind === 'humanidade' ? (s.humanidade || 0) : '';
+      return { kicker: t[0], titulo: t[1], desc: t[2], atual: inf.atual || '', nivelTit: t[3].length ? (inf.kind === 'ressonancia' ? 'Humores e Disciplinas' : inf.kind === 'vitalidade' || inf.kind === 'vontade' ? 'Tipos de dano' : 'O que cada nível significa') : '', niveis: lvl(t[3], cur), nota: t[4] };
+    }
+    return null;
+  }
+
+  closeToast(id) {
+    this.setState(st => ({ toasts: st.toasts.filter(t => t.id !== id) }));
+  }
+
+  // Use for anything coming back from a request: fetch Response, Error, or {status, message}.
+  apiError(err, retry) {
+    const status = err && (err.status || (err.response && err.response.status));
+    let msg = 'Não foi possível falar com o servidor. Verifique a conexão.';
+    if (status === 401 || status === 403) msg = 'Sua sessão expirou. Entre de novo para continuar.';
+    else if (status === 404) msg = 'Não encontramos o que você pediu.';
+    else if (status === 409) msg = 'Essa ficha foi alterada em outro lugar. Recarregue antes de salvar.';
+    else if (status === 422 || status === 400) msg = (err && err.message) || 'Algum campo foi recusado. Revise e tente de novo.';
+    else if (status >= 500) msg = 'O servidor falhou ao responder. Nada foi perdido; tente de novo.';
+    else if (err && err.message && !/fetch|network/i.test(err.message)) msg = err.message;
+    return this.toast(msg, { titulo: status ? 'Erro ' + status : 'Sem conexão', acao: retry ? 'Tentar de novo' : '', onAcao: retry });
+  }
+
+  accounts() { try { return JSON.parse(localStorage.getItem('vtm5.accounts') || '{}'); } catch (e) { return {}; } }
+
+  loadUser(u) {
+    let sheet = Component.blank();
+    try {
+      const raw = localStorage.getItem('vtm5.sheet.' + u);
+      if (raw) {
+        sheet = Object.assign(Component.blank(), JSON.parse(raw));
+        sheet.disc = (sheet.disc || []).filter(d => (d.nome || '').trim());
+      }
+    } catch (e) { }
+    this.setState({ user: u, sheet, screen: sheet.criada ? 'sheet' : 'wizard', authPass: '', authErr: '', wizStep: 1 });
+  }
+
+  save(sheet) {
+    if (this.state.user) {
+      try { localStorage.setItem('vtm5.sheet.' + this.state.user, JSON.stringify(sheet)); }
+      catch (e) { if (!this.saveWarned) { this.saveWarned = true; this.toast('A última alteração não foi salva neste dispositivo. O armazenamento pode estar cheio ou bloqueado.', { titulo: 'Não salvou', duracao: 0 }); } }
+    }
+  }
+
+  markDireto(key, level, delta) {
+    const max = key === 'vit' ? this.vitMax() : this.fdvMax();
+    const arr = this.boxesRaw(key, max);
+    if (delta > 0) {
+      const vazio = arr.indexOf(0);
+      if (vazio >= 0) arr[vazio] = level;
+      else { const sup = arr.indexOf(1); if (sup >= 0) arr[sup] = 2; else return; }
+    } else {
+      const i = arr.lastIndexOf(level);
+      if (i < 0) return;
+      arr[i] = 0;
+    }
+    this.patch({ [key]: arr });
+  }
+
+  markDano(key, level, qty) {
+    const max = key === 'vit' ? this.vitMax() : this.fdvMax();
+    const arr = this.boxesRaw(key, max);
+    let aplicados = 0, transbordou = 0;
+    for (let n = 0; n < qty; n++) {
+      const vazio = arr.indexOf(0);
+      if (vazio >= 0) { arr[vazio] = level; aplicados++; continue; }
+      const sup = arr.indexOf(1);
+      if (sup >= 0) { arr[sup] = 2; aplicados++; transbordou++; continue; }
+      transbordou++;
+    }
+    this.patch({ [key]: arr });
+    const nome = key === 'vit' ? 'Vitalidade' : 'Força de Vontade';
+    const tipo = level === 2 ? 'agravado' : 'superficial';
+    const livres = arr.filter(v => v === 0).length;
+    const cheia = livres === 0;
+    const tudoAgravado = arr.every(v => v === 2);
+    let nota = aplicados + (aplicados === 1 ? ' marca' : ' marcas') + ' de dano ' + tipo + ' em ' + nome + '.';
+    if (transbordou) nota += ' ' + transbordou + (transbordou === 1 ? ' excedeu a trilha e converteu superficial em agravado.' : ' excederam a trilha e converteram superficial em agravado.');
+    if (key === 'vit') {
+      if (tudoAgravado) nota += ' Trilha só com agravado: Morte Final.';
+      else if (cheia) nota += ' Trilha cheia: você está Ferido — torpor se sofrer mais agravado.';
+      else if (livres <= 2) nota += ' Metade ou menos da trilha livre: −2 em testes físicos (Impedido).';
+    } else {
+      if (tudoAgravado) nota += ' Força de Vontade só com agravado: colapso mental até a próxima sessão de descanso.';
+      else if (cheia) nota += ' Trilha cheia: não há mais Força de Vontade para gastar.';
+      else if (livres <= 2) nota += ' Metade ou menos livre: −2 em testes sociais e mentais (Impedido).';
+    }
+    this.setState({ modalNote: nota, stage: 'done' });
+  }
+
+  patch(obj) {
+    const prev = this.state.sheet;
+    const sheet = Object.assign({}, prev, obj);
+    if (Object.prototype.hasOwnProperty.call(obj, 'fome')) {
+      const antes = prev.fome || 0, agora = sheet.fome || 0;
+      if (agora !== antes && (agora === 5 || agora === 0)) this.setState({ fomeAlerta: agora });
+    }
+    this.save(sheet); this.setState({ sheet });
+  }
+
+  potencia() {
+    const s = this.state.sheet;
+    const der = Component.potDeGeracao(s.geracao);
+    return der === null ? (s.potencia || 0) : der;
+  }
+
+  field(key) {
+    return { value: this.state.sheet[key] || '', set: e => this.patch({ [key]: e.target.value }) };
+  }
+
+  dots(count, current, apply) {
+    const out = [];
+    for (let i = 1; i <= count; i++) out.push({ on: current >= i, click: () => apply(current === i ? i - 1 : i) });
+    return out;
+  }
+
+  boxes(key, max) {
+    const cur = (this.state.sheet[key] || []).slice(0, max);
+    while (cur.length < max) cur.push(0);
+    return cur.map((v, i) => ({
+      mark: v === 1 ? '/' : v === 2 ? '✕' : '',
+      click: () => { const n = cur.slice(); n[i] = (n[i] + 1) % 3; this.patch({ [key]: n }); }
+    }));
+  }
+
+  vitMax() { return (this.state.sheet.attrs['Vigor'] || 1) + 3; }
+  fdvMax() { return (this.state.sheet.attrs['Autocontrole'] || 1) + (this.state.sheet.attrs['Determinação'] || 1); }
+
+  applyRouse(passed) {
+    const s = this.state.sheet;
+    if (passed) {
+      this.setState({ stage: 'rouseDone', modalNote: 'Fome permanece em ' + s.fome + '. Sem alteração.' });
+      return;
+    }
+    const fome = Math.min(5, (s.fome || 0) + 1);
+    const frenesi = fome >= 5 && this.props.avisoFrenesi !== false;
+    this.patch({ fome });
+    this.setState({
+      stage: 'rouseDone',
+      modalNote: frenesi
+        ? 'Fome ' + fome + '. Frenesi de Fome: teste de Determinação para não caçar.'
+        : 'Fome sobe para ' + fome + '.'
+    });
+  }
+
+  aggHeal(falhas) {
+    const s = this.state.sheet;
+    const fome = Math.min(5, (s.fome || 0) + falhas);
+    const vit = this.boxesRaw('vit', this.vitMax());
+    const i = vit.lastIndexOf(2);
+    const custo = falhas
+      ? falhas + (falhas > 1 ? ' Rouse Checks falharam' : ' Rouse Check falhou') + ': Fome ' + fome + '.'
+      : 'Nenhum Rouse Check falhou. Fome permanece em ' + fome + '.';
+    if (i < 0) {
+      this.patch({ fome });
+      this.setState({ stage: 'aggDone', modalNote: 'Nenhum dano agravado marcado na vitalidade. ' + custo });
+      return;
+    }
+    vit[i] = 1;
+    this.patch({ vit, fome });
+    this.setState({ stage: 'aggDone', modalNote: '1 de dano agravado curado (passa a superficial). ' + custo });
+  }
+
+  doSleep() {
+    const s = this.state.sheet;
+    let note = 'Nada a curar.';
+    if (this.props.curaAoDormir !== false) {
+      const cura = ((Component.BP[this.potencia()] || Component.BP[0]).mend) || 1;
+      const vit = this.boxesRaw('vit', this.vitMax());
+      let healed = 0;
+      for (let i = vit.length - 1; i >= 0 && healed < cura; i--) if (vit[i] === 1) { vit[i] = 0; healed++; }
+      const fdvHeal = Math.max(s.attrs['Autocontrole'] || 0, s.attrs['Determinação'] || 0);
+      const fdv = this.boxesRaw('fdv', this.fdvMax());
+      let fh = 0;
+      for (let i = fdv.length - 1; i >= 0 && fh < fdvHeal; i--) if (fdv[i] === 1) { fdv[i] = 0; fh++; }
+      this.patch({ vit, fdv, noites: (s.noites || 0) + 1 });
+      note = (healed || fh)
+        ? healed + ' de vitalidade superficial curada · ' + fh + ' de Força de Vontade restaurada.'
+        : 'Nada a curar nesta noite.';
+    } else {
+      this.patch({ noites: (s.noites || 0) + 1 });
+    }
+    this.setState({ stage: 'wake', modalNote: note });
+  }
+
+  boxesRaw(key, max) {
+    const cur = (this.state.sheet[key] || []).slice(0, max);
+    while (cur.length < max) cur.push(0);
+    return cur;
+  }
+
+  failAuth(msg) {
+    this.setState({ authErr: msg });
+    this.toast(msg, { titulo: this.state.authMode === 'signup' ? 'Não foi possível criar a conta' : 'Não foi possível entrar' });
+  }
+
+  submitAuth() {
+    if (this.state.authBusy) return;
+    this.setState({ authBusy: true, authErr: '' });
+    clearTimeout(this.authTimer);
+    this.authTimer = setTimeout(() => this.setState({ authBusy: false }, () => this.runAuth()), 420);
+  }
+
+  runAuth() {
+    const signup = this.state.authMode === 'signup';
+    const u = (this.state.authUser || '').trim().toLowerCase();
+    const p = this.state.authPass || '';
+    if (!u || !p) return this.failAuth('Informe e-mail e senha.');
+    if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(u)) return this.failAuth('E-mail inválido.');
+    const acc = this.accounts();
+    if (signup) {
+      if (!(this.state.authName || '').trim()) return this.failAuth('Informe o nome.');
+      if (p !== this.state.authPass2) return this.failAuth('As senhas não conferem.');
+      if (acc[u]) return this.failAuth('E-mail já cadastrado. Use "Entrar".');
+      acc[u] = p;
+      try { localStorage.setItem('vtm5.name.' + u, this.state.authName.trim()); } catch (e) { }
+      try { localStorage.setItem('vtm5.accounts', JSON.stringify(acc)); localStorage.setItem('vtm5.session', u); } catch (e) { }
+      if (this.props.dadosDeExemplo) {
+        const s = Object.assign(Component.blank(), { nome: 'Vitória Salles', conceito: 'Advogada da noite', cla: 'Ventrue', predador: 'Extorsionária', geracao: '12ª' });
+        this.save(s);
+      }
+      return this.loadUser(u);
+    }
+    if (!acc[u]) return this.failAuth('E-mail não cadastrado neste dispositivo.');
+    if (acc[u] !== p) return this.failAuth('Senha incorreta.');
+    try { localStorage.setItem('vtm5.session', u); } catch (e) { }
+    this.loadUser(u);
+  }
+
+  renderVals() {
+    const s = this.state.sheet, st = this.state;
+    const on = '#0D0D0D', off = 'transparent';
+    const vals = {
+      isBooting: !!st.booting, authBusy: !!st.authBusy,
+      isAuth: !st.booting && st.screen === 'auth', isWizard: !st.booting && st.screen === 'wizard', isSheet: !st.booting && st.screen === 'sheet',
+      authUser: st.authUser, authPass: st.authPass, authPass2: st.authPass2,
+      authName: st.authName, authErr: st.authErr,
+      toastBottom: (!st.booting && st.screen === 'sheet' ? 96 : 16) + 'px',
+      toastLeft: st.narrow ? '16px' : 'auto',
+      toastRight: st.narrow ? '16px' : '24px',
+      toastAlign: st.narrow ? 'center' : 'flex-end',
+      toastWidth: st.narrow ? 'auto' : 'min(420px, calc(100vw - 48px))',
+      toasts: (st.toasts || []).map(t => ({
+        titulo: t.titulo, msg: t.msg,
+        bd: t.tom === 'ok' ? '#2F6B3C' : t.tom === 'info' ? '#0D0D0D' : '#7A1220',
+        temAcao: !!(t.acao && t.onAcao), acao: t.acao,
+        agir: () => { this.closeToast(t.id); t.onAcao && t.onAcao(); },
+        fechar: () => this.closeToast(t.id)
+      })),
+      isSignup: st.authMode === 'signup',
+      authTitulo: st.authMode === 'signup' ? 'Criar conta' : 'Entrar',
+      authSub: st.authMode === 'signup'
+        ? 'Cadastro de jogador. Uma ficha por conta.'
+        : 'Acesso à ficha salva neste dispositivo.',
+      primaryLabel: st.authBusy ? 'Verificando…' : (st.authMode === 'signup' ? 'Criar conta' : 'Entrar'),
+      secondaryLabel: st.authMode === 'signup' ? 'Já tenho conta' : 'Criar conta',
+      primaryAuth: () => this.submitAuth(),
+      secondaryAuth: () => this.setState({ authMode: st.authMode === 'signup' ? 'login' : 'signup', authErr: '', authPass: '', authPass2: '' }),
+      setAuthUser: e => this.setState({ authUser: e.target.value, authErr: '' }),
+      setAuthPass: e => this.setState({ authPass: e.target.value, authErr: '' }),
+      setAuthPass2: e => this.setState({ authPass2: e.target.value, authErr: '' }),
+      setAuthName: e => this.setState({ authName: e.target.value, authErr: '' }),
+      logout: () => { try { localStorage.removeItem('vtm5.session'); } catch (e) { } this.setState({ screen: 'auth', user: null, authPass: '', sheet: Component.blank() }); },
+      restart: () => this.setState({ screen: 'wizard', wizStep: 1 })
+    };
+
+    vals.identFields = Component.IDENT.map(([k, label, ph]) => Object.assign({ label, ph }, this.field(k)));
+    vals.longFields = Component.LONGF.map(([k, label]) => Object.assign({ label }, this.field(k)));
+    vals.bioFields = Component.BIOF.map(([k, label]) => Object.assign({ label }, this.field(k)));
+
+    vals.attrGroups = Component.ATTRS.map(([label, traits]) => ({
+      label, traits: traits.map(name => ({
+        name, info: () => this.openInfo('attr', name), dots: this.dots(5, s.attrs[name] || 0, v => this.patch({ attrs: Object.assign({}, s.attrs, { [name]: v }) }))
+      }))
+    }));
+    vals.skillGroups = Component.SKILLS.map(([label, traits]) => ({
+      label, traits: traits.map(name => ({
+        name, info: () => this.openInfo('skill', name), dots: this.dots(5, s.skills[name] || 0, v => this.patch({ skills: Object.assign({}, s.skills, { [name]: v }) }))
+      }))
+    }));
+
+    const setDisc = (i, key, v) => {
+      const disc = s.disc.slice();
+      while (disc.length <= i) disc.push({ nome: '', nivel: 0, powers: [] });
+      disc[i] = Object.assign({}, disc[i], { [key]: v });
+      this.patch({ disc });
+    };
+    const clan = Component.CLANS.find(c => c[0] === (s.cla || '').trim());
+    const livre = !!clan && clan[1].indexOf('Livre escolha') >= 0;
+    const ralo = !!clan && clan[0] === 'Sangue Fraco';
+    const clanDiscs = livre || !clan ? Component.DISCS : clan[1];
+    vals.discSemIntrinsecas = ralo;
+    vals.discAviso = !clan
+      ? 'Escolha o clã no passo 1 para ver as Disciplinas disponíveis.'
+      : ralo
+        ? 'Sangues-ralos não têm Disciplinas intrínsecas. Siga para o próximo passo.'
+        : livre
+          ? 'Caitiff: escolha duas Disciplinas quaisquer. Dois pontos em uma, um ponto na outra.'
+          : 'Escolha duas Disciplinas do clã ' + clan[0] + ' (' + clan[1].join(', ') + '). Dois pontos em uma, um ponto na outra.';
+    const d0 = s.disc[0] || {}, d1 = s.disc[1] || {};
+    const setPts = (i, v) => {
+      const a = v >= 2 ? 2 : 1, b = a === 2 ? 1 : 2;
+      const arr = [Object.assign({ nome: '' }, d0), Object.assign({ nome: '' }, d1)].concat((s.disc || []).slice(2));
+      arr[i].nivel = a; arr[i === 0 ? 1 : 0].nivel = b;
+      [0, 1].forEach(k => { const ps = Array.isArray(arr[k].powers) ? arr[k].powers : []; arr[k].powers = ps.filter(p => (p.nivel || 1) <= arr[k].nivel).slice(0, arr[k].nivel); });
+      this.patch({ disc: arr });
+    };
+    const pts = [d0.nivel || 0, d1.nivel || 0];
+    const distOk = (pts[0] === 2 && pts[1] === 1) || (pts[0] === 1 && pts[1] === 2);
+    const nomesOk = !!(d0.nome || '').trim() && !!(d1.nome || '').trim();
+    vals.discDist = ralo ? '' : (nomesOk && distOk ? 'Distribuição completa: 2 e 1.' : 'Falta: ' + [!nomesOk ? 'escolher as duas Disciplinas' : '', !distOk ? 'marcar 2 pontos em uma e 1 na outra' : ''].filter(Boolean).join(' e ') + '.');
+    vals.discDistFg = nomesOk && distOk ? '#2F6B3C' : 'rgba(13,13,13,.68)';
+    vals.discRows = (ralo ? [] : [d0, d1]).map((d, i) => {
+      const outra = ((s.disc[i === 0 ? 1 : 0] || {}).nome || '').trim();
+      const nomeD = (d.nome || '').trim();
+      const cat = Component.POWERS[nomeD] || [];
+      const nivelD = d.nivel || 0;
+      const atuais = Array.isArray(d.powers) ? d.powers : [];
+      const marcados = atuais.map(p => p.nome);
+      const teto = Math.max(nivelD, 1);
+      return {
+        nome: d.nome || '', options: clanDiscs.filter(n => n !== outra), setNome: e => setDisc(i, 'nome', e.target.value),
+
+        dots: this.dots(2, nivelD, v => setPts(i, v)),
+        rotulo: i === 0 ? 'Primeira Disciplina' : 'Segunda Disciplina',
+        temNome: !!nomeD && cat.length > 0,
+        pwHint: nivelD
+          ? 'Escolha ' + nivelD + (nivelD === 1 ? ' poder' : ' poderes') + ' (um por ponto) · ' + atuais.length + '/' + nivelD + ' escolhidos. Toque no nome para ver a descrição.'
+          : 'Marque os pontos primeiro: cada ponto dá direito a um poder. Toque no nome para ver a descrição.',
+        pwList: cat.filter(p => p[0] <= teto).map(p => {
+          const on = marcados.indexOf(p[1]) >= 0;
+          return {
+            nome: p[1], meta: 'Nível ' + p[0] + ' · ' + p[4], on,
+            hov: on ? '#E8535F' : '#7A1220',
+            info: ev => { if (ev && ev.stopPropagation) ev.stopPropagation(); this.openInfo('poder', p[1], { disc: nomeD, nivel: p[0] }); },
+            bg: on ? '#0D0D0D' : 'transparent',
+            fg: on ? '#FFFFFF' : '#0D0D0D',
+            bd: on ? '#0D0D0D' : 'rgba(13,13,13,.25)',
+            click: () => {
+              const arr = atuais.slice();
+              const j = arr.findIndex(x => x.nome === p[1]);
+              if (j >= 0) arr.splice(j, 1);
+              else if (!nivelD) return this.toast('Marque os pontos da Disciplina antes de escolher poderes.', { tom: 'info', titulo: 'Sem pontos' });
+              else if (arr.length >= nivelD) return this.toast(nomeD + ' tem ' + nivelD + (nivelD === 1 ? ' ponto: só 1 poder.' : ' pontos: só ' + nivelD + ' poderes.') + ' Tire um para trocar.', { tom: 'info', titulo: 'Limite de poderes' });
+              else arr.push({ nivel: p[0], nome: p[1], desc: p[2], rouse: p[3], custo: p[4], duracao: p[5] });
+              arr.sort((x, y) => (x.nivel || 1) - (y.nivel || 1));
+              setDisc(i, 'powers', arr);
+            }
+          };
+        })
+      };
+    });
+    const badge = (label, active, click) => ({
+      label, click,
+      bg: active ? '#0D0D0D' : 'transparent',
+      fg: active ? '#FFFFFF' : '#0D0D0D',
+      bd: active ? '#0D0D0D' : 'rgba(13,13,13,.25)'
+    });
+    const powersOf = d => Array.isArray(d.powers) ? d.powers
+      : String(d.poderes || '').split('\n').filter(x => x.trim()).map(x => ({ nome: x.trim(), nivel: 1, desc: '', rouse: false }));
+    const openKey = st.openPoder || '';
+    vals.discList = s.disc.map((d, i) => {
+      const ps = powersOf(d);
+      const setPowers = arr => setDisc(i, 'powers', arr);
+      return {
+        nome: d.nome || '',
+        setNome: e => setDisc(i, 'nome', e.target.value),
+        dots: this.dots(5, d.nivel || 0, v => setDisc(i, 'nivel', v)),
+        remove: () => this.patch({ disc: s.disc.filter((_, j) => j !== i) }),
+        info: () => this.openInfo('disc', d.nome || '', { nivel: d.nivel || 0 }),
+
+        poderes: ps.map((p, j) => {
+          const key = i + ':' + j;
+          const desc = (p.desc || '').replace(/\s+/g, ' ').trim();
+          return {
+            nome: p.nome || 'Poder sem nome',
+            nomeRaw: p.nome || '', descRaw: p.desc || '', nivelRaw: String(p.nivel || 1),
+            nivel: String(p.nivel || 1),
+            resumo: desc ? (desc.length > 90 ? desc.slice(0, 90) + '…' : desc) : 'sem descrição',
+            rouse: !!p.rouse,
+            rouseBg: p.rouse ? '#0D0D0D' : 'transparent',
+            rouseFg: p.rouse ? '#FFFFFF' : '#0D0D0D',
+            open: openKey === key,
+            chevron: openKey === key ? '▴' : '▾',
+            rowBg: openKey === key ? '#FFFFFF' : 'transparent',
+            toggle: () => this.setState({ openPoder: openKey === key ? '' : key }),
+            setNome: e => setPowers(ps.map((x, k) => k === j ? Object.assign({}, x, { nome: e.target.value }) : x)),
+            setDesc: e => setPowers(ps.map((x, k) => k === j ? Object.assign({}, x, { desc: e.target.value }) : x)),
+            setNivel: e => setPowers(ps.map((x, k) => k === j ? Object.assign({}, x, { nivel: parseInt(e.target.value, 10) || 1 }) : x)),
+            toggleRouse: () => setPowers(ps.map((x, k) => k === j ? Object.assign({}, x, { rouse: !x.rouse }) : x)),
+            remove: () => { setPowers(ps.filter((_, k) => k !== j)); this.setState({ openPoder: '' }); },
+            info: () => this.openInfo('poder', p.nome || '', { disc: d.nome || '', nivel: p.nivel || 1, desc: p.desc || '' }),
+            useRouse: ev => { if (ev && ev.stopPropagation) ev.stopPropagation(); this.setState({ modal: 'rouse', stage: 'ask', modalNote: (p.nome || 'Poder') + ': exige Rouse Check.' }); }
+          };
+        })
+      };
+    });
+    vals.discVazio = s.disc.length === 0;
+    const INF = this.buildInfo(s);
+    vals.infoOpen = !!INF;
+    vals.closeInfo = () => this.setState({ info: null });
+    vals.infoKicker = INF ? INF.kicker : '';
+    vals.infoTitulo = INF ? INF.titulo : '';
+    vals.infoDesc = INF ? INF.desc : '';
+    vals.infoAtual = INF ? INF.atual : '';
+    vals.infoTemAtual = !!(INF && INF.atual);
+    vals.infoNivelTit = INF ? INF.nivelTit : '';
+    vals.infoTemNiveis = !!(INF && INF.niveis && INF.niveis.length);
+    vals.infoNiveis = INF ? INF.niveis : [];
+    vals.infoNota = INF ? INF.nota : '';
+    vals.infoTabelas = INF && INF.tabelas ? INF.tabelas : [];
+    vals.infoLargura = INF && INF.tabelas ? '760px' : '400px';
+    vals.infoTemNota = !!(INF && INF.nota);
+    vals.infoFome = () => this.openInfo('fome');
+    vals.infoHum = () => this.openInfo('humanidade');
+    vals.infoVit = () => this.openInfo('vitalidade', null, { atual: 'Máximo ' + (((s.attrs || {})['Vigor'] || 0) + 3) });
+    vals.infoFdv = () => this.openInfo('vontade');
+    vals.infoRes = () => this.openInfo('ressonancia');
+    vals.infoPot = () => this.openInfo('potencia');
+    const mer = s.meritos || [];
+    const setMer = arr => this.patch({ meritos: arr });
+    const mRalo = (s.cla || '').trim() === 'Sangue Fraco';
+    const mTipos = mRalo ? ['V', 'D', 'Q', 'R'] : ['V', 'D'];
+    const mLabel = { V: 'Vantagem', D: 'Defeito', Q: 'Qualidade SR', R: 'Defeito SR' };
+    const mBg = { V: '#2F6B3C', D: '#7A1220', Q: '#2F6B3C', R: '#7A1220' };
+    const tipoDe = m => mTipos.indexOf(m.tipo) >= 0 ? m.tipo : (m.tipo === 'D' || m.tipo === 'R' ? 'D' : 'V');
+    const somaT = t => mer.filter(m => tipoDe(m) === t).reduce((a, m) => a + (m.pts || 0), 0);
+    const contaT = t => mer.filter(m => tipoDe(m) === t).length;
+    vals.meritTotalV = somaT('V');
+    vals.meritTotalD = somaT('D');
+    vals.meritRalo = mRalo;
+    vals.meritQR = contaT('Q');
+    vals.meritDR = contaT('R');
+    vals.meritRegra = 'Distribua 7 pontos em Vantagens e adquira 2 pontos de Defeitos além daqueles obtidos do seu Tipo de Predador.' + (mRalo ? ' Sangues-ralos devem adquirir entre uma e três Qualidades de Sangue-Ralo e a mesma quantidade de Defeitos de Sangue-Ralo.' : '');
+    const faltaM = [];
+    if (vals.meritTotalV !== 7) faltaM.push(vals.meritTotalV < 7 ? 'distribuir ' + (7 - vals.meritTotalV) + ' pts em vantagens' : 'remover ' + (vals.meritTotalV - 7) + ' pts de vantagens');
+    if (vals.meritTotalD !== 2) faltaM.push(vals.meritTotalD < 2 ? 'adquirir ' + (2 - vals.meritTotalD) + ' pts em defeitos' : 'remover ' + (vals.meritTotalD - 2) + ' pts de defeitos');
+    if (mRalo) {
+      if (vals.meritQR < 1 || vals.meritQR > 3) faltaM.push('ter de 1 a 3 Qualidades de Sangue-Ralo');
+      if (vals.meritDR !== vals.meritQR) faltaM.push('igualar Defeitos de Sangue-Ralo às Qualidades');
+    }
+    vals.meritStatus = faltaM.length ? 'Falta: ' + faltaM.join(' · ') + '.' : 'Distribuição completa.';
+    vals.meritStatusFg = faltaM.length ? 'rgba(13,13,13,.68)' : '#2F6B3C';
+    vals.addMerito = () => setMer(mer.concat({ tipo: 'V', nome: '', pts: 1 }));
+    vals.meritRows = mer.map((m, i) => ({
+      nome: m.nome || '',
+      tipoLabel: mLabel[tipoDe(m)],
+      tipoBg: mBg[tipoDe(m)],
+      tipoFg: '#FFFFFF',
+      toggleTipo: () => setMer(mer.map((x, j) => j === i ? Object.assign({}, x, { tipo: mTipos[(mTipos.indexOf(tipoDe(x)) + 1) % mTipos.length] }) : x)),
+      setNome: e => setMer(mer.map((x, j) => j === i ? Object.assign({}, x, { nome: e.target.value }) : x)),
+      dots: this.dots(5, m.pts || 0, v => setMer(mer.map((x, j) => j === i ? Object.assign({}, x, { pts: v }) : x))),
+      remove: () => setMer(mer.filter((_, j) => j !== i)),
+      info: () => this.openInfo('merit', m.nome || '', { tipo: tipoDe(m) === 'R' ? 'D' : (tipoDe(m) === 'Q' ? 'V' : tipoDe(m)), pts: m.pts || 0 })
+    }));
+    vals.meritVazio = (s.meritos || []).length === 0;
+    const a = st.add || {};
+    const pickedDisc = a.disc || '';
+    vals.addOpen = !!st.addOpen;
+    vals.openAdd = () => this.setState({ addOpen: true, add: { disc: '', nome: '', nivel: '1', rouse: false, desc: '' }, addErr: '' });
+    vals.closeAdd = () => this.setState({ addOpen: false, addErr: '' });
+    const setAdd = (k, v) => this.setState({ add: Object.assign({}, a, { [k]: v }), addErr: '' });
+    const clanOf = Component.CLANS.find(c => c[0] === (s.cla || '').trim());
+    const suggested = clanOf ? clanOf[1] : [];
+    const existing = s.disc.map(d => (d.nome || '').trim()).filter(Boolean);
+    const optionNames = existing
+      .concat(suggested.filter(n => !existing.includes(n)))
+      .concat(Component.DISCS.filter(n => !existing.includes(n) && !suggested.includes(n)));
+    vals.addDiscOptions = optionNames.map(n => badge(n, pickedDisc === n, () => setAdd('disc', pickedDisc === n ? '' : n)));
+    vals.addDiscNome = pickedDisc && !optionNames.includes(pickedDisc) ? pickedDisc : (a.livre || '');
+    vals.setAddDiscNome = e => this.setState({ add: Object.assign({}, a, { livre: e.target.value, disc: '' }), addErr: '' });
+    vals.addPowerNome = a.nome || '';
+    vals.setAddPowerNome = e => setAdd('nome', e.target.value);
+    vals.addPowerNivel = a.nivel || '1';
+    vals.setAddPowerNivel = e => setAdd('nivel', e.target.value);
+    vals.addPowerDesc = a.desc || '';
+    vals.setAddPowerDesc = e => setAdd('desc', e.target.value);
+    vals.addRouseBg = a.rouse ? '#7A1220' : 'transparent';
+    vals.addRouseFg = a.rouse ? '#FFFFFF' : '#0D0D0D';
+    vals.toggleAddRouse = () => setAdd('rouse', !a.rouse);
+    vals.addErr = st.addErr || '';
+    vals.confirmAdd = () => {
+      const name = (pickedDisc || a.livre || '').trim();
+      if (!name) { this.setState({ addErr: 'x' }); this.toast('Selecione ou digite uma disciplina.', { titulo: 'Falta a disciplina' }); return; }
+      const power = (a.nome || '').trim()
+        ? [{ nome: a.nome.trim(), nivel: parseInt(a.nivel, 10) || 1, desc: a.desc || '', rouse: !!a.rouse }] : [];
+      const idx = s.disc.findIndex(d => (d.nome || '').trim() === name);
+      let disc;
+      if (idx >= 0) {
+        disc = s.disc.map((d, j) => j === idx ? Object.assign({}, d, { powers: powersOf(d).concat(power) }) : d);
+      } else {
+        disc = s.disc.concat([{ nome: name, nivel: power.length ? power[0].nivel : 1, powers: power }]);
+      }
+      this.patch({ disc });
+      this.setState({ addOpen: false, addErr: '' });
+    };
+
+    vals.convRows = s.conv.map((c, i) => ({
+      conv: c.c || '', pilar: c.p || '',
+      setConv: e => this.patch({ conv: s.conv.map((x, j) => j === i ? Object.assign({}, x, { c: e.target.value }) : x) }),
+      setPilar: e => this.patch({ conv: s.conv.map((x, j) => j === i ? Object.assign({}, x, { p: e.target.value }) : x) })
+    }));
+
+    vals.vitMax = this.vitMax(); vals.fdvMax = this.fdvMax();
+    vals.vitBoxes = this.boxes('vit', vals.vitMax);
+    vals.fdvBoxes = this.boxes('fdv', vals.fdvMax);
+    vals.fomeDots = this.dots(5, s.fome || 0, v => this.patch({ fome: v }));
+    const pot = this.potencia();
+    vals.potDots = this.dots(10, pot, () => { });
+    const gerOk = Component.potDeGeracao(s.geracao) !== null;
+    vals.potNota = gerOk
+      ? 'Geração ' + s.geracao + ' — Potência de Sangue ' + pot + '.'
+      : (s.geracao
+        ? 'Geração "' + s.geracao + '" não reconhecida — usando Potência de Sangue ' + pot + '.'
+        : 'Escolha a Geração para definir a Potência de Sangue.');
+    vals.fomeNum = s.fome || 0;
+    vals.humBoxes = [];
+    const manchasIdx = Array.isArray(s.manchasIdx)
+      ? s.manchasIdx.slice(0, 10)
+      : Array.from({ length: 10 }, (_, k) => (k + 1) > 10 - (s.manchas || 0));
+    while (manchasIdx.length < 10) manchasIdx.push(false);
+    for (let i = 1; i <= 10; i++) {
+      const filled = (s.humanidade || 0) >= i;
+      const stained = !!manchasIdx[i - 1];
+      vals.humBoxes.push({
+        bg: filled ? '#0D0D0D' : '#FFFFFF', fg: filled ? '#FFFFFF' : '#0D0D0D', mark: stained ? '✕' : '',
+        click: () => {
+          const next = manchasIdx.slice();
+          next[i - 1] = !next[i - 1];
+          this.patch({ manchasIdx: next, manchas: next.filter(Boolean).length });
+        }
+      });
+    }
+    vals.humNivel = s.humanidade || 0;
+    vals.manchas = manchasIdx.filter(Boolean).length;
+    vals.delHum = () => this.patch({ humanidade: Math.max(0, (s.humanidade || 0) - 1) });
+    vals.addHum = () => this.patch({ humanidade: Math.min(10, (s.humanidade || 0) + 1) });
+    vals.historiaValue = s.historia || '';
+    vals.setHistoria = e => this.patch({ historia: e.target.value });
+    vals.resOptions = ['Colérica', 'Melancólica', 'Fleumática', 'Sanguínea', 'Sem ressonância'].map(r =>
+      badge(r, (s.ressonancia || '') === r, () => this.patch({ ressonancia: (s.ressonancia === r ? '' : r) })));
+    vals.resIntens = ['Negligenciável', 'Difusa', 'Intensa', 'Aguçada'].map(r =>
+      badge(r, (s.resIntensidade || '') === r, () => this.patch({ resIntensidade: (s.resIntensidade === r ? '' : r) })));
+    vals.notasValue = s.notas || '';
+    vals.setNotas = e => this.patch({ notas: e.target.value });
+
+    const bp = Component.BP[pot] || Component.BP[0];
+    vals.bpLevel = 'Nível ' + bp.level;
+    vals.bpForca = [
+      { label: 'Surto de Sangue', value: bp.bloodSurge, nota: 'Dados extras em um teste físico, ao custo de um Rouse Check.' },
+      { label: 'Bônus de Poder', value: bp.powerBonus, nota: 'Adicionado aos testes de ativação de Disciplina.' },
+      { label: 'Rerrolagem de Rouse', value: bp.rouseReroll, nota: 'Uma segunda chance de não subir a Fome.' }
+    ];
+    vals.bpCusto = [
+      { label: 'Cura ao Despertar', value: bp.mendAmount, nota: 'Quanto some da vitalidade quando você dorme.' },
+      { label: 'Penalidade de Alimentação', value: bp.feedingPenalty, nota: 'O que já não sacia mais a sua Fome.' },
+      { label: 'Gravidade da Perdição', value: 'Severidade ' + bp.baneSeverity, nota: 'Intensidade da maldição do seu clã.' }
+    ];
+
+    vals.xpTotal = s.xpTotal || ''; vals.xpGasto = s.xpGasto || '';
+    vals.setXpTotal = e => this.patch({ xpTotal: e.target.value });
+    vals.setXpGasto = e => this.patch({ xpGasto: e.target.value });
+    vals.xpLivre = Math.max(0, (parseInt(s.xpTotal, 10) || 0) - (parseInt(s.xpGasto, 10) || 0));
+    vals.noites = s.noites || 0;
+    vals.sessRows = s.sessoes.map((x, i) => ({
+      data: x.data || '', xp: x.xp || '', resumo: x.resumo || '',
+      setData: e => this.patch({ sessoes: s.sessoes.map((y, j) => j === i ? Object.assign({}, y, { data: e.target.value }) : y) }),
+      setXp: e => this.patch({ sessoes: s.sessoes.map((y, j) => j === i ? Object.assign({}, y, { xp: e.target.value }) : y) }),
+      setResumo: e => this.patch({ sessoes: s.sessoes.map((y, j) => j === i ? Object.assign({}, y, { resumo: e.target.value }) : y) })
+    }));
+    vals.addSess = () => this.patch({ sessoes: s.sessoes.concat([{ data: '', xp: '', resumo: '' }]) });
+
+    vals.tabLabel = { ficha: 'Ficha', disciplinas: 'Disciplinas', acoes: 'Ações', registros: 'Registros', notas: 'Notas', sessoes: 'Sessões & XP' }[st.tab] || 'Ficha';
+    vals.menuOpen = !!st.menuOpen;
+    vals.menuEmail = st.user || '';
+    vals.toggleMenu = () => this.setState({ menuOpen: !st.menuOpen });
+    vals.closeMenu = () => this.setState({ menuOpen: false });
+    vals.menuItems = [
+      { label: 'Ficha', k: 'ficha' }, { label: 'Disciplinas', k: 'disciplinas' }, { label: 'Ações', k: 'acoes' },
+      { label: 'Registros', k: 'registros' }, { label: 'Notas', k: 'notas' }
+    ].concat(this.props.mostrarXP !== false ? [{ label: 'Sessões & XP', k: 'sessoes' }] : [])
+      .map(m => ({ label: m.label, fg: st.tab === m.k ? '#FFFFFF' : '#0D0D0D', bg: st.tab === m.k ? '#0D0D0D' : 'transparent', pad: st.tab === m.k ? '12px 16px' : '12px 0', click: () => this.setState({ tab: m.k, menuOpen: false, openPoder: '' }) }))
+      .concat([
+        { label: 'Refazer personagem', fg: '#0D0D0D', bg: 'transparent', pad: '12px 0', click: () => this.setState({ screen: 'wizard', wizStep: 1, menuOpen: false }) },
+        { label: 'Sair', fg: '#7A1220', bg: 'transparent', pad: '12px 0', click: () => { try { localStorage.removeItem('vtm5.session'); } catch (e) { } this.setState({ screen: 'auth', user: null, authPass: '', authPass2: '', menuOpen: false, sheet: Component.blank() }); } }
+      ]);
+
+    vals.headerNome = s.nome || 'Sem nome';
+    vals.headerCla = s.cla || 'Clã indefinido';
+    vals.headerSub = [s.conceito, s.cronica].filter(Boolean).join(' · ') || 'jogador: ' + (st.user || '');
+
+    const tabDefs = [['ficha', 'Ficha'], ['disciplinas', 'Disciplinas'], ['acoes', 'Ações'], ['registros', 'Registros'], ['notas', 'Notas']];
+    if (this.props.mostrarXP !== false) tabDefs.push(['sessoes', 'Sessões & XP']);
+    vals.tabs = tabDefs.map(([k, label]) => ({
+      label, bg: st.tab === k ? '#FFFFFF' : 'transparent', fg: st.tab === k ? '#0D0D0D' : 'rgba(13,13,13,.68)',
+      click: () => this.setState({ tab: k })
+    }));
+    const NEUTRO = 'rgba(255,255,255,.6)';
+    const markOne = (key, max, level) => {
+      const arr = this.boxesRaw(key, max);
+      for (let i = 0; i < arr.length; i++) if (arr[i] === 0) { arr[i] = level; this.patch({ [key]: arr }); return true; }
+      if (level === 1) for (let i = 0; i < arr.length; i++) if (arr[i] === 1) { arr[i] = 2; this.patch({ [key]: arr }); return true; }
+      return false;
+    };
+    vals.fomeSub = 'Potência de Sangue ' + pot;
+    vals.humNum = s.humanidade || 0;
+    vals.humSub = vals.manchas === 1 ? '1 mancha' : vals.manchas + ' manchas';
+    vals.actionCards = [
+      { titulo: 'Alimentar-se', desc: 'Reduz a Fome conforme o quanto o recipiente rendeu.', cta: 'Registrar', click: () => this.setState({ modal: 'feed', stage: 'ask', modalNote: '' }) },
+      { red: true, titulo: 'Teste de Frenesi', desc: 'Resiste à Besta com Autocontrole + Determinação contra a dificuldade da provocação.', cta: 'Testar', click: () => this.setState({ modal: 'frenzy', stage: 'ask', frenDif: 0, modalNote: '' }) },
+      { red: true, titulo: 'Surto de Sangue', desc: 'Adiciona o bônus de Potência de Sangue a um teste físico. Exige Rouse Check.', cta: 'Rouse + surto', click: () => this.setState({ modal: 'rouse', stage: 'ask', modalNote: 'Surto de Sangue: ' + (Component.BP[s.potencia || 0] || Component.BP[0])[0] + ' no teste.' }) }
+    ].map(a => Object.assign({ cta2: '', click2: null, cta: '' }, a, { hasSecond: !!a.cta2, hasCta: !a.botoes, botoes: (a.botoes || []).map(b => Object.assign({}, b, { bg: b.verde ? '#2F6B3C' : 'transparent', fg: b.verde ? '#FFFFFF' : 'inherit', bd: b.verde ? '#2F6B3C' : 'rgba(13,13,13,.25)' })), bg: a.red ? '#7A1220' : '#0D0D0D' }));
+
+    vals.tabFicha = st.tab === 'ficha'; vals.tabDisciplinas = st.tab === 'disciplinas'; vals.tabAcoes = st.tab === 'acoes'; vals.tabRegistros = st.tab === 'registros';
+    vals.tabNotas = st.tab === 'notas'; vals.tabSessoes = st.tab === 'sessoes' && this.props.mostrarXP !== false;
+
+    const espec2 = s.espec || {};
+    const setPrim = (name, txt) => {
+      if (!name) return;
+      const cur = (espec2[name] || []).slice();
+      cur[0] = txt;
+      this.patch({ espec: Object.assign({}, espec2, { [name]: cur.filter((v, i) => i === 0 || v) }) });
+    };
+    const comDots = Component.SKILLS.reduce((a, g) => a.concat(g[1]), []).filter(k => (s.skills[k] || 0) > 0);
+    const obrig = Component.ESPEC_OBRIG.filter(k => (s.skills[k] || 0) > 0);
+    vals.especObrigRows = obrig.map(name => ({
+      name, nivel: 'nível ' + (s.skills[name] || 0),
+      value: (espec2[name] || [])[0] || '', set: e => setPrim(name, e.target.value)
+    }));
+    vals.temObrig = obrig.length > 0;
+    vals.semObrig = obrig.length === 0;
+    vals.especLivreOpts = comDots;
+    vals.especLivreSkill = s.especLivre || '';
+    vals.setEspecLivreSkill = e => this.patch({ especLivre: e.target.value });
+    vals.especLivreValue = (espec2[s.especLivre] || [])[0] || '';
+    vals.setEspecLivreValue = e => setPrim(s.especLivre, e.target.value);
+
+    vals.distOpts = Component.DIST.map(([nome, desc, alvo]) => {
+      const sel = (s.dist || '') === nome;
+      return {
+        nome, desc, resumo: Object.keys(alvo).sort((a, b) => b - a).map(k => alvo[k] + '× nível ' + k).join(' · '),
+        bd: sel ? '#0D0D0D' : 'rgba(13,13,13,.25)', bg: sel ? '#0D0D0D' : 'transparent', fg: sel ? '#FFFFFF' : '#0D0D0D',
+        pick: () => this.patch({ dist: nome })
+      };
+    });
+    const distAtual = (Component.DIST.find(d => d[0] === (s.dist || '')) || Component.DIST[1])[2];
+    vals.distLinhas = Object.keys(distAtual).sort((a, b) => b - a).map(k => {
+      const atual = comDots.filter(n => (s.skills[n] || 0) === Number(k)).length;
+      return { label: 'Nível ' + k, texto: atual + ' de ' + distAtual[k], fg: atual === distAtual[k] ? '#2F6B3C' : '#7A1220' };
+    });
+
+    vals.predCards = Component.PREDADORES.map(([nome, desc]) => {
+      const sel = (s.predador || '') === nome;
+      return {
+        nome, desc,
+        bd: sel ? '#0D0D0D' : 'rgba(13,13,13,.25)', bg: sel ? '#0D0D0D' : 'transparent', fg: sel ? '#FFFFFF' : '#0D0D0D',
+        pick: () => this.patch({ predador: nome, predEspec: '', predDisc: '' })
+      };
+    });
+
+    const predRalo = (s.cla || '').trim() === 'Sangue Fraco';
+    vals.predRalo = predRalo;
+    vals.predPode = !predRalo;
+    const predSel = predRalo ? null : Component.PREDADORES.find(p => p[0] === (s.predador || ''));
+    vals.predSel = !!predSel;
+    vals.predNome = predSel ? predSel[0] : '';
+    const mkOpt = (val, key) => {
+      const on = (s[key] || '') === val;
+      return {
+        label: val, pick: () => this.patch({ [key]: val }),
+        bd: on ? '#2F6B3C' : 'rgba(13,13,13,.18)', bg: on ? '#FFFFFF' : 'transparent', fg: '#0D0D0D'
+      };
+    };
+    vals.predEspecOpts = predSel ? predSel[2].map(v => mkOpt(v, 'predEspec')) : [];
+    vals.predDiscOpts = predSel ? predSel[3].map(v => mkOpt(v, 'predDisc')) : [];
+    vals.predExtras = predSel ? predSel[4].map(t => ({
+      txt: t,
+      bd: /^−|Defeito|Exige|Perde/.test(t) ? '#7A1220' : (/^\+|Vantagem|pontos em|Rebanho|Contatos|Fama|Recursos/.test(t) ? '#2F6B3C' : 'rgba(13,13,13,.18)')
+    })) : [];
+    vals.predPend = predSel && (!(s.predEspec || '') || !(s.predDisc || ''))
+      ? 'Escolha uma especialidade e uma Disciplina para completar o Predador.'
+      : predSel ? 'Predador definido: ' + predSel[0] + ' · ' + s.predEspec + ' · +1 ' + s.predDisc : '';
+
+    const clanSel = Component.CLANS.find(c => c[0] === (s.cla || '').trim());
+    vals.clanSel = !!clanSel;
+    vals.claBane = clanSel ? clanSel[2] : '';
+    vals.claBaneTxt = clanSel ? clanSel[3] : '';
+    vals.claComp = clanSel ? clanSel[4] : '';
+    vals.claCompTxt = clanSel ? clanSel[5] : '';
+    vals.infoBane = () => clanSel && this.openInfo('bane', clanSel[0]);
+    vals.infoComp = () => clanSel && this.openInfo('comp', clanSel[0]);
+    const alvoAtr = { 4: 1, 3: 3, 1: 1 };
+    const atrNomes = Component.ATTRS.reduce((acc, g) => acc.concat(g[1]), []);
+    const atrVals = atrNomes.map(n => s.attrs[n] || 0);
+    const cont = { 4: 0, 3: 0, 1: 0 };
+    atrVals.forEach(v => { if (cont[v] !== undefined) cont[v]++; });
+    vals.atrCotas = [4, 3, 1].map(v => {
+      const resta = alvoAtr[v] - cont[v];
+      return {
+        label: v + (v === 1 ? ' ponto' : ' pontos'),
+        usado: resta + '/' + alvoAtr[v],
+        cor: resta === 0 ? '#2F6B3C' : (resta < 0 ? '#7A1220' : 'rgba(13,13,13,.68)'),
+        bd: resta < 0 ? '#7A1220' : 'rgba(13,13,13,.25)'
+      };
+    });
+    const excedeu = cont[4] > alvoAtr[4] || cont[3] > alvoAtr[3] || cont[1] > alvoAtr[1];
+    const faltaAtr = (alvoAtr[4] - Math.min(cont[4], alvoAtr[4])) + (alvoAtr[3] - Math.min(cont[3], alvoAtr[3])) + (alvoAtr[1] - Math.min(cont[1], alvoAtr[1]));
+    vals.atrResumo = excedeu
+      ? 'Você passou de alguma cota: ajuste os pontos.'
+      : (faltaAtr ? faltaAtr + (faltaAtr === 1 ? ' escolha restante.' : ' escolhas restantes.') : 'Distribuição completa.');
+    vals.clanFields = [['senhor', 'Senhor']].map(([k, label]) => Object.assign({ label, ph: '' }, this.field(k)));
+    vals.geracao = s.geracao || '';
+    vals.infoGer = () => this.openInfo('geracao');
+    vals.gerLabel = s.geracao ? 'Geração ' + s.geracao : 'Geração';
+    const gerN = parseInt(String(s.geracao || '').replace(/[^0-9]/g, ''), 10);
+    vals.senhorGerNota = gerN ? 'Seu senhor é da ' + (gerN - 1) + 'ª Geração (você é sempre uma Geração acima do senhor).' : 'Você é sempre uma Geração acima do seu senhor.';
+    vals.geracoes = Component.GERACOES.map(g => g[0]);
+    vals.setGeracao = e => this.patch({ geracao: e.target.value, potencia: Component.potDeGeracao(e.target.value) || 0 });
+    vals.finalFields = Component.IDENT.filter(fd => ['cla', 'senhor', 'predador', 'geracao'].indexOf(fd[0]) < 0)
+      .map(([k, label, ph]) => Object.assign({ label, ph }, this.field(k)));
+    vals.derivados = 'Vitalidade ' + this.vitMax() + ' · Força de Vontade ' + this.fdvMax();
+
+    const wizTitles = [
+      ['Clã e senhor', 'O clã define as Disciplinas iniciais e a Perdição.'],
+      ['Atributos', 'Vitalidade e Força de Vontade saem daqui.'],
+      ['Habilidades', 'Escolha o formato de distribuição e aplique os pontos.'],
+      ['Especialidades', 'Perícias amplas exigem uma especialidade.'],
+      ['Disciplinas', 'Duas Disciplinas do clã: dois pontos em uma, um na outra.'],
+      ['Predador', 'Como você caça define perícias e Disciplinas extras. Sangues-ralos não têm.'],
+      ['Vantagens e defeitos', 'Sete pontos em vantagens, dois em defeitos além dos do Predador.'],
+      ['Detalhes finais', 'O que faltou para fechar a ficha.']
+    ];
+    vals.wizStep = st.wizStep;
+    vals.wizTitle = wizTitles[st.wizStep - 1][0];
+    vals.wizHint = wizTitles[st.wizStep - 1][1];
+    vals.wizBars = [1, 2, 3, 4, 5, 6, 7, 8].map(n => ({ bg: n <= st.wizStep ? '#0D0D0D' : 'rgba(13,13,13,.25)' }));
+    [1, 2, 3, 4, 5, 6, 7, 8].forEach(n => { vals['w' + n] = st.wizStep === n; });
+    vals.wizNextLabel = st.wizStep === 8 ? 'Concluir' : 'Continuar';
+    vals.wizBack = () => st.wizStep === 1
+      ? this.setState({ screen: s.criada ? 'sheet' : 'auth' })
+      : this.setState({ wizStep: st.wizStep - 1 });
+    vals.wizNext = () => {
+      if (st.wizStep === 1) {
+        const nomes = Component.ATTRS.reduce((acc, g) => acc.concat(g[1]), []);
+        if (nomes.every(n => (s.attrs[n] || 0) <= 1)) {
+          const na = Object.assign({}, s.attrs);
+          nomes.forEach(n => { na[n] = 2; });
+          this.patch({ attrs: na });
+        }
+      }
+      if (st.wizStep === 8) {
+        this.patch({ criada: true, disc: s.disc.filter(d => (d.nome || '').trim()) });
+        this.setState({ screen: 'sheet', tab: 'ficha' });
+      }
+      else this.setState({ wizStep: st.wizStep + 1 });
+    };
+    vals.clanCards = Component.CLANS.map(([nome, discs]) => {
+      const sel = (s.cla || '') === nome;
+      return {
+        nome, discs: discs.join(' · '),
+        bg: sel ? '#0D0D0D' : '#FFFFFF', fg: sel ? '#FFFFFF' : '#0D0D0D',
+        bd: sel ? '#0D0D0D' : 'rgba(13,13,13,.25)',
+        pick: () => this.patch({ cla: nome })
+      };
+    });
+
+
+    const fa = st.fomeAlerta;
+    vals.fomeAlerta = fa === 5 || fa === 0;
+    vals.fomeAlertaCor = fa === 5 ? '#E8535F' : '#2F6B3C';
+    vals.fomeAlertaKicker = fa === 5 ? 'A Besta desperta' : 'Saciado';
+    vals.fomeAlertaTitulo = fa === 5 ? 'Fome 5' : 'Fome 0';
+    vals.fomeAlertaTexto = fa === 5
+      ? 'Você está à beira do frenesi. Resistir à Fome agora exige teste de frenesi e qualquer falha bestial vira Compulsão. Alimente-se.'
+      : 'Sua Fome está em 0. A Besta está quieta, mas o próximo Rouse Check já volta a subir a Fome.';
+    vals.fecharFomeAlerta = () => this.setState({ fomeAlerta: null });
+    const close = () => this.setState({ modal: null, stage: null, modalNote: '' });
+    const btn = (label, click, primary) => ({
+      label, click,
+      bg: primary ? '#0D0D0D' : 'transparent', fg: primary ? '#FFFFFF' : '#0D0D0D',
+      bd: primary ? '#0D0D0D' : 'rgba(13,13,13,.25)'
+    });
+    vals.modalOpen = !!st.modal;
+    vals.modalNote = st.modalNote;
+    vals.openRouse = () => this.setState({ modal: 'rouse', stage: 'ask', modalNote: '' });
+    vals.openSleep = () => this.setState({ modal: 'sleep', stage: 'ask', modalNote: '' });
+    if (st.modal === 'rouse' && st.stage === 'ask') {
+      vals.modalKicker = 'Teste';
+      vals.modalTitle = 'Rouse Check';
+      vals.modalBody = 'Um dado. Resultado 6 ou mais é sucesso. Fome atual: ' + (s.fome || 0) + '.';
+      vals.modalActions = [btn('Passei', () => this.applyRouse(true), true), btn('Falhei', () => this.applyRouse(false)), btn('Cancelar', close)];
+    } else if (st.modal === 'rouse' && st.stage === 'rouseDone') {
+      vals.modalKicker = 'Resultado';
+      vals.modalTitle = 'Fome ' + (s.fome || 0);
+      vals.modalBody = 'Anotado na ficha.';
+      vals.modalActions = [btn('Fechar', close, true), btn('Outro Rouse Check', () => this.setState({ stage: 'ask', modalNote: '' }))];
+    } else if (st.modal === 'sleep' && st.stage === 'ask') {
+      vals.modalKicker = 'Fim da noite';
+      vals.modalTitle = 'Dormir até o anoitecer?';
+      vals.modalBody = 'A ficha será atualizada: cura de vitalidade superficial e Força de Vontade.';
+      vals.modalActions = [btn('Dormir', () => this.doSleep(), true), btn('Curar dano agravado (3 Rouse Checks)', () => this.setState({ modal: 'agg', stage: 'ask', modalNote: '' })), btn('Cancelar', close)];
+    } else if (st.modal === 'sleep' && st.stage === 'wake') {
+      vals.modalKicker = 'Anoiteceu';
+      vals.modalTitle = 'Hora de acordar';
+      vals.modalBody = 'Faça um Rouse Check para sair do torpor.';
+      vals.modalActions = [btn('Fazer Rouse Check', () => this.setState({ modal: 'rouse', stage: 'ask', modalNote: '' }), true), btn('Curar dano agravado (3 Rouse Checks)', () => this.setState({ modal: 'agg', stage: 'ask', modalNote: '' })), btn('Depois', close)];
+    } else if (st.modal === 'feed') {
+      const fomeAtual = s.fome || 0;
+      const potencia = this.potencia();
+      const apply = (n, fonte) => {
+        const real = Math.min(n, fomeAtual);
+        this.patch({ fome: fomeAtual - real });
+        this.setState({ stage: 'done', modalNote: fonte + ': −' + real + ' de Fome. Fome agora ' + (fomeAtual - real) + '.' });
+      };
+      const fontes = [
+        { nome: 'Vários animais pequenos', cura: 1, tipo: 'animal' },
+        { nome: 'Animal médio', cura: 1, tipo: 'animal' },
+        { nome: 'Animal grande', cura: 2, tipo: 'animal' },
+        { nome: 'Bolsa de sangue', cura: 1, tipo: 'bolsa' },
+        { nome: 'Pessoa, sem dor e rápido', cura: 1, tipo: 'humano' },
+        { nome: 'Pessoa, sem dor', cura: 2, tipo: 'humano' },
+        { nome: 'Pessoa', cura: 4, escolha: true, tipo: 'humano' },
+        { nome: 'Matar a pessoa', cura: 5, tipo: 'letal' }
+      ];
+      const limite = f => {
+        if (f.tipo === 'animal') {
+          if (potencia >= 3) return { cura: 0, aviso: 'Sangue animal não sacia na Potência ' + potencia + '.' };
+          if (potencia === 2) return { cura: Math.floor(f.cura / 2), aviso: 'Sangue animal rende metade na Potência 2.' };
+        }
+        if (f.tipo === 'bolsa' && potencia >= 3) return { cura: 0, aviso: 'Sangue de bolsa não sacia na Potência ' + potencia + '.' };
+        if (f.tipo === 'humano' && potencia >= 4) return { cura: 0, aviso: 'Na Potência ' + potencia + ' só sacia drenando a pessoa por completo.' };
+        return { cura: f.cura, aviso: '' };
+      };
+      if (st.stage === 'pessoa') {
+        vals.modalKicker = 'Alimentação';
+        vals.modalTitle = 'Quanto você bebeu?';
+        vals.modalBody = 'Beber de uma pessoa sacia de 1 a 4 de Fome, conforme o quanto você tomou. Fome atual: ' + fomeAtual + '.';
+        const escolhas = [];
+        for (let n = 1; n <= 4; n++) escolhas.push(btn('−' + n + ' de Fome', () => apply(n, 'Pessoa'), n === 1));
+        vals.modalActions = escolhas.concat([btn('Voltar', () => this.setState({ stage: 'ask', modalNote: '' }))]);
+      } else if (st.stage === 'done') {
+        vals.modalKicker = 'Alimentação';
+        vals.modalTitle = 'Fome ' + fomeAtual;
+        vals.modalBody = 'Anotado na ficha.';
+        vals.modalActions = [btn('Fechar', close, true)];
+      } else {
+        vals.modalKicker = 'Alimentação';
+        vals.modalTitle = fomeAtual ? 'De onde veio o sangue?' : 'Fome 0';
+        vals.modalBody = fomeAtual
+          ? 'Fome atual: ' + fomeAtual + '. Potência de Sangue ' + potencia + ' define o quanto cada fonte sacia.'
+          : 'Você está saciado. Nada a reduzir.';
+        vals.modalActions = fontes.map(f => {
+          const lim = limite(f);
+          if (!lim.cura) return btn(f.nome + ' — não sacia', () => this.setState({ modalNote: lim.aviso }));
+          const rotulo = f.escolha ? f.nome + ' — até −' + lim.cura + ' de Fome' : f.nome + ' — −' + lim.cura + ' de Fome';
+          return btn(rotulo + (lim.aviso ? ' *' : ''), f.escolha
+            ? () => this.setState({ stage: 'pessoa', modalNote: '' })
+            : () => apply(lim.cura, f.nome));
+        }).concat([btn('Cancelar', close)]);
+      }
+            } else if (st.modal === 'agg' && st.stage === 'ask') {
+      vals.modalKicker = 'Cura profunda';
+      vals.modalTitle = 'Curar dano agravado';
+      vals.modalBody = 'Cura 1 de dano agravado e exige três Rouse Checks. Quantos falharam? Fome atual: ' + (s.fome || 0) + '.';
+      vals.modalActions = [btn('Nenhum falhou', () => this.aggHeal(0), true), btn('1 falhou', () => this.aggHeal(1)), btn('2 falharam', () => this.aggHeal(2)), btn('3 falharam', () => this.aggHeal(3)), btn('Cancelar', close)];
+    } else if (st.modal === 'agg') {
+      vals.modalKicker = 'Resultado';
+      vals.modalTitle = 'Fome ' + (s.fome || 0);
+      vals.modalBody = 'Anotado na ficha.';
+      vals.modalActions = [btn('Fechar', close, true)];
+    } else if (st.modal === 'frenzy' && st.stage === 'ask') {
+      const go = (dif, causa) => this.setState({ stage: 'roll', frenDif: dif, modalNote: causa + ' · dificuldade ' + dif });
+      vals.modalKicker = 'Teste de Frenesi';
+      vals.modalTitle = 'Contra o que resiste?';
+      vals.modalBody = 'Reserva: Autocontrole + Determinação = ' + this.fdvMax() + ' dados. Fome ' + (s.fome || 0) + '.';
+      vals.modalActions = [btn('Fome / sangue à vista (dif. 2)', () => go(2, 'Frenesi de Fome'), true), btn('Provocação ou fúria (dif. 3)', () => go(3, 'Frenesi de raiva')), btn('Terror: fogo, sol, Fúria (dif. 4)', () => go(4, 'Frenesi de terror')), btn('Cancelar', close)];
+    } else if (st.modal === 'frenzy' && st.stage === 'roll') {
+      vals.modalKicker = 'Rolagem';
+      vals.modalTitle = this.fdvMax() + ' dados vs. dificuldade ' + st.frenDif;
+      vals.modalBody = 'Role Autocontrole + Determinação. Você pode gastar Força de Vontade para rerrolar até três dados.';
+      vals.modalActions = [
+        btn('Resisti', () => this.setState({ stage: 'done', modalNote: 'A Besta recua. Nenhuma alteração na ficha.' }), true),
+        btn('Sucumbi ao frenesi', () => this.setState({ stage: 'done', modalNote: 'Frenesi por uma cena: a Besta age. Sem gastar Força de Vontade e sem usar Disciplinas que exijam calma; ao fim, teste de Humanidade se houver transgressão.' })),
+        btn('Cancelar', close)
+      ];
+    } else if (st.modal === 'frenzy') {
+      vals.modalKicker = 'Resultado';
+      vals.modalTitle = 'Frenesi resolvido';
+      vals.modalBody = 'Anotado para a cena.';
+      vals.modalActions = [btn('Fechar', close, true), btn('Novo teste', () => this.setState({ stage: 'ask', frenDif: 0, modalNote: '' }))];
+    } else if (st.modal === 'note') {
+      vals.modalKicker = 'Sem margem';
+      vals.modalTitle = 'Força de Vontade esgotada';
+      vals.modalBody = 'Todas as caixas de Força de Vontade já estão marcadas.';
+      vals.modalActions = [btn('Entendi', close, true)];
+    } else {
+      vals.modalKicker = ''; vals.modalTitle = ''; vals.modalBody = ''; vals.modalActions = [];
+    }
+    return vals;
+  }
+}

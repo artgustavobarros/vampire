@@ -1,18 +1,21 @@
 import { z } from "zod";
 import { publicUserSchema } from "../users/users.schemas.js";
 
-const MISSING = "Informe e-mail e senha.";
+const EMAIL_REQUIRED = "Informe o e-mail.";
+const PASSWORD_REQUIRED = "Informe a senha.";
 
 const email = z
-  .string({ error: MISSING })
+  .string({ error: EMAIL_REQUIRED })
   .trim()
   .toLowerCase()
-  .min(1, MISSING)
+  .min(1, EMAIL_REQUIRED)
   // o OpenAPI do corpo só enxerga o lado de entrada do `pipe`
   .meta({ format: "email" })
   .pipe(z.email("E-mail inválido."));
 
-const password = z.string({ error: MISSING }).min(1, MISSING);
+const password = z
+  .string({ error: PASSWORD_REQUIRED })
+  .min(1, PASSWORD_REQUIRED);
 
 // a ordem das chaves é a ordem das mensagens: a primeira falha vira o toast
 export const signupSchema = z.object(
@@ -24,10 +27,13 @@ export const signupSchema = z.object(
       .min(1, "Informe o nome."),
     password: password.min(6, "A senha precisa ter pelo menos 6 caracteres."),
   },
-  { error: MISSING }
+  { error: EMAIL_REQUIRED }
 );
 
-export const loginSchema = z.object({ email, password }, { error: MISSING });
+export const loginSchema = z.object(
+  { email, password },
+  { error: EMAIL_REQUIRED }
+);
 
 export const authResponseSchema = z.object({
   accessToken: z

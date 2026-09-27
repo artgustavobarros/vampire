@@ -25,10 +25,10 @@ describe("signupSchema", () => {
   });
 
   it.each([
-    [undefined, "Informe e-mail e senha."],
-    [{ name: "a", password: "segredo" }, "Informe e-mail e senha."],
-    [{ email: " ", name: "a", password: "segredo" }, "Informe e-mail e senha."],
-    [{ email: "a@b.co", name: "a", password: "" }, "Informe e-mail e senha."],
+    [undefined, "Informe o e-mail."],
+    [{ name: "a", password: "segredo" }, "Informe o e-mail."],
+    [{ email: " ", name: "a", password: "segredo" }, "Informe o e-mail."],
+    [{ email: "a@b.co", name: "a", password: "" }, "Informe a senha."],
     [{ email: "abc", name: "a", password: "segredo" }, "E-mail inválido."],
     [
       { email: "a@b.co", name: "a", password: "12345" },
@@ -51,7 +51,13 @@ describe("loginSchema", () => {
 
   it("recusa campos vazios", () => {
     expect(firstMessage(loginSchema, { email: "", password: "" })).toBe(
-      "Informe e-mail e senha."
+      "Informe o e-mail."
+    );
+    expect(firstMessage(loginSchema, { email: "abc", password: "" })).toBe(
+      "E-mail inválido."
+    );
+    expect(firstMessage(loginSchema, { email: "a@b.co", password: "" })).toBe(
+      "Informe a senha."
     );
   });
 });

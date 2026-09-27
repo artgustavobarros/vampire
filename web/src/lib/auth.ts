@@ -29,11 +29,14 @@ const LOGOUT_WAIT = 2000;
 /** Mesmas regras e mensagens da API, sem ida e volta. */
 function validate(input: AuthInput, email: string): string | null {
   const { password } = input;
-  if (!(email && password)) {
-    return "Informe e-mail e senha.";
+  if (!email) {
+    return "Informe o e-mail.";
   }
   if (!EMAIL.test(email)) {
     return "E-mail inválido.";
+  }
+  if (!password) {
+    return "Informe a senha.";
   }
   if (input.mode === "login") {
     return null;

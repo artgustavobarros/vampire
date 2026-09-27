@@ -55,6 +55,19 @@ function fillLogin(password: string) {
 }
 
 describe("AuthCard", () => {
+  it("aponta o e-mail inválido mesmo com a senha vazia", async () => {
+    renderLogin();
+    fireEvent.change(await screen.findByLabelText("E-mail"), {
+      target: { value: "email-errado" },
+    });
+    fireEvent.click(screen.getByRole("button", { name: "Entrar" }));
+
+    expect(await screen.findByRole("alert")).toHaveTextContent(
+      "E-mail inválido."
+    );
+    expect(fakeApi.calls).toHaveLength(0);
+  });
+
   it("erro de entrada sai como toast, não dentro do formulário", async () => {
     fakeApi.seed({ email: "ana@exemplo.com", password: "123456" });
     renderLogin();
