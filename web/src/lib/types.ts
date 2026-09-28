@@ -46,6 +46,19 @@ export interface Conviction {
   p: string;
 }
 
+/** Parada de dados salva: guarda os nomes dos traços, não os valores. */
+export interface DicePool {
+  /** nome do atributo (chave de `attrs`) */
+  attr?: string;
+  /** só para `key` e foco */
+  id: string;
+  /** −10 a +10 */
+  mod: number;
+  nome: string;
+  /** nome da habilidade (chave de `skills`) */
+  skill?: string;
+}
+
 export interface SessionLog {
   data: string;
   resumo: string;
@@ -73,7 +86,8 @@ export type Sheet = Partial<Record<TextFieldKey, string>> & {
   disc: Discipline[];
   conv: Conviction[];
   sessoes: SessionLog[];
-  notas: string;
+  /** paradas de dados salvas na aba Rolagens */
+  rolagens?: DicePool[];
   ressonancia: string;
   resIntensidade?: string;
   xpTotal: string;
@@ -95,3 +109,48 @@ export type Sheet = Partial<Record<TextFieldKey, string>> & {
   predBonus?: PredatorBonus;
   meritos?: Merit[];
 };
+
+/** Parada de um inimigo: nome e quantidade de dados. */
+export interface EnemyPool {
+  dados: number;
+  nome: string;
+}
+
+/** Especial de um inimigo; `texto` é HTML restrito (ver `lib/rich-text`). */
+export interface EnemySpecial {
+  nome: string;
+  texto: string;
+}
+
+/** Trilhas, paradas e especiais: o que o jogador só vê se o Mestre deixar. */
+export interface EnemyStats {
+  especiais: EnemySpecial[];
+  fdv: DamageMark[];
+  fdvMax: number;
+  paradas: EnemyPool[];
+  vit: DamageMark[];
+  vitMax: number;
+}
+
+/** Inimigo do Bestiário. */
+export interface Enemy extends EnemyStats {
+  nome: string;
+  /** "Jogadores veem os dados" */
+  visivel: boolean;
+}
+
+/** Participante da rodada: um jogador (`userId`) ou um inimigo do Bestiário. */
+export interface RoundEntry {
+  id: string;
+  /** 0 a 30, ou vazio */
+  iniciativa: number | null;
+  tipo: "jogador" | "inimigo";
+}
+
+export interface RoundState {
+  ordem: RoundEntry[];
+  /** a partir de 1 */
+  rodada: number;
+  /** índice em `ordem` de quem age */
+  vez: number;
+}

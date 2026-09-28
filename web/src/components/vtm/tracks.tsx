@@ -40,7 +40,8 @@ interface DamageTrackProps {
   className?: string;
   label: string;
   marks: readonly DamageMark[];
-  onCycle: (index: number) => void;
+  /** sem ele, as caixas são só para leitura */
+  onCycle?: (index: number) => void;
   /** `inverse`: caixas brancas sobre fundo tinta */
   tone?: "ink" | "inverse";
 }
@@ -50,7 +51,21 @@ const TRACK_TONES = {
   inverse: "border-white bg-white focus-visible:outline-white",
 } as const;
 
-/** Caixas de Vitalidade / Força de Vontade: vazio → superficial → agravado. */
+/** "Vitalidade: 3 de 5, 1 superficial, 1 agravado" */
+export function trackLabel(label: string, marks: readonly DamageMark[]) {
+  const count = (mark: DamageMark) => marks.filter((m) => m === mark).length;
+  const parts = [
+    `${label}: ${count(0)} de ${marks.length}`,
+    count(1) ? countLabel(count(1), "superficial", "superficiais") : null,
+    count(2) ? countLabel(count(2), "agravado", "agravados") : null,
+  ];
+  return parts.filter(Boolean).join(", ");
+}
+
+/**
+ * Caixas de Vitalidade / Força de Vontade: vazio → superficial → agravado.
+ * Sem `onCycle`, só mostra as marcas.
+ */
 export function DamageTrack({
   className,
   label,
@@ -58,6 +73,27 @@ export function DamageTrack({
   onCycle,
   tone = "ink",
 }: DamageTrackProps) {
+  if (!onCycle) {
+    return (
+      <div
+        aria-label={trackLabel(label, marks)}
+        className={cn("flex flex-wrap gap-1", className)}
+        role="img"
+      >
+        {marks.map((m, i) => (
+          <span
+            className={cn(
+              "grid size-6 place-items-center border",
+              TRACK_TONES[tone]
+            )}
+            key={i}
+          >
+            <DamageIcon mark={m} />
+          </span>
+        ))}
+      </div>
+    );
+  }
   return (
     <fieldset
       aria-label={label}

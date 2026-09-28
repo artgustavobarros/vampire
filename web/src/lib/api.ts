@@ -4,7 +4,7 @@
  * Os dois formatos são entendidos por `apiError` de `./toast`.
  */
 import { clearToken, readToken, writeToken } from "./storage";
-import type { Sheet } from "./types";
+import type { Enemy, EnemyStats, RoundEntry, RoundState, Sheet } from "./types";
 
 export const API_URL: string =
   import.meta.env.VITE_API_URL || "http://localhost:3333/api";
@@ -34,6 +34,49 @@ export interface SheetResponse {
 /** Um jogador e sua ficha, na lista do Mestre. */
 export interface PlayerSheetResponse extends SheetResponse {
   user: ApiUser;
+}
+
+/** Uma coterie na visão do Mestre: membros com a ficha inteira. */
+export interface CoterieResponse {
+  id: string;
+  membros: PlayerSheetResponse[];
+  nome: string;
+}
+
+/**
+ * A coterie do jogador. `sheet` traz só nome, clã, Fome, trilhas e os
+ * Atributos das trilhas; sem e-mail.
+ */
+export interface MyCoterieResponse {
+  coterie: {
+    id: string;
+    membros: { sheet: Record<string, unknown> | null; userId: string }[];
+    nome: string;
+  } | null;
+}
+
+export interface EnemyRecord {
+  enemy: Enemy;
+  id: string;
+  updatedAt: string;
+}
+
+export type RoundViewEntry =
+  | (RoundEntry & { sheet: Record<string, unknown> | null; tipo: "jogador" })
+  | (RoundEntry & {
+      /** `null` para jogadores quando o Mestre não deixou ver */
+      dados: EnemyStats | null;
+      nome: string;
+      tipo: "inimigo";
+      visivel: boolean;
+    });
+
+/** A rodada com cada participante completo, como `GET /round` devolve. */
+export interface RoundView {
+  ordem: RoundViewEntry[];
+  rodada: number;
+  updatedAt: string | null;
+  vez: number;
 }
 
 export class ApiError extends Error {
@@ -100,6 +143,9 @@ async function request<T>(
     keepalive,
     method,
   });
+  if (res.status === 204) {
+    return undefined as T;
+  }
   if (res.ok) {
     return (await res.json()) as T;
   }
@@ -167,4 +213,86 @@ export function patchPlayerSheet(
     { patch },
     options
   );
+}
+
+const segment = (value: string) => encodeURIComponent(value);
+
+/** Só o Mestre: todas as coteries com os membros. */
+export function listCoteries(): Promise<CoterieResponse[]> {
+  return request("GET", "/coteries");
+}
+
+export function createCoterie(nome = ""): Promise<CoterieResponse> {
+  return request("POST", "/coteries", { nome });
+}
+
+export function renameCoterie(
+  coterieId: string,
+  nome: string,
+  options: { keepalive?: boolean } = {}
+): Promise<CoterieResponse> {
+  return request("PATCH", `/coteries/${segment(coterieId)}`, { nome }, options);
+}
+
+export function deleteCoterie(coterieId: string): Promise<void> {
+  return request("DELETE", `/coteries/${segment(coterieId)}`);
+}
+
+export function addCoterieMember(
+  coterieId: string,
+  userId: string
+): Promise<CoterieResponse> {
+  return request(
+    "PUT",
+    `/coteries/${segment(coterieId)}/membros/${segment(userId)}`
+  );
+}
+
+export function removeCoterieMember(
+  coterieId: string,
+  userId: string
+): Promise<CoterieResponse> {
+  return request(
+    "DELETE",
+    `/coteries/${segment(coterieId)}/membros/${segment(userId)}`
+  );
+}
+
+/** A coterie do jogador do token, ou `{ coterie: null }`. */
+export function getMyCoterie(): Promise<MyCoterieResponse> {
+  return request("GET", "/me/coterie");
+}
+
+/** Só o Mestre: o Bestiário, por ordem de criação. */
+export function listEnemies(): Promise<EnemyRecord[]> {
+  return request("GET", "/enemies");
+}
+
+export function createEnemy(enemy: Enemy): Promise<EnemyRecord> {
+  return request("POST", "/enemies", { enemy });
+}
+
+export function saveEnemy(
+  enemyId: string,
+  enemy: Enemy,
+  options: { keepalive?: boolean } = {}
+): Promise<EnemyRecord> {
+  return request("PUT", `/enemies/${segment(enemyId)}`, { enemy }, options);
+}
+
+export function deleteEnemy(enemyId: string): Promise<void> {
+  return request("DELETE", `/enemies/${segment(enemyId)}`);
+}
+
+/** A rodada; para jogadores, sem os dados de inimigos ocultos. */
+export function getRound(): Promise<RoundView> {
+  return request("GET", "/round");
+}
+
+/** Só o Mestre: grava o estado inteiro da rodada. */
+export function putRound(
+  state: RoundState,
+  options: { keepalive?: boolean } = {}
+): Promise<RoundView> {
+  return request("PUT", "/round", state, options);
 }

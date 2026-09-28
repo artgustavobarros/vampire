@@ -5,6 +5,8 @@ import { trackBoxes, vitalityMax, willpowerMax } from "#/rules/tracks";
 export interface TrackSummary {
   /** caixas sem dano (superficial ou agravado) */
   atual: number;
+  /** as caixas no tamanho do máximo, com as marcas de dano */
+  marks: DamageMark[];
   max: number;
 }
 
@@ -21,7 +23,8 @@ export function trackSummary(
   marks: readonly DamageMark[] | undefined,
   max: number
 ): TrackSummary {
-  return { atual: trackBoxes(marks, max).filter((m) => m === 0).length, max };
+  const boxes = trackBoxes(marks, max);
+  return { atual: boxes.filter((m) => m === 0).length, marks: boxes, max };
 }
 
 /** Resumo da ficha vinda da API; `null` se o personagem ainda não foi criado. */

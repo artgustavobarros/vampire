@@ -72,6 +72,7 @@ function renderLayout(role: Role, url: string) {
 const header = () => screen.getByRole("banner");
 const ACOES = /ações/i;
 const MESTRE = /mestre/i;
+const MODO_MESTRE = /modo mestre/i;
 const REFAZER = /refazer/i;
 
 describe("cabeçalho e menu da ficha", () => {
@@ -89,27 +90,51 @@ describe("cabeçalho e menu da ficha", () => {
     renderLayout("player", "/ficha/acoes");
     await userEvent.click(await screen.findByLabelText("Abrir menu"));
     const menu = screen.getByRole("dialog");
-    expect(within(menu).getByRole("link", { name: "Notas" })).toHaveAttribute(
-      "href",
-      "/ficha/notas"
-    );
+    expect(
+      within(menu).getByRole("link", { name: "Rolagens" })
+    ).toHaveAttribute("href", "/ficha/rolagens");
+    expect(within(menu).queryByText("Notas")).toBeNull();
     expect(within(menu).queryByText("Lista de personagens")).toBeNull();
     expect(within(menu).queryByText(REFAZER)).toBeNull();
     expect(within(menu).getByText("Sair")).toBeInTheDocument();
   });
 
-  it("Mestre: MESTRE em sangue e abas dentro de /personagens", async () => {
+  it("jogador: sem faixa do Mestre", async () => {
+    renderLayout("player", "/ficha/acoes");
+    await screen.findByText("conteúdo");
+    expect(screen.queryByText(MODO_MESTRE)).toBeNull();
+  });
+
+  it("Mestre: faixa acima do cabeçalho e cabeçalho sem MESTRE", async () => {
     const router = renderLayout("dm", "/personagens/u1/caracteristicas");
     await screen.findByText("conteúdo");
-    expect(within(header()).getByText("Mestre")).toHaveClass("text-blood");
+    expect(within(header()).queryByText(MESTRE)).toBeNull();
+    const faixa = screen.getByText(
+      "Modo Mestre · Vitória Salles · Ficha de jogador"
+    ).parentElement as HTMLElement;
+    expect(faixa).toHaveClass("bg-blood");
+    expect(header().previousElementSibling).toBe(faixa);
+    expect(
+      within(faixa).getByRole("button", { name: "Sair" })
+    ).toBeInTheDocument();
+
+    await userEvent.click(
+      within(faixa).getByRole("link", { name: "Lista de personagens" })
+    );
+    expect(await screen.findByText("Página da lista")).toBeInTheDocument();
+    expect(router.state.location.pathname).toBe("/personagens");
+  });
+
+  it("Mestre: abas dentro de /personagens", async () => {
+    const router = renderLayout("dm", "/personagens/u1/caracteristicas");
+    await screen.findByText("conteúdo");
 
     await userEvent.click(screen.getByLabelText("Abrir menu"));
     const menu = screen.getByRole("dialog");
     expect(within(menu).getByText("jogador@exemplo.com")).toBeInTheDocument();
-    expect(within(menu).getByRole("link", { name: "Notas" })).toHaveAttribute(
-      "href",
-      "/personagens/u1/notas"
-    );
+    expect(
+      within(menu).getByRole("link", { name: "Rolagens" })
+    ).toHaveAttribute("href", "/personagens/u1/rolagens");
     const items = [...within(menu).getByRole("navigation").children].map(
       (el) => el.textContent
     );

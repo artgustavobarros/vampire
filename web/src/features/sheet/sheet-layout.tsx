@@ -12,7 +12,11 @@ import { cn } from "#/lib/utils";
 import { useCharacterStore, useSheet } from "#/stores/character-store";
 import { usePlayerStore } from "#/stores/player-store";
 import { BottomBar } from "./bottom-bar";
-import { DEFAULT_TAB, isSheetTab, type SheetTab, visibleTabs } from "./tabs";
+import { DEFAULT_TAB, isSheetTab, type SheetTab, tabsFor } from "./tabs";
+
+/** Botão da faixa do Mestre: Karla caixa-alta com borda. */
+const BAR_BTN =
+  "flex min-h-9 cursor-pointer items-center border px-3 font-label font-semibold text-xs uppercase leading-none tracking-[.12em] focus-visible:outline-2 focus-visible:outline-white focus-visible:outline-offset-2";
 
 const MENU_ITEM =
   "cursor-pointer flex min-h-12 items-center border-line-soft border-b font-label font-semibold text-xs uppercase leading-none tracking-widest";
@@ -44,30 +48,51 @@ export function SheetLayout({ tabs }: { tabs: SheetTabsBase }) {
   const ownerEmail = useCharacterStore((s) => s.owner?.email);
   const sheet = useSheet();
   const { aba } = useParams({ strict: false });
-  const current = aba && isSheetTab(aba) ? aba : DEFAULT_TAB;
+  const context = tabs.to === "/ficha/$aba" ? "jogador" : "mestre";
+  const current = aba && isSheetTab(aba, context) ? aba : DEFAULT_TAB;
   const [menuOpen, setMenuOpen] = useState(false);
   const navigate = useNavigate();
   const name = sheet.nome || "Sem nome";
+
+  const signOut = async () => {
+    await logout();
+    navigate({ to: "/entrar" });
+  };
 
   return (
     <RuleDialogProvider>
       <div className="min-h-screen pb-84 sm:pb-52">
         <div className="mx-auto max-w-[1000px] pb-5">
-          <header className="flex items-center justify-between gap-3 border-line border-b px-4 py-2">
-            <div className="flex min-w-0 items-baseline gap-2">
-              <TabLink
-                aba={DEFAULT_TAB}
-                base={tabs}
-                className="truncate font-semibold text-xl leading-tight focus-visible:outline-2 focus-visible:outline-ink"
-              >
-                {name}
-              </TabLink>
-              {role === "dm" && (
-                <span className="whitespace-nowrap font-label font-semibold text-blood text-xs uppercase leading-none tracking-[.12em]">
-                  Mestre
-                </span>
-              )}
+          {tabs.to === "/personagens/$id/$aba" && (
+            <div className="flex flex-wrap items-center justify-between gap-x-4 gap-y-2 bg-blood px-4 py-3">
+              <div className="min-w-0 basis-full truncate font-label font-semibold text-white text-xs uppercase leading-none tracking-[.12em] sm:flex-1 sm:basis-auto">
+                Modo Mestre · {name} · Ficha de jogador
+              </div>
+              <div className="ml-auto flex flex-none gap-2">
+                <Link
+                  className={cn(BAR_BTN, "border-white text-white")}
+                  to="/personagens"
+                >
+                  Lista de personagens
+                </Link>
+                <button
+                  className={cn(BAR_BTN, "border-white bg-white text-blood")}
+                  onClick={signOut}
+                  type="button"
+                >
+                  Sair
+                </button>
+              </div>
             </div>
+          )}
+          <header className="flex items-center justify-between gap-3 border-line border-b px-4 py-2">
+            <TabLink
+              aba={DEFAULT_TAB}
+              base={tabs}
+              className="min-w-0 truncate font-semibold text-xl leading-tight focus-visible:outline-2 focus-visible:outline-ink"
+            >
+              {name}
+            </TabLink>
             <button
               aria-expanded={menuOpen}
               aria-label="Abrir menu"
@@ -94,7 +119,7 @@ export function SheetLayout({ tabs }: { tabs: SheetTabsBase }) {
                 {name}
               </DrawerTitle>
               <nav className="flex flex-col">
-                {visibleTabs.map((t) => (
+                {tabsFor(context).map((t) => (
                   <TabLink
                     aba={t.id}
                     aria-current={t.id === current ? "page" : undefined}
@@ -120,10 +145,9 @@ export function SheetLayout({ tabs }: { tabs: SheetTabsBase }) {
                 )}
                 <button
                   className={cn(MENU_ITEM, "text-left text-blood")}
-                  onClick={async () => {
+                  onClick={() => {
                     setMenuOpen(false);
-                    await logout();
-                    navigate({ to: "/entrar" });
+                    signOut();
                   }}
                   type="button"
                 >

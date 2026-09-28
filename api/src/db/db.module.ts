@@ -10,9 +10,16 @@ import { ConfigService } from "@nestjs/config";
 import { drizzle, type NodePgDatabase } from "drizzle-orm/node-postgres";
 import { Pool } from "pg";
 import type { Env } from "../config/env.js";
-import { sheets, users } from "./schema.js";
+import {
+  coterieMembers,
+  coteries,
+  enemies,
+  rounds,
+  sheets,
+  users,
+} from "./schema.js";
 
-const schema = { sheets, users };
+const schema = { coterieMembers, coteries, enemies, rounds, sheets, users };
 
 export const DRIZZLE = Symbol("DRIZZLE");
 const PG_POOL = Symbol("PG_POOL");

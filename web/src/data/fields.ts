@@ -23,8 +23,7 @@ export type TextFieldKey =
   | "morte"
   | "aparencia"
   | "tracos"
-  | "historia"
-  | "notas";
+  | "historia";
 
 export const IDENTITY_FIELDS: readonly TextFieldDef[] = [
   { key: "nome", label: "Nome", placeholder: "ex. Vitória Salles" },

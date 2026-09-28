@@ -22,6 +22,9 @@ import { Route as PersonagensIdIndexRouteImport } from './routes/personagens.$id
 import { Route as PersonagensIdAbaRouteImport } from './routes/personagens.$id.$aba'
 import { Route as PersonagensPainelIndexRouteImport } from './routes/personagens._painel.index'
 import { Route as PersonagensPainelAcoesRouteImport } from './routes/personagens._painel.acoes'
+import { Route as PersonagensPainelBestiarioRouteImport } from './routes/personagens._painel.bestiario'
+import { Route as PersonagensPainelCoteriesRouteImport } from './routes/personagens._painel.coteries'
+import { Route as PersonagensPainelRodadaRouteImport } from './routes/personagens._painel.rodada'
 
 const IndexRoute = IndexRouteImport.update({
   id: '/',
@@ -87,6 +90,23 @@ const PersonagensPainelAcoesRoute = PersonagensPainelAcoesRouteImport.update({
   path: '/acoes',
   getParentRoute: () => PersonagensPainelRoute,
 } as any)
+const PersonagensPainelBestiarioRoute =
+  PersonagensPainelBestiarioRouteImport.update({
+    id: '/bestiario',
+    path: '/bestiario',
+    getParentRoute: () => PersonagensPainelRoute,
+  } as any)
+const PersonagensPainelCoteriesRoute =
+  PersonagensPainelCoteriesRouteImport.update({
+    id: '/coteries',
+    path: '/coteries',
+    getParentRoute: () => PersonagensPainelRoute,
+  } as any)
+const PersonagensPainelRodadaRoute = PersonagensPainelRodadaRouteImport.update({
+  id: '/rodada',
+  path: '/rodada',
+  getParentRoute: () => PersonagensPainelRoute,
+} as any)
 
 export interface FileRoutesByFullPath {
   '/': typeof IndexRoute
@@ -99,6 +119,9 @@ export interface FileRoutesByFullPath {
   '/ficha/': typeof FichaIndexRoute
   '/personagens/$id/$aba': typeof PersonagensIdAbaRoute
   '/personagens/acoes': typeof PersonagensPainelAcoesRoute
+  '/personagens/bestiario': typeof PersonagensPainelBestiarioRoute
+  '/personagens/coteries': typeof PersonagensPainelCoteriesRoute
+  '/personagens/rodada': typeof PersonagensPainelRodadaRoute
   '/personagens/$id/': typeof PersonagensIdIndexRoute
   '/personagens/': typeof PersonagensPainelIndexRoute
 }
@@ -111,6 +134,9 @@ export interface FileRoutesByTo {
   '/ficha': typeof FichaIndexRoute
   '/personagens/$id/$aba': typeof PersonagensIdAbaRoute
   '/personagens/acoes': typeof PersonagensPainelAcoesRoute
+  '/personagens/bestiario': typeof PersonagensPainelBestiarioRoute
+  '/personagens/coteries': typeof PersonagensPainelCoteriesRoute
+  '/personagens/rodada': typeof PersonagensPainelRodadaRoute
   '/personagens/$id': typeof PersonagensIdIndexRoute
 }
 export interface FileRoutesById {
@@ -126,6 +152,9 @@ export interface FileRoutesById {
   '/ficha/': typeof FichaIndexRoute
   '/personagens/$id/$aba': typeof PersonagensIdAbaRoute
   '/personagens/_painel/acoes': typeof PersonagensPainelAcoesRoute
+  '/personagens/_painel/bestiario': typeof PersonagensPainelBestiarioRoute
+  '/personagens/_painel/coteries': typeof PersonagensPainelCoteriesRoute
+  '/personagens/_painel/rodada': typeof PersonagensPainelRodadaRoute
   '/personagens/$id/': typeof PersonagensIdIndexRoute
   '/personagens/_painel/': typeof PersonagensPainelIndexRoute
 }
@@ -142,6 +171,9 @@ export interface FileRouteTypes {
     | '/ficha/'
     | '/personagens/$id/$aba'
     | '/personagens/acoes'
+    | '/personagens/bestiario'
+    | '/personagens/coteries'
+    | '/personagens/rodada'
     | '/personagens/$id/'
     | '/personagens/'
   fileRoutesByTo: FileRoutesByTo
@@ -154,6 +186,9 @@ export interface FileRouteTypes {
     | '/ficha'
     | '/personagens/$id/$aba'
     | '/personagens/acoes'
+    | '/personagens/bestiario'
+    | '/personagens/coteries'
+    | '/personagens/rodada'
     | '/personagens/$id'
   id:
     | '__root__'
@@ -168,6 +203,9 @@ export interface FileRouteTypes {
     | '/ficha/'
     | '/personagens/$id/$aba'
     | '/personagens/_painel/acoes'
+    | '/personagens/_painel/bestiario'
+    | '/personagens/_painel/coteries'
+    | '/personagens/_painel/rodada'
     | '/personagens/$id/'
     | '/personagens/_painel/'
   fileRoutesById: FileRoutesById
@@ -273,6 +311,27 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof PersonagensPainelAcoesRouteImport
       parentRoute: typeof PersonagensPainelRoute
     }
+    '/personagens/_painel/bestiario': {
+      id: '/personagens/_painel/bestiario'
+      path: '/bestiario'
+      fullPath: '/personagens/bestiario'
+      preLoaderRoute: typeof PersonagensPainelBestiarioRouteImport
+      parentRoute: typeof PersonagensPainelRoute
+    }
+    '/personagens/_painel/coteries': {
+      id: '/personagens/_painel/coteries'
+      path: '/coteries'
+      fullPath: '/personagens/coteries'
+      preLoaderRoute: typeof PersonagensPainelCoteriesRouteImport
+      parentRoute: typeof PersonagensPainelRoute
+    }
+    '/personagens/_painel/rodada': {
+      id: '/personagens/_painel/rodada'
+      path: '/rodada'
+      fullPath: '/personagens/rodada'
+      preLoaderRoute: typeof PersonagensPainelRodadaRouteImport
+      parentRoute: typeof PersonagensPainelRoute
+    }
   }
 }
 
@@ -304,11 +363,17 @@ const PersonagensIdRouteWithChildren = PersonagensIdRoute._addFileChildren(
 
 interface PersonagensPainelRouteChildren {
   PersonagensPainelAcoesRoute: typeof PersonagensPainelAcoesRoute
+  PersonagensPainelBestiarioRoute: typeof PersonagensPainelBestiarioRoute
+  PersonagensPainelCoteriesRoute: typeof PersonagensPainelCoteriesRoute
+  PersonagensPainelRodadaRoute: typeof PersonagensPainelRodadaRoute
   PersonagensPainelIndexRoute: typeof PersonagensPainelIndexRoute
 }
 
 const PersonagensPainelRouteChildren: PersonagensPainelRouteChildren = {
   PersonagensPainelAcoesRoute: PersonagensPainelAcoesRoute,
+  PersonagensPainelBestiarioRoute: PersonagensPainelBestiarioRoute,
+  PersonagensPainelCoteriesRoute: PersonagensPainelCoteriesRoute,
+  PersonagensPainelRodadaRoute: PersonagensPainelRodadaRoute,
   PersonagensPainelIndexRoute: PersonagensPainelIndexRoute,
 }
 

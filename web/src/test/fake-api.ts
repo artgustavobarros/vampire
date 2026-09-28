@@ -2,8 +2,15 @@
  * API falsa em memória no lugar do `fetch`, com os mesmos endpoints, status
  * e mensagens da API real (`api/`). Instalada em `setup.ts` para todo teste.
  */
-import { API_URL, type ApiUser, type Role, setToken } from "#/lib/api";
-import type { Sheet } from "#/lib/types";
+import {
+  API_URL,
+  type ApiUser,
+  type EnemyRecord,
+  type Role,
+  type RoundViewEntry,
+  setToken,
+} from "#/lib/api";
+import type { Enemy, RoundEntry, RoundState, Sheet } from "#/lib/types";
 import { usePlayerStore } from "#/stores/player-store";
 
 interface Account extends ApiUser {
@@ -28,7 +35,17 @@ const STATUS_TEXT: Record<number, string> = {
   500: "Internal Server Error",
 };
 
+interface FakeCoterie {
+  id: string;
+  /** ids dos jogadores, por ordem de entrada */
+  membros: string[];
+  nome: string;
+}
+
 const accounts = new Map<string, Account>();
+let coteries: FakeCoterie[] = [];
+let enemies: EnemyRecord[] = [];
+let round: RoundState = { ordem: [], rodada: 1, vez: 0 };
 const tokens = new Map<string, string>();
 let failure: "network" | number | null = null;
 let nextId = 1;
@@ -133,6 +150,36 @@ function route(call: FakeCall): Response {
   if (call.path.startsWith("/sheets")) {
     return dmRoute(call, account, body);
   }
+  return chronicleRoute(call, account, body);
+}
+
+/** Coteries, Bestiário e rodada. */
+function chronicleRoute(
+  call: FakeCall,
+  account: Account,
+  body: Record<string, unknown>
+): Response {
+  if (call.path === "/me/coterie" && call.method === "GET") {
+    return json(200, myCoterie(account));
+  }
+  if (call.path === "/round" && call.method === "GET") {
+    return json(200, roundView(account));
+  }
+  const dmOnly = ["/coteries", "/enemies", "/round"].some((p) =>
+    call.path.startsWith(p)
+  );
+  if (dmOnly && account.role !== "dm") {
+    return error(403, "Apenas o Mestre pode fazer isso.");
+  }
+  if (call.path.startsWith("/coteries")) {
+    return coterieRoute(call, body);
+  }
+  if (call.path.startsWith("/enemies")) {
+    return enemyRoute(call, body);
+  }
+  if (call.path === "/round" && call.method === "PUT") {
+    return putRound(account, body as unknown as RoundState);
+  }
   return error(404, "Not Found");
 }
 
@@ -182,8 +229,210 @@ function dmRoute(
   return json(200, { ...sheetResponse(target), user: publicUser(target) });
 }
 
+const byId = (userId: string) =>
+  [...accounts.values()].find((a) => a.id === userId && a.role === "player");
+
+/** Como `projectSheet` da API: só o que o cartão mostra. */
+function projectSheet(sheet: Record<string, unknown> | null) {
+  if (!sheet) {
+    return null;
+  }
+  const out: Record<string, unknown> = {};
+  for (const key of ["nome", "cla", "criada", "fome", "vit", "fdv"]) {
+    if (key in sheet) {
+      out[key] = sheet[key];
+    }
+  }
+  const attrs = (sheet.attrs ?? {}) as Record<string, number>;
+  out.attrs = Object.fromEntries(
+    ["Vigor", "Autocontrole", "Determinação"]
+      .filter((a) => typeof attrs[a] === "number")
+      .map((a) => [a, attrs[a]])
+  );
+  return out;
+}
+
+function coterieResponse(c: FakeCoterie) {
+  return {
+    id: c.id,
+    membros: c.membros.flatMap((userId) => {
+      const a = byId(userId);
+      return a ? [{ ...sheetResponse(a), user: publicUser(a) }] : [];
+    }),
+    nome: c.nome,
+  };
+}
+
+function myCoterie(account: Account) {
+  const c = coteries.find((x) => x.membros.includes(account.id));
+  if (!c) {
+    return { coterie: null };
+  }
+  return {
+    coterie: {
+      id: c.id,
+      membros: c.membros.map((userId) => ({
+        sheet: projectSheet(byId(userId)?.sheet ?? null),
+        userId,
+      })),
+      nome: c.nome,
+    },
+  };
+}
+
+function coterieRoute(call: FakeCall, body: Record<string, unknown>): Response {
+  const [, , coterieId, membros, userId] = call.path
+    .split("/")
+    .map(decodeURIComponent);
+  if (!coterieId) {
+    if (call.method === "POST") {
+      nextId += 1;
+      const c = {
+        id: `coterie-${nextId}`,
+        membros: [],
+        nome: String(body.nome ?? "").trim(),
+      };
+      coteries.push(c);
+      return json(201, coterieResponse(c));
+    }
+    return json(200, coteries.map(coterieResponse));
+  }
+  const c = coteries.find((x) => x.id === coterieId);
+  if (!c) {
+    return error(404, "Coterie não encontrada.");
+  }
+  if (!membros) {
+    if (call.method === "DELETE") {
+      coteries = coteries.filter((x) => x !== c);
+      return new Response(null, { status: 204 });
+    }
+    c.nome = String(body.nome ?? "").trim();
+    return json(200, coterieResponse(c));
+  }
+  const target = byId(userId ?? "");
+  if (!target) {
+    return error(404, "Jogador não encontrado.");
+  }
+  if (call.method === "DELETE") {
+    c.membros = c.membros.filter((m) => m !== target.id);
+    return json(200, coterieResponse(c));
+  }
+  if (target.sheet?.criada !== true) {
+    return error(400, "Este jogador ainda não criou o personagem.");
+  }
+  const other = coteries.find((x) => x.membros.includes(target.id));
+  if (other && other !== c) {
+    return error(409, "Este jogador já está em outra coterie.");
+  }
+  if (!other) {
+    c.membros.push(target.id);
+  }
+  return json(200, coterieResponse(c));
+}
+
+function enemyRoute(call: FakeCall, body: Record<string, unknown>): Response {
+  const enemyId = decodeURIComponent(call.path.split("/")[2] ?? "");
+  if (!enemyId) {
+    if (call.method === "POST") {
+      nextId += 1;
+      const record = {
+        enemy: body.enemy as Enemy,
+        id: `enemy-${nextId}`,
+        updatedAt: new Date().toISOString(),
+      };
+      enemies.push(record);
+      return json(201, record);
+    }
+    return json(200, enemies);
+  }
+  const record = enemies.find((e) => e.id === enemyId);
+  if (!record) {
+    return error(404, "Inimigo não encontrado.");
+  }
+  if (call.method === "DELETE") {
+    enemies = enemies.filter((e) => e !== record);
+    round = keepEntries(round, (e) => e.id !== enemyId);
+    return new Response(null, { status: 204 });
+  }
+  const enemy = body.enemy as Enemy;
+  if (enemy.vit.length > enemy.vitMax || enemy.fdv.length > enemy.fdvMax) {
+    return error(400, "Inimigo inválido.");
+  }
+  record.enemy = enemy;
+  return json(200, record);
+}
+
+function keepEntries(
+  state: RoundState,
+  keep: (e: RoundEntry) => boolean
+): RoundState {
+  let { vez } = state;
+  const ordem = state.ordem.filter((e, i) => {
+    if (!keep(e) && i < state.vez) {
+      vez -= 1;
+    }
+    return keep(e);
+  });
+  return { ordem, rodada: state.rodada, vez: vez >= ordem.length ? 0 : vez };
+}
+
+function exists(e: RoundEntry): boolean {
+  return e.tipo === "jogador"
+    ? Boolean(byId(e.id))
+    : enemies.some((x) => x.id === e.id);
+}
+
+function roundView(account: Account) {
+  const state = keepEntries(round, exists);
+  const ordem = state.ordem.map((e): RoundViewEntry => {
+    if (e.tipo === "jogador") {
+      return {
+        ...e,
+        sheet: projectSheet(byId(e.id)?.sheet ?? null),
+        tipo: "jogador",
+      };
+    }
+    const { nome, visivel, ...dados } = (
+      enemies.find((x) => x.id === e.id) as EnemyRecord
+    ).enemy;
+    return {
+      ...e,
+      dados: account.role === "dm" || visivel ? dados : null,
+      nome,
+      tipo: "inimigo",
+      visivel,
+    };
+  });
+  return { ...state, ordem, updatedAt: new Date().toISOString() };
+}
+
+function putRound(account: Account, state: RoundState): Response {
+  const valid = state.ordem.every(
+    (e) =>
+      exists(e) && (e.tipo === "inimigo" || byId(e.id)?.sheet?.criada === true)
+  );
+  if (!valid) {
+    return error(400, "Participante inválido na rodada.");
+  }
+  if (state.ordem.length ? state.vez >= state.ordem.length : state.vez !== 0) {
+    return error(400, "Vez fora da ordem.");
+  }
+  round = { ordem: state.ordem, rodada: state.rodada, vez: state.vez };
+  return json(200, roundView(account));
+}
+
 export const fakeApi = {
   calls: [] as FakeCall[],
+
+  /** Coteries gravadas (ids dos membros por ordem de entrada). */
+  coteries(): readonly FakeCoterie[] {
+    return coteries;
+  },
+
+  /** Inimigos gravados no Bestiário. */
+  enemies(): readonly EnemyRecord[] {
+    return enemies;
+  },
 
   /** Invalida todos os tokens emitidos (simula expiração). */
   expireTokens(): void {
@@ -233,9 +482,17 @@ export const fakeApi = {
 
   reset(): void {
     accounts.clear();
+    coteries = [];
+    enemies = [];
+    round = { ordem: [], rodada: 1, vez: 0 };
     tokens.clear();
     failure = null;
     fakeApi.calls = [];
+  },
+
+  /** Estado gravado da rodada. */
+  round(): RoundState {
+    return round;
   },
 
   seed({
@@ -262,6 +519,38 @@ export const fakeApi = {
     };
     accounts.set(email, account);
     return account;
+  },
+
+  seedCoterie(nome: string, membros: string[] = []): FakeCoterie {
+    nextId += 1;
+    const c = { id: `coterie-${nextId}`, membros: [...membros], nome };
+    coteries.push(c);
+    return c;
+  },
+
+  seedEnemy(patch: Partial<Enemy> = {}): EnemyRecord {
+    nextId += 1;
+    const record = {
+      enemy: {
+        especiais: [],
+        fdv: [],
+        fdvMax: 3,
+        nome: "",
+        paradas: [],
+        visivel: false,
+        vit: [],
+        vitMax: 5,
+        ...patch,
+      },
+      id: `enemy-${nextId}`,
+      updatedAt: new Date().toISOString(),
+    };
+    enemies.push(record);
+    return record;
+  },
+
+  seedRound(state: Partial<RoundState>): void {
+    round = { ...round, ...state };
   },
 
   /** Ficha gravada na API para o e-mail. */

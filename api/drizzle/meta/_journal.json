@@ -15,6 +15,13 @@
       "when": 1790563815014,
       "tag": "0001_roles",
       "breakpoints": true
+    },
+    {
+      "idx": 2,
+      "version": "7",
+      "when": 1790574307835,
+      "tag": "0002_chronicle",
+      "breakpoints": true
     }
   ]
 }

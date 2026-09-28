@@ -8,7 +8,7 @@ export const Route = createFileRoute("/personagens/$id/$aba")({
 
 function Aba() {
   const { aba, id } = Route.useParams();
-  const { redirect, tab } = resolveTab(aba);
+  const { redirect, tab } = resolveTab(aba, "mestre");
   if (redirect) {
     return (
       <Navigate params={{ aba: tab, id }} replace to="/personagens/$id/$aba" />

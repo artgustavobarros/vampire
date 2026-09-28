@@ -24,7 +24,6 @@ export function blankSheet(): Sheet {
     humanidade: 7,
     manchas: 0,
     noites: 0,
-    notas: "",
     potencia: 1,
     ressonancia: "",
     sessoes: [{ data: "", resumo: "", xp: "" }],

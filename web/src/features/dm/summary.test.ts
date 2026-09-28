@@ -4,8 +4,16 @@ import { summarize, trackSummary } from "./summary";
 
 describe("resumo do cartão", () => {
   it("conta superficial e agravado como caixas perdidas", () => {
-    expect(trackSummary([1, 2, 0], 6)).toEqual({ atual: 4, max: 6 });
-    expect(trackSummary(undefined, 5)).toEqual({ atual: 5, max: 5 });
+    expect(trackSummary([1, 2, 0], 6)).toEqual({
+      atual: 4,
+      marks: [1, 2, 0, 0, 0, 0],
+      max: 6,
+    });
+    expect(trackSummary(undefined, 5)).toEqual({
+      atual: 5,
+      marks: [0, 0, 0, 0, 0],
+      max: 5,
+    });
   });
 
   it("resume a ficha criada", () => {
@@ -25,10 +33,10 @@ describe("resumo do cartão", () => {
     };
     expect(summarize(sheet)).toEqual({
       cla: "Ventrue",
-      fdv: { atual: 4, max: 5 },
+      fdv: { atual: 4, marks: [2, 0, 0, 0, 0], max: 5 },
       fome: 1,
       nome: "Vitória Salles",
-      vit: { atual: 5, max: 5 },
+      vit: { atual: 5, marks: [0, 0, 0, 0, 0], max: 5 },
     });
   });
 

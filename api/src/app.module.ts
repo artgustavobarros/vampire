@@ -1,6 +1,7 @@
 import { Module } from "@nestjs/common";
 import { ConfigModule } from "@nestjs/config";
 import { AuthModule } from "./auth/auth.module.js";
+import { ChronicleModule } from "./chronicle/chronicle.module.js";
 import { envSchema } from "./config/env.js";
 import { DbModule } from "./db/db.module.js";
 import { HealthModule } from "./health/health.module.js";
@@ -13,6 +14,7 @@ import { SheetsModule } from "./sheets/sheets.module.js";
     HealthModule,
     AuthModule,
     SheetsModule,
+    ChronicleModule,
   ],
 })
 export class AppModule {}

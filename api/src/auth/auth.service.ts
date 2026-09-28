@@ -5,27 +5,17 @@ import {
 } from "@nestjs/common";
 import { JwtService } from "@nestjs/jwt";
 import bcrypt from "bcryptjs";
+import { isUniqueViolation } from "../common/pg-errors.js";
 import type { User } from "../db/schema.js";
 import { toPublicUser, UsersService } from "../users/users.service.js";
 import type { AuthResponse, LoginDto, SignupDto } from "./auth.schemas.js";
 
 const BCRYPT_COST = 10;
-const UNIQUE_VIOLATION = "23505";
 const EMAIL_TAKEN = 'E-mail já cadastrado. Use "Entrar".';
 
 export interface JwtPayload {
   email: string;
   sub: string;
-}
-
-/** O Drizzle embrulha o erro do `pg` em `cause`. */
-function isUniqueViolation(error: unknown): boolean {
-  for (let e = error; e; e = (e as { cause?: unknown }).cause) {
-    if ((e as { code?: unknown }).code === UNIQUE_VIOLATION) {
-      return true;
-    }
-  }
-  return false;
 }
 
 @Injectable()
