@@ -19,7 +19,7 @@ const timestamps = {
     .defaultNow(),
 };
 
-/** `player` é todo cadastro; `dm` (Mestre) só vem das migrações. */
+/** `player` é todo cadastro; `dm` (Mestre) só vem de `ADMIN_EMAIL`/`ADMIN_PASSWORD`. */
 export const roleEnum = pgEnum("user_role", ["player", "dm"]);
 
 export const users = pgTable("users", {

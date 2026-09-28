@@ -35,6 +35,9 @@ services:
       JWT_SECRET: ${JWT_SECRET:?defina JWT_SECRET}
       JWT_EXPIRES_IN: ${JWT_EXPIRES_IN:-7d}
       CORS_ORIGIN: https://${APP_HOST:?defina APP_HOST}
+      # conta do Mestre, garantida pela API ao subir
+      ADMIN_EMAIL: ${ADMIN_EMAIL:?defina ADMIN_EMAIL}
+      ADMIN_PASSWORD: ${ADMIN_PASSWORD:?defina ADMIN_PASSWORD}
     healthcheck:
       test: ["CMD", "wget", "-q", "-O", "/dev/null", "http://127.0.0.1:3333/api/health"]
       interval: 10s

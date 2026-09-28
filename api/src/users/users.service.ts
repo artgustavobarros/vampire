@@ -43,4 +43,23 @@ export class UsersService {
     const [user] = await this.db.insert(users).values(input).returning();
     return user;
   }
+
+  /** Cria o Mestre; se o e-mail já existir, promove a `dm` e troca a senha. */
+  async upsertDm(input: {
+    email: string;
+    name: string;
+    passwordHash: string;
+  }): Promise<void> {
+    await this.db
+      .insert(users)
+      .values({ ...input, role: "dm" })
+      .onConflictDoUpdate({
+        set: {
+          passwordHash: input.passwordHash,
+          role: "dm",
+          updatedAt: new Date(),
+        },
+        target: users.email,
+      });
+  }
 }

@@ -72,7 +72,7 @@ A documentação interativa (Swagger UI) fica em [`/api/docs`](http://localhost:
 
 ### Papéis
 
-Todo cadastro é `player`. A migração `0001_roles` cria a conta do Mestre (`role: "dm"`): **`admin@admin.com` / `!@#ASD123asd`**. Fora de desenvolvimento, troque a senha direto no banco (`UPDATE users SET password_hash = '<bcrypt>' WHERE email = 'admin@admin.com'`). O papel é lido do banco a cada requisição, então mudar `users.role` vale na hora.
+Todo cadastro é `player`. A conta do Mestre (`role: "dm"`) é garantida pela API ao subir, a partir de `ADMIN_EMAIL` e `ADMIN_PASSWORD`: se o e-mail não existe, ela cria a conta; se existe, promove a `dm` e troca a senha. Sem as duas variáveis, nenhuma conta é criada. Em desenvolvimento (`.env.example` e `docker-compose.yml`) o padrão é **`admin@admin.com` / `!@#ASD123asd`**; em produção os valores vêm dos secrets do GitHub. O papel é lido do banco a cada requisição, então mudar `users.role` vale na hora.
 
 Com a ficha criada (`criada: true`), o jogador não muda mais `attrs` nem `skills` pelo `/me/sheet` (`403`); valores iguais aos gravados passam. Só o Mestre, por `/api/sheets/:userId`, altera Atributos e Habilidades.
 

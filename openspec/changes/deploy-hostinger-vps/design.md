@@ -40,6 +40,8 @@
 
 **Workflow com validação e `concurrency`.** Um passo antes da action confere os secrets e variables e falha com mensagem clara; `concurrency` impede dois deploys ao mesmo tempo. `workflow_dispatch` permite reimplantar sem commit.
 
+**Mestre por variável, garantido na subida.** A migração `0001_roles` inseria `admin@admin.com` com senha em texto num comentário e hash no SQL; com o repositório público, isso daria o papel de Mestre em produção a qualquer um. O `INSERT` sai da migração (o journal do Drizzle não guarda hash, e bancos que já a aplicaram não a rodam de novo) e um provider `AdminBootstrap` faz upsert do Mestre em `onApplicationBootstrap`, com a senha de `ADMIN_PASSWORD`. A variável é a fonte da verdade: trocar o secret e reimplantar troca a senha. Alternativas: trocar a senha à mão depois do deploy (deixa uma janela com senha pública) ou promover a própria conta por SQL (sem caminho de recuperação).
+
 **Swagger continua em `/api/docs`.** O app é de uso entre amigos e a documentação ajuda a depurar; fica fora deste change desligar por variável.
 
 ## Risks / Trade-offs

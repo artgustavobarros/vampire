@@ -1,5 +1,6 @@
-# Deploy no VPS Hostinger a cada push na main. A action não constrói nada aqui:
-# ela pede à Hostinger que o VPS clone este commit e suba o docker-compose.prod.yml.
+# Deploy no VPS Hostinger a cada push na main, depois do CI passar. A action não
+# constrói nada aqui: ela pede à Hostinger que o VPS clone este commit e suba o
+# docker-compose.prod.yml.
 name: Deploy
 
 on:
@@ -12,7 +13,11 @@ concurrency:
   cancel-in-progress: false
 
 jobs:
+  ci:
+    uses: ./.github/workflows/ci.yml
+
   deploy:
+    needs: ci
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v5
@@ -22,11 +27,13 @@ jobs:
           HOSTINGER_API_KEY: ${{ secrets.HOSTINGER_API_KEY }}
           JWT_SECRET: ${{ secrets.JWT_SECRET }}
           POSTGRES_PASSWORD: ${{ secrets.POSTGRES_PASSWORD }}
+          ADMIN_PASSWORD: ${{ secrets.ADMIN_PASSWORD }}
           HOSTINGER_VM_ID: ${{ vars.HOSTINGER_VM_ID }}
           APP_HOST: ${{ vars.APP_HOST }}
+          ADMIN_EMAIL: ${{ vars.ADMIN_EMAIL }}
         run: |
           missing=0
-          for name in HOSTINGER_API_KEY JWT_SECRET POSTGRES_PASSWORD HOSTINGER_VM_ID APP_HOST; do
+          for name in HOSTINGER_API_KEY JWT_SECRET POSTGRES_PASSWORD ADMIN_PASSWORD HOSTINGER_VM_ID APP_HOST ADMIN_EMAIL; do
             if [ -z "${!name}" ]; then
               echo "::error::Falta $name (Settings → Secrets and variables → Actions)"
               missing=1
@@ -39,6 +46,12 @@ jobs:
               missing=1
             fi
           done
+          # sem aspas, $, crase, barra invertida nem espaço: quebrariam o shell da action ou o .env do VPS
+          safe='^[A-Za-z0-9!@#%^&*()_+=.,:;?/~-]{8,}$'
+          if [ -n "$ADMIN_PASSWORD" ] && ! [[ "$ADMIN_PASSWORD" =~ $safe ]]; then
+            echo "::error::ADMIN_PASSWORD precisa de 8+ caracteres, só letras, números e !@#%^&*()_+=.,:;?/~-"
+            missing=1
+          fi
           exit $missing
 
       - name: Deploy no VPS
@@ -52,3 +65,5 @@ jobs:
             APP_HOST=${{ vars.APP_HOST }}
             JWT_SECRET=${{ secrets.JWT_SECRET }}
             POSTGRES_PASSWORD=${{ secrets.POSTGRES_PASSWORD }}
+            ADMIN_EMAIL=${{ vars.ADMIN_EMAIL }}
+            ADMIN_PASSWORD=${{ secrets.ADMIN_PASSWORD }}

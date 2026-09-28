@@ -1,0 +1,73 @@
+# Lint, tipos, testes, build e e2e. Roda em PRs e em pushes fora da main; na
+# main quem chama é o deploy.yml, que só implanta se tudo aqui passar.
+name: CI
+
+on:
+  pull_request:
+  push:
+    branches-ignore: [main]
+  workflow_call:
+
+jobs:
+  verify:
+    name: Lint, tipos, testes e build
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v5
+      # a versão vem do packageManager do package.json
+      - uses: pnpm/action-setup@v4
+      - uses: actions/setup-node@v5
+        with:
+          node-version: 24
+          cache: pnpm
+      - run: pnpm install --frozen-lockfile
+      - run: pnpm check
+      - run: pnpm typecheck
+      - run: pnpm test
+      - run: pnpm build
+
+  e2e:
+    name: E2E da API
+    runs-on: ubuntu-latest
+    services:
+      postgres:
+        image: postgres:17-alpine
+        env:
+          POSTGRES_USER: vampire
+          POSTGRES_PASSWORD: vampire
+          POSTGRES_DB: vampire
+        ports:
+          - 5432:5432
+        options: >-
+          --health-cmd "pg_isready -U vampire -d vampire"
+          --health-interval 5s
+          --health-timeout 5s
+          --health-retries 10
+    env:
+      DATABASE_URL: postgres://vampire:vampire@localhost:5432/vampire
+      JWT_SECRET: ci-segredo-so-para-os-testes-e2e-da-api
+      CORS_ORIGIN: http://localhost:3000
+    steps:
+      - uses: actions/checkout@v5
+      - uses: pnpm/action-setup@v4
+      - uses: actions/setup-node@v5
+        with:
+          node-version: 24
+          cache: pnpm
+      - run: pnpm install --frozen-lockfile --filter api
+      - run: pnpm --filter api db:migrate
+      - run: pnpm --filter api test:e2e
+
+  images:
+    name: Imagens Docker de produção
+    runs-on: ubuntu-latest
+    # valores falsos: só para o compose interpolar; nada sobe
+    env:
+      APP_HOST: ci.invalid
+      JWT_SECRET: ci
+      POSTGRES_PASSWORD: ci
+      ADMIN_EMAIL: ci@ci.invalid
+      ADMIN_PASSWORD: ci
+    steps:
+      - uses: actions/checkout@v5
+      - run: docker compose -f docker-compose.prod.yml build

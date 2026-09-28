@@ -4,6 +4,7 @@ import { APP_GUARD } from "@nestjs/core";
 import { JwtModule, type JwtModuleOptions } from "@nestjs/jwt";
 import type { Env } from "../config/env.js";
 import { UsersModule } from "../users/users.module.js";
+import { AdminBootstrap } from "./admin-bootstrap.js";
 import { AuthController } from "./auth.controller.js";
 import { AuthService } from "./auth.service.js";
 import { JwtAuthGuard } from "./jwt-auth.guard.js";
@@ -28,6 +29,7 @@ import { RolesGuard } from "./roles.guard.js";
   // a ordem importa: primeiro identifica o usuário, depois checa o papel
   providers: [
     AuthService,
+    AdminBootstrap,
     { provide: APP_GUARD, useClass: JwtAuthGuard },
     { provide: APP_GUARD, useClass: RolesGuard },
   ],

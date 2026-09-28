@@ -23,7 +23,7 @@ Em produção, `web` e `api` SHALL ficar na mesma origem: o Traefik MUST mandar 
 - **THEN** o app passa a responder no novo domínio sem mudar código nem o argumento de build do `web`
 
 ### Requirement: Segredos obrigatórios em produção
-O compose de produção MUST exigir `APP_HOST`, `POSTGRES_PASSWORD` e `JWT_SECRET` sem valor padrão, e MUST NOT conter senha ou segredo fixo. A `DATABASE_URL` da API SHALL ser montada com o `POSTGRES_PASSWORD`.
+O compose de produção MUST exigir `APP_HOST`, `POSTGRES_PASSWORD`, `JWT_SECRET`, `ADMIN_EMAIL` e `ADMIN_PASSWORD` sem valor padrão, e MUST NOT conter senha ou segredo fixo. A `DATABASE_URL` da API SHALL ser montada com o `POSTGRES_PASSWORD`.
 
 #### Scenario: Esquecer um segredo
 - **WHEN** o compose de produção é usado sem `JWT_SECRET` (ou sem `POSTGRES_PASSWORD`, ou sem `APP_HOST`)
@@ -37,7 +37,7 @@ Os três serviços de produção SHALL ter `restart: unless-stopped` e healthche
 - **THEN** `db`, `api` e `web` voltam sozinhos e os dados do volume `pgdata` continuam lá
 
 ### Requirement: Deploy contínuo pelo GitHub Actions
-O repositório SHALL ter o workflow `.github/workflows/deploy.yml` que, a cada push na `main` (e manualmente pelo `workflow_dispatch`), usa a action `hostinger/deploy-on-vps` para implantar o `docker-compose.prod.yml` do commit no VPS, com o nome de projeto `vampire`. A chave da API da Hostinger, `JWT_SECRET` e `POSTGRES_PASSWORD` MUST vir de secrets do GitHub, e o ID do VPS e o `APP_HOST` de variables do GitHub. Dois deploys MUST NOT rodar ao mesmo tempo.
+O repositório SHALL ter o workflow `.github/workflows/deploy.yml` que, a cada push na `main` (e manualmente pelo `workflow_dispatch`), usa a action `hostinger/deploy-on-vps` para implantar o `docker-compose.prod.yml` do commit no VPS, com o nome de projeto `vampire`. A chave da API da Hostinger, `JWT_SECRET`, `POSTGRES_PASSWORD` e `ADMIN_PASSWORD` MUST vir de secrets do GitHub, e o ID do VPS, o `APP_HOST` e o `ADMIN_EMAIL` de variables do GitHub. Dois deploys MUST NOT rodar ao mesmo tempo.
 
 #### Scenario: Push na main
 - **WHEN** um commit chega na `main`
@@ -46,3 +46,14 @@ O repositório SHALL ter o workflow `.github/workflows/deploy.yml` que, a cada p
 #### Scenario: Configuração faltando
 - **WHEN** o workflow roda sem algum dos secrets ou variables obrigatórios
 - **THEN** ele falha antes de chamar a Hostinger, dizendo qual está faltando
+
+### Requirement: CI antes do deploy
+O repositório SHALL ter o workflow `.github/workflows/ci.yml`, que roda `pnpm check`, `pnpm typecheck`, `pnpm test`, `pnpm build`, os e2e da API contra um Postgres de serviço (depois de aplicar as migrações) e o build das imagens do `docker-compose.prod.yml`. Ele MUST rodar em pull requests e em pushes fora da `main`, e o workflow de deploy MUST chamá-lo e só implantar se ele passar.
+
+#### Scenario: Teste quebrado na main
+- **WHEN** um commit que quebra um teste chega na `main`
+- **THEN** o CI falha e o deploy não é pedido à Hostinger
+
+#### Scenario: Pull request
+- **WHEN** alguém abre um pull request
+- **THEN** o CI roda e mostra o resultado no PR, sem implantar nada

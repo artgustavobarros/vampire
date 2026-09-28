@@ -10,7 +10,7 @@ import type { User } from "../db/schema.js";
 import { toPublicUser, UsersService } from "../users/users.service.js";
 import type { AuthResponse, LoginDto, SignupDto } from "./auth.schemas.js";
 
-const BCRYPT_COST = 10;
+export const BCRYPT_COST = 10;
 const EMAIL_TAKEN = 'E-mail já cadastrado. Use "Entrar".';
 
 export interface JwtPayload {

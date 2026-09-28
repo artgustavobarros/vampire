@@ -30,6 +30,9 @@ services:
       JWT_SECRET: ${JWT_SECRET:-dev-secret-troque-isto-antes-de-usar-de-verdade}
       JWT_EXPIRES_IN: ${JWT_EXPIRES_IN:-7d}
       CORS_ORIGIN: ${CORS_ORIGIN:-http://localhost:${WEB_PORT:-3000}}
+      # conta do Mestre de desenvolvimento, garantida pela API ao subir
+      ADMIN_EMAIL: "${ADMIN_EMAIL:-admin@admin.com}"
+      ADMIN_PASSWORD: "${ADMIN_PASSWORD:-!@#ASD123asd}"
     ports:
       - "${API_PORT:-3333}:3333"
 
