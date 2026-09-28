@@ -55,6 +55,20 @@ A conta do Mestre (`role: dm`) é criada pela API ao subir, a partir de `ADMIN_E
 
 O workflow fica verde quando a Hostinger aceita o pedido, não quando o app sobe. Acompanhe build e logs no Docker Manager, no projeto `vampire`. Os dados ficam no volume `vampire_pgdata` do VPS e sobrevivem aos redeploys. Para voltar atrás, reverta o commit na `main`.
 
+### MCP da Hostinger para agentes
+
+Este repositório configura o MCP remoto oficial da Hostinger em três clientes:
+
+| Cliente | Arquivo do projeto |
+|---|---|
+| Codex | `.codex/config.toml` |
+| Claude Code | `.mcp.json` |
+| Antigravity | `.agents/mcp_config.json` |
+
+Abra o projeto no cliente desejado e autorize a conexão com sua conta Hostinger pelo navegador. No Codex, use `codex mcp login hostinger` se o login não abrir automaticamente. No Claude Code, aprove o servidor do projeto e use `/mcp` para autenticar. No Antigravity, abra **MCP Servers** e selecione **Authenticate** para o servidor `hostinger`.
+
+O secret `HOSTINGER_API_KEY` do GitHub continua sendo usado apenas pelo workflow de deploy; clientes locais não recebem secrets do GitHub Actions. O MCP remoto usa OAuth e não precisa da chave no `.env` ou nos arquivos de configuração.
+
 ## Desenvolver
 
 ```bash

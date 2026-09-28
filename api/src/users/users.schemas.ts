@@ -9,6 +9,7 @@ export const publicUserSchema = z.object({
     description:
       "`player` (padrão) ou `dm` (Mestre, vê e edita todas as fichas)",
   }),
+  username: z.string(),
 });
 
 export type PublicUser = z.infer<typeof publicUserSchema>;

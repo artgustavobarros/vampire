@@ -36,6 +36,6 @@
 - [x] 5.2 Conferir rede, entrypoint e cert resolver do Traefik (`network_mode: host`, `websecure`, `letsencrypt`)
 - [x] 5.2a Ligar o projeto `traefik-5k2e` (está parado) e conferir que responde nas portas 80/443
 - [x] 5.3 Criar o registro A do subdomínio de `artbarros.tech` para `177.7.51.113`
-- [ ] 5.4 Criar o repositório público no GitHub e fazer o push
-- [ ] 5.5 Gerar a chave de API da Hostinger e cadastrar os secrets `HOSTINGER_API_KEY`, `HOSTINGER_VM_ID`, `APP_HOST`, `JWT_SECRET`, `POSTGRES_PASSWORD`, `ADMIN_EMAIL` e `ADMIN_PASSWORD`
-- [ ] 5.6 Rodar o primeiro deploy e conferir `https://<APP_HOST>` e `https://<APP_HOST>/api/health`
+- [x] 5.4 Criar o repositório público no GitHub e fazer o push
+- [x] 5.5 Gerar a chave de API da Hostinger e cadastrar os secrets `HOSTINGER_API_KEY`, `HOSTINGER_VM_ID`, `APP_HOST`, `JWT_SECRET`, `POSTGRES_PASSWORD`, `ADMIN_EMAIL` e `ADMIN_PASSWORD`
+- [x] 5.6 Rodar o primeiro deploy e conferir `https://<APP_HOST>` e `https://<APP_HOST>/api/health`

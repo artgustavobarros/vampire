@@ -34,6 +34,7 @@ const signup = (email = "ana@exemplo.com") =>
       name: "Ana",
       password: "123456",
       password2: "123456",
+      username: "ana",
     },
     { exampleData: false }
   );
@@ -53,12 +54,28 @@ describe("contas na API", () => {
     expect(fakeApi.calls.map((c) => c.path)).toEqual(["/auth/signup"]);
   });
 
+  it("envia o nome de usuário normalizado no cadastro", async () => {
+    await authenticate(
+      {
+        email: "b@b.co",
+        mode: "signup",
+        name: "Bia",
+        password: "123456",
+        password2: "123456",
+        username: "  Bia_S ",
+      },
+      { exampleData: false }
+    );
+    expect(fakeApi.calls[0]?.body).toMatchObject({ username: "bia_s" });
+  });
+
   it("valida o cadastro antes de chamar a API", async () => {
     const base = {
       email: "a@b.co",
       mode: "signup" as const,
       name: "A",
       password: "123456",
+      username: "ana",
     };
     expect(await authenticate({ ...base, password2: "654321" })).toBe(false);
     await expectToast("As senhas não conferem.");
@@ -70,8 +87,32 @@ describe("contas na API", () => {
       await authenticate({ ...base, password: "123", password2: "123" })
     ).toBe(false);
     await expectToast("A senha precisa ter pelo menos 6 caracteres.");
+    expect(
+      await authenticate({ ...base, password2: "123456", username: " " })
+    ).toBe(false);
+    await expectToast("Informe o nome de usuário.");
     expect(fakeApi.calls).toHaveLength(0);
   });
+
+  it.each(["ab", "1ana", "ana souza", "ana@x", "a".repeat(21)])(
+    "recusa o nome de usuário %j sem chamar a API",
+    async (username) => {
+      expect(
+        await authenticate({
+          email: "a@b.co",
+          mode: "signup",
+          name: "A",
+          password: "123456",
+          password2: "123456",
+          username,
+        })
+      ).toBe(false);
+      await expectToast(
+        "Nome de usuário: 3 a 20 letras, números, _ ou ., começando por letra."
+      );
+      expect(fakeApi.calls).toHaveLength(0);
+    }
+  );
 
   it("mostra o e-mail duplicado que a API recusa", async () => {
     fakeApi.seed({ email: "a@b.co" });
@@ -82,45 +123,82 @@ describe("contas na API", () => {
         name: "A",
         password: "123456",
         password2: "123456",
+        username: "outro",
       })
     ).toBe(false);
     await expectToast('E-mail já cadastrado. Use "Entrar".');
     expect(getToken()).toBeNull();
   });
 
+  it("mostra o nome de usuário que a API recusa", async () => {
+    fakeApi.seed({ email: "a@b.co", username: "ana" });
+    expect(
+      await authenticate({
+        email: "c@d.co",
+        mode: "signup",
+        name: "A",
+        password: "123456",
+        password2: "123456",
+        username: "Ana",
+      })
+    ).toBe(false);
+    await expectToast("Nome de usuário já em uso.");
+    expect(getToken()).toBeNull();
+  });
+
   it("valida o login", async () => {
-    expect(await authenticate({ email: "", mode: "login", password: "" })).toBe(
-      false
-    );
-    await expectToast("Informe o e-mail.");
     expect(
-      await authenticate({ email: "", mode: "login", password: "123456" })
+      await authenticate({ identifier: "", mode: "login", password: "" })
     ).toBe(false);
-    await expectToast("Informe o e-mail.");
+    await expectToast("Informe o e-mail ou usuário.");
     expect(
-      await authenticate({ email: "x", mode: "login", password: "" })
+      await authenticate({ identifier: " ", mode: "login", password: "123456" })
     ).toBe(false);
-    await expectToast("E-mail inválido.");
+    await expectToast("Informe o e-mail ou usuário.");
     expect(
-      await authenticate({ email: "a@b.co", mode: "login", password: "" })
+      await authenticate({ identifier: "x", mode: "login", password: "" })
     ).toBe(false);
     await expectToast("Informe a senha.");
-    expect(
-      await authenticate({ email: "x", mode: "login", password: "1" })
-    ).toBe(false);
-    await expectToast("E-mail inválido.");
     expect(fakeApi.calls).toHaveLength(0);
 
     fakeApi.seed({ email: "ana@exemplo.com", password: "123456" });
     expect(
       await authenticate({
-        email: "ana@exemplo.com",
+        identifier: "ana@exemplo.com",
         mode: "login",
         password: "x",
       })
     ).toBe(false);
-    await expectToast("E-mail ou senha incorretos.");
+    await expectToast("E-mail, usuário ou senha incorretos.");
+    expect(
+      await authenticate({
+        identifier: "ninguem",
+        mode: "login",
+        password: "x",
+      })
+    ).toBe(false);
+    await expectToast("E-mail, usuário ou senha incorretos.");
     expect(player().user).toBeNull();
+  });
+
+  it("entra com o nome de usuário em qualquer caixa", async () => {
+    fakeApi.seed({
+      email: "ana@exemplo.com",
+      password: "123456",
+      username: "ana_s",
+    });
+    expect(
+      await authenticate({
+        identifier: "  Ana_S ",
+        mode: "login",
+        password: "123456",
+      })
+    ).toBe(true);
+    expect(fakeApi.calls[0]?.body).toEqual({
+      identifier: "ana_s",
+      password: "123456",
+    });
+    expect(player().user).toBe("ana@exemplo.com");
   });
 
   it("entra com e-mail normalizado e carrega a ficha da API", async () => {
@@ -131,7 +209,7 @@ describe("contas na API", () => {
     });
     expect(
       await authenticate({
-        email: "  ANA@exemplo.com ",
+        identifier: "  ANA@exemplo.com ",
         mode: "login",
         password: "123456",
       })
@@ -146,7 +224,7 @@ describe("contas na API", () => {
     fakeApi.seed({ email: "admin@admin.com", password: "senha1", role: "dm" });
     expect(
       await authenticate({
-        email: "admin@admin.com",
+        identifier: "admin@admin.com",
         mode: "login",
         password: "senha1",
       })
@@ -159,7 +237,7 @@ describe("contas na API", () => {
   it("sem conexão ao entrar mostra o aviso de conexão", async () => {
     fakeApi.fail("network");
     expect(
-      await authenticate({ email: "a@b.co", mode: "login", password: "1" })
+      await authenticate({ identifier: "a@b.co", mode: "login", password: "1" })
     ).toBe(false);
     expect(await screen.findByText("Sem conexão")).toBeInTheDocument();
     expect(getToken()).toBeNull();
@@ -173,6 +251,7 @@ describe("contas na API", () => {
         name: "V",
         password: "123456",
         password2: "123456",
+        username: "vitoria",
       },
       { exampleData: true }
     );

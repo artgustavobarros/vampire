@@ -19,7 +19,9 @@ export function AuthCard({ mode }: { mode: "login" | "signup" }) {
   const navigate = useNavigate();
   const signup = mode === "signup";
   const [name, setName] = useState("");
+  const [username, setUsername] = useState("");
   const [email, setEmail] = useState("");
+  const [identifier, setIdentifier] = useState("");
   const [password, setPassword] = useState("");
   const [password2, setPassword2] = useState("");
   const [pending, setPending] = useState(false);
@@ -34,7 +36,15 @@ export function AuthCard({ mode }: { mode: "login" | "signup" }) {
       return;
     }
     setPending(true);
-    const ok = await authenticate({ email, mode, name, password, password2 });
+    const ok = await authenticate({
+      email,
+      identifier,
+      mode,
+      name,
+      password,
+      password2,
+      username,
+    });
     setPending(false);
     if (!ok) {
       return;
@@ -77,7 +87,7 @@ export function AuthCard({ mode }: { mode: "login" | "signup" }) {
           </p>
         </div>
 
-        {signup && (
+        {signup ? (
           <>
             <FieldLabel htmlFor="auth-name">Nome</FieldLabel>
             <Input
@@ -88,18 +98,45 @@ export function AuthCard({ mode }: { mode: "login" | "signup" }) {
               placeholder="Nome completo"
               value={name}
             />
+            <FieldLabel htmlFor="auth-username">Nome de usuário</FieldLabel>
+            <Input
+              autoCapitalize="none"
+              autoComplete="username"
+              autoCorrect="off"
+              className="mb-4"
+              id="auth-username"
+              onChange={edit(setUsername)}
+              placeholder="vitoria_salles"
+              spellCheck={false}
+              value={username}
+            />
+            <FieldLabel htmlFor="auth-email">E-mail</FieldLabel>
+            <Input
+              autoComplete="email"
+              className="mb-4"
+              id="auth-email"
+              onChange={edit(setEmail)}
+              placeholder="voce@exemplo.com"
+              type="email"
+              value={email}
+            />
+          </>
+        ) : (
+          <>
+            <FieldLabel htmlFor="auth-identifier">E-mail ou usuário</FieldLabel>
+            <Input
+              autoCapitalize="none"
+              autoComplete="username"
+              autoCorrect="off"
+              className="mb-4"
+              id="auth-identifier"
+              onChange={edit(setIdentifier)}
+              placeholder="E-mail ou nome de usuário"
+              spellCheck={false}
+              value={identifier}
+            />
           </>
         )}
-        <FieldLabel htmlFor="auth-email">E-mail</FieldLabel>
-        <Input
-          autoComplete="email"
-          className="mb-4"
-          id="auth-email"
-          onChange={edit(setEmail)}
-          placeholder="voce@exemplo.com"
-          type="email"
-          value={email}
-        />
         <FieldLabel htmlFor="auth-pass">Senha</FieldLabel>
         <Input
           autoComplete={signup ? "new-password" : "current-password"}

@@ -2,7 +2,12 @@ import { z } from "zod";
 import { publicUserSchema } from "../users/users.schemas.js";
 
 const EMAIL_REQUIRED = "Informe o e-mail.";
+const IDENTIFIER_REQUIRED = "Informe o e-mail ou usuário.";
 const PASSWORD_REQUIRED = "Informe a senha.";
+const USERNAME_REQUIRED = "Informe o nome de usuário.";
+
+/** Sem `@`, então o login distingue o usuário do e-mail por ele. */
+export const USERNAME_FORMAT = /^[a-z][a-z0-9_.]{2,19}$/;
 
 const email = z
   .string({ error: EMAIL_REQUIRED })
@@ -17,6 +22,16 @@ const password = z
   .string({ error: PASSWORD_REQUIRED })
   .min(1, PASSWORD_REQUIRED);
 
+const username = z
+  .string({ error: USERNAME_REQUIRED })
+  .trim()
+  .toLowerCase()
+  .min(1, USERNAME_REQUIRED)
+  .regex(
+    USERNAME_FORMAT,
+    "Nome de usuário: 3 a 20 letras, números, _ ou ., começando por letra."
+  );
+
 // a ordem das chaves é a ordem das mensagens: a primeira falha vira o toast
 export const signupSchema = z.object(
   {
@@ -26,13 +41,22 @@ export const signupSchema = z.object(
       .trim()
       .min(1, "Informe o nome."),
     password: password.min(6, "A senha precisa ter pelo menos 6 caracteres."),
+    username,
   },
   { error: EMAIL_REQUIRED }
 );
 
 export const loginSchema = z.object(
-  { email, password },
-  { error: EMAIL_REQUIRED }
+  {
+    identifier: z
+      .string({ error: IDENTIFIER_REQUIRED })
+      .trim()
+      .toLowerCase()
+      .min(1, IDENTIFIER_REQUIRED)
+      .meta({ description: "E-mail (se tiver `@`) ou nome de usuário" }),
+    password,
+  },
+  { error: IDENTIFIER_REQUIRED }
 );
 
 export const authResponseSchema = z.object({

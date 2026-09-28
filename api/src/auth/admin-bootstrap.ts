@@ -12,6 +12,7 @@ import { BCRYPT_COST } from "./auth.service.js";
 /**
  * Garante a conta do Mestre a partir de `ADMIN_EMAIL` e `ADMIN_PASSWORD` a cada
  * subida: a senha fica fora do repositório e trocar a variável troca a senha.
+ * O nome de usuário é sempre `mestre` (ver `UsersService.upsertDm`).
  */
 @Injectable()
 export class AdminBootstrap implements OnApplicationBootstrap {

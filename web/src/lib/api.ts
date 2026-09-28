@@ -19,6 +19,7 @@ export interface ApiUser {
   id: string;
   name: string;
   role: Role;
+  username: string;
 }
 
 export interface AuthResponse {
@@ -160,12 +161,14 @@ export function signup(body: {
   email: string;
   name: string;
   password: string;
+  username: string;
 }): Promise<AuthResponse> {
   return request("POST", "/auth/signup", body, { auth: false });
 }
 
+/** `identifier` é o e-mail (com `@`) ou o nome de usuário. */
 export function login(body: {
-  email: string;
+  identifier: string;
   password: string;
 }): Promise<AuthResponse> {
   return request("POST", "/auth/login", body, { auth: false });

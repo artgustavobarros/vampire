@@ -72,12 +72,16 @@ function issueToken(email: string): string {
   return token;
 }
 
-const publicUser = ({ email, id, name, role }: Account): ApiUser => ({
+const publicUser = ({ email, id, name, role, username }: Account): ApiUser => ({
   email,
   id,
   name,
   role,
+  username,
 });
+
+const byUsername = (username: string) =>
+  [...accounts.values()].find((a) => a.username === username);
 
 const LOCKED = "Atributos e Habilidades só podem ser alterados pelo Mestre.";
 
@@ -104,17 +108,25 @@ function sheetResponse(account: Account) {
   };
 }
 
-function route(call: FakeCall): Response {
-  const body = (call.body ?? {}) as Record<string, unknown>;
+/** `/auth/signup` e `/auth/login`, as rotas públicas; `null` para as demais. */
+function authRoute(
+  call: FakeCall,
+  body: Record<string, unknown>
+): Response | null {
   if (call.method === "POST" && call.path === "/auth/signup") {
     const email = String(body.email).trim().toLowerCase();
+    const username = String(body.username).trim().toLowerCase();
     if (accounts.has(email)) {
       return error(409, 'E-mail já cadastrado. Use "Entrar".');
+    }
+    if (username === "mestre" || byUsername(username)) {
+      return error(409, "Nome de usuário já em uso.");
     }
     const account = fakeApi.seed({
       email,
       name: String(body.name).trim(),
       password: String(body.password),
+      username,
     });
     return json(201, {
       accessToken: issueToken(email),
@@ -122,15 +134,26 @@ function route(call: FakeCall): Response {
     });
   }
   if (call.method === "POST" && call.path === "/auth/login") {
-    const email = String(body.email).trim().toLowerCase();
-    const account = accounts.get(email);
+    const identifier = String(body.identifier).trim().toLowerCase();
+    const account = identifier.includes("@")
+      ? accounts.get(identifier)
+      : byUsername(identifier);
     if (!account || account.password !== body.password) {
-      return error(401, "E-mail ou senha incorretos.");
+      return error(401, "E-mail, usuário ou senha incorretos.");
     }
     return json(200, {
-      accessToken: issueToken(email),
+      accessToken: issueToken(account.email),
       user: publicUser(account),
     });
+  }
+  return null;
+}
+
+function route(call: FakeCall): Response {
+  const body = (call.body ?? {}) as Record<string, unknown>;
+  const auth = authRoute(call, body);
+  if (auth) {
+    return auth;
   }
 
   const token = call.auth?.replace("Bearer ", "");
@@ -501,12 +524,14 @@ export const fakeApi = {
     password = "123456",
     role = "player",
     sheet = null,
+    username = role === "dm" ? "mestre" : email.split("@")[0],
   }: {
     email: string;
     name?: string;
     password?: string;
     role?: Role;
     sheet?: Sheet | Record<string, unknown> | null;
+    username?: string;
   }): Account {
     nextId += 1;
     const account: Account = {
@@ -516,6 +541,7 @@ export const fakeApi = {
       password,
       role,
       sheet: sheet as Record<string, unknown> | null,
+      username,
     };
     accounts.set(email, account);
     return account;

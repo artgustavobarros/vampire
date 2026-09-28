@@ -43,7 +43,7 @@ export class AuthController {
   @ApiCreatedResponse({ standardSchema: authResponseSchema })
   @ApiBadRequestResponse({ standardSchema: errorResponseSchema })
   @ApiConflictResponse({
-    description: "E-mail já cadastrado",
+    description: "E-mail ou nome de usuário já cadastrado",
     standardSchema: errorResponseSchema,
   })
   signup(
@@ -55,11 +55,11 @@ export class AuthController {
   @Public()
   @Post("login")
   @HttpCode(HttpStatus.OK)
-  @ApiOperation({ summary: "Entrar com e-mail e senha" })
+  @ApiOperation({ summary: "Entrar com e-mail ou nome de usuário e senha" })
   @ApiOkResponse({ standardSchema: authResponseSchema })
   @ApiBadRequestResponse({ standardSchema: errorResponseSchema })
   @ApiUnauthorizedResponse({
-    description: "E-mail ou senha incorretos",
+    description: "E-mail, usuário ou senha incorretos",
     standardSchema: errorResponseSchema,
   })
   login(@Body({ schema: loginSchema }) body: LoginDto): Promise<AuthResponse> {

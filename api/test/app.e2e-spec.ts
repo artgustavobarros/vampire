@@ -5,8 +5,10 @@ import request from "supertest";
 import { afterAll, beforeAll, describe, expect, it } from "vitest";
 import { AppModule } from "../src/app.module.js";
 import { ApiExpressAdapter, configureApp } from "../src/app.setup.js";
+import { AdminBootstrap } from "../src/auth/admin-bootstrap.js";
 import { type Database, DRIZZLE } from "../src/db/db.module.js";
 import { sheets, users } from "../src/db/schema.js";
+import { UsersService } from "../src/users/users.service.js";
 
 /** Precisa do Postgres do compose (`docker compose up db`) e do `.env`. */
 describe("API (e2e)", () => {
@@ -14,13 +16,27 @@ describe("API (e2e)", () => {
   let db: Database;
   const run = `${Date.now()}-${Math.random().toString(36).slice(2, 8)}`;
   const emailOf = (name: string) => `${name}-${run}@e2e.test`;
+  // o nome de usuário tem no máximo 20 caracteres: um curto por nome
+  const tag = Math.random().toString(36).slice(2, 10);
+  const usernames = new Map<string, string>();
+  const usernameOf = (name: string) => {
+    if (!usernames.has(name)) {
+      usernames.set(name, `e${usernames.size}_${tag}`);
+    }
+    return usernames.get(name) as string;
+  };
 
   const http = () => request(app.getHttpServer());
 
   async function signup(name: string): Promise<{ id: string; token: string }> {
     const res = await http()
       .post("/api/auth/signup")
-      .send({ email: emailOf(name), name, password: "segredo" })
+      .send({
+        email: emailOf(name),
+        name,
+        password: "segredo",
+        username: usernameOf(name),
+      })
       .expect(201);
     return { id: res.body.user.id, token: res.body.accessToken };
   }
@@ -62,6 +78,7 @@ describe("API (e2e)", () => {
           email: `  ${email.toUpperCase()} `,
           name: " Vitória ",
           password: "segredo",
+          username: `  ${usernameOf("vitoria").toUpperCase()} `,
         })
         .expect(201);
       expect(signupRes.body.user).toEqual({
@@ -69,11 +86,21 @@ describe("API (e2e)", () => {
         id: expect.any(String),
         name: "Vitória",
         role: "player",
+        username: usernameOf("vitoria"),
       });
+
+      const byUsername = await http()
+        .post("/api/auth/login")
+        .send({
+          identifier: usernameOf("vitoria").toUpperCase(),
+          password: "segredo",
+        })
+        .expect(200);
+      expect(byUsername.body.user.id).toBe(signupRes.body.user.id);
 
       const loginRes = await http()
         .post("/api/auth/login")
-        .send({ email, password: "segredo" })
+        .send({ identifier: email, password: "segredo" })
         .expect(200);
 
       const meRes = await http()
@@ -92,6 +119,7 @@ describe("API (e2e)", () => {
           name: "Esperto",
           password: "segredo",
           role: "dm",
+          username: usernameOf("quer-ser-mestre"),
         })
         .expect(201);
       expect(res.body.user.role).toBe("player");
@@ -105,6 +133,7 @@ describe("API (e2e)", () => {
           email: emailOf("repetido"),
           name: "Outro",
           password: "segredo",
+          username: usernameOf("outro"),
         })
         .expect(409);
       expect(res.body).toEqual({
@@ -114,24 +143,50 @@ describe("API (e2e)", () => {
       });
     });
 
-    it("responde igual para senha errada e e-mail desconhecido", async () => {
+    it.each([
+      [
+        "repetido",
+        async () => {
+          await signup("dono");
+          return usernameOf("dono");
+        },
+      ],
+      ["do Mestre", () => Promise.resolve("mestre")],
+    ])("recusa nome de usuário %s", async (_caso, username) => {
+      const res = await http()
+        .post("/api/auth/signup")
+        .send({
+          email: emailOf("usuario-repetido"),
+          name: "Outro",
+          password: "segredo",
+          username: await username(),
+        })
+        .expect(409);
+      expect(res.body.message).toBe("Nome de usuário já em uso.");
+    });
+
+    it("responde igual para senha errada e conta desconhecida", async () => {
       await signup("senha");
-      const wrong = await http()
-        .post("/api/auth/login")
-        .send({ email: emailOf("senha"), password: "errada" })
-        .expect(401);
-      const unknown = await http()
-        .post("/api/auth/login")
-        .send({ email: emailOf("ninguem"), password: "errada" })
-        .expect(401);
-      expect(wrong.body).toEqual(unknown.body);
-      expect(wrong.body.message).toBe("E-mail ou senha incorretos.");
+      const bodies = await Promise.all(
+        [emailOf("senha"), emailOf("ninguem"), usernameOf("ninguem")].map(
+          async (identifier) =>
+            (
+              await http()
+                .post("/api/auth/login")
+                .send({ identifier, password: "errada" })
+                .expect(401)
+            ).body
+        )
+      );
+      expect(bodies[1]).toEqual(bodies[0]);
+      expect(bodies[2]).toEqual(bodies[0]);
+      expect(bodies[0].message).toBe("E-mail, usuário ou senha incorretos.");
     });
 
     it("valida o corpo com mensagens em português", async () => {
       const res = await http()
         .post("/api/auth/signup")
-        .send({ email: "abc", name: "a", password: "segredo" })
+        .send({ email: "abc", name: "a", password: "segredo", username: "ana" })
         .expect(400);
       expect(res.body.message).toBe("E-mail inválido.");
     });
@@ -389,11 +444,12 @@ describe("API (e2e)", () => {
     beforeAll(async () => {
       const res = await http()
         .post("/api/auth/login")
-        .send({ email: "admin@admin.com", password: "!@#ASD123asd" })
+        .send({ identifier: "admin@admin.com", password: "!@#ASD123asd" })
         .expect(200);
       expect(res.body.user).toMatchObject({
         email: "admin@admin.com",
         role: "dm",
+        username: "mestre",
       });
       dm = res.body.accessToken;
       player = await signup("jogador-da-mesa");
@@ -402,6 +458,17 @@ describe("API (e2e)", () => {
         .set("Authorization", `Bearer ${player.token}`)
         .send({ sheet: { attrs: { Força: 2 }, criada: true, nome: "Vitória" } })
         .expect(200);
+    });
+
+    it("entra pelo nome de usuário mestre", async () => {
+      const res = await http()
+        .post("/api/auth/login")
+        .send({ identifier: "Mestre", password: "!@#ASD123asd" })
+        .expect(200);
+      expect(res.body.user).toMatchObject({
+        email: "admin@admin.com",
+        role: "dm",
+      });
     });
 
     it("GET /auth/me devolve o papel", async () => {
@@ -470,6 +537,31 @@ describe("API (e2e)", () => {
         .expect(403);
       expect(res.body.message).toBe("Apenas o Mestre pode fazer isso.");
     });
+
+    it("troca de ADMIN_EMAIL passa o usuário mestre para a conta nova", async () => {
+      const usernameBy = async (email: string) =>
+        (
+          await db
+            .select({ id: users.id, username: users.username })
+            .from(users)
+            .where(eq(users.email, email))
+        )[0];
+      const other = emailOf("outro-mestre");
+      await app.get(UsersService).upsertDm({
+        email: other,
+        name: "Mestre",
+        passwordHash: "x",
+      });
+      const admin = await usernameBy("admin@admin.com");
+      expect((await usernameBy(other)).username).toBe("mestre");
+      expect(admin.username).toBe(`mestre_${admin.id.slice(0, 8)}`);
+
+      // de volta ao Mestre do ambiente de teste
+      await app.get(AdminBootstrap).onApplicationBootstrap();
+      const moved = await usernameBy(other);
+      expect((await usernameBy("admin@admin.com")).username).toBe("mestre");
+      expect(moved.username).toBe(`mestre_${moved.id.slice(0, 8)}`);
+    });
   });
 
   describe("CORS", () => {
@@ -531,7 +623,7 @@ describe("API (e2e)", () => {
         paths["/api/auth/signup"].post.requestBody.content["application/json"]
           .schema;
       expect(signupBody.required).toEqual(
-        expect.arrayContaining(["email", "name", "password"])
+        expect.arrayContaining(["email", "name", "password", "username"])
       );
       expect(signupBody.properties.password.minLength).toBe(6);
 

@@ -9,3 +9,13 @@ coverage
 openspec/*.py
 openspec/*.txt
 __pycache__/
+
+.agent
+.agents/*
+!.agents/mcp_config.json
+.claude
+.codex/*
+!.codex/config.toml
+.github
+design
+openspec

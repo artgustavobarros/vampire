@@ -14,20 +14,42 @@ import { settings } from "./settings";
 import { apiError, notify } from "./toast";
 
 export interface AuthInput {
-  email: string;
+  /** cadastro */
+  email?: string;
+  /** entrar: e-mail ou nome de usuário */
+  identifier?: string;
   mode: "login" | "signup";
   name?: string;
   password: string;
   password2?: string;
+  /** cadastro */
+  username?: string;
 }
 
 const EMAIL = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+/** o mesmo formato da API; sem `@`, o que separa o usuário do e-mail ao entrar */
+const USERNAME = /^[a-z][a-z0-9_.]{2,19}$/;
 const MIN_PASSWORD = 6;
 /** quanto o "Sair" espera as mudanças pendentes irem para a API */
 const LOGOUT_WAIT = 2000;
 
+/** sem espaços nas pontas e em minúsculas, como a API guarda */
+const normalize = (value = "") => value.trim().toLowerCase();
+
 /** Mesmas regras e mensagens da API, sem ida e volta. */
-function validate(input: AuthInput, email: string): string | null {
+function validateLogin({ identifier, password }: AuthInput): string | null {
+  if (!normalize(identifier)) {
+    return "Informe o e-mail ou usuário.";
+  }
+  if (!password) {
+    return "Informe a senha.";
+  }
+  return null;
+}
+
+function validateSignup(input: AuthInput): string | null {
+  const email = normalize(input.email);
+  const username = normalize(input.username);
   const { password } = input;
   if (!email) {
     return "Informe o e-mail.";
@@ -38,11 +60,14 @@ function validate(input: AuthInput, email: string): string | null {
   if (!password) {
     return "Informe a senha.";
   }
-  if (input.mode === "login") {
-    return null;
-  }
   if (!(input.name ?? "").trim()) {
     return "Informe o nome.";
+  }
+  if (!username) {
+    return "Informe o nome de usuário.";
+  }
+  if (!USERNAME.test(username)) {
+    return "Nome de usuário: 3 a 20 letras, números, _ ou ., começando por letra.";
   }
   if (password.length < MIN_PASSWORD) {
     return "A senha precisa ter pelo menos 6 caracteres.";
@@ -58,8 +83,8 @@ export async function authenticate(
   input: AuthInput,
   options: { exampleData: boolean } = { exampleData: settings.dadosDeExemplo }
 ): Promise<boolean> {
-  const email = input.email.trim().toLowerCase();
-  const invalid = validate(input, email);
+  const invalid =
+    input.mode === "signup" ? validateSignup(input) : validateLogin(input);
   if (invalid) {
     notify(invalid);
     return false;
@@ -68,8 +93,12 @@ export async function authenticate(
   try {
     let sheet: unknown = null;
     if (input.mode === "signup") {
-      const name = (input.name ?? "").trim();
-      const res = await signup({ email, name, password });
+      const res = await signup({
+        email: normalize(input.email),
+        name: (input.name ?? "").trim(),
+        password,
+        username: normalize(input.username),
+      });
       setToken(res.accessToken);
       if (options.exampleData) {
         ({ sheet } = await putSheet(exampleSheet()));
@@ -77,7 +106,10 @@ export async function authenticate(
       usePlayerStore.getState().login(res.user, sheet);
       return true;
     }
-    const res = await login({ email, password });
+    const res = await login({
+      identifier: normalize(input.identifier),
+      password,
+    });
     setToken(res.accessToken);
     // o Mestre não tem ficha própria
     if (res.user.role === "player") {

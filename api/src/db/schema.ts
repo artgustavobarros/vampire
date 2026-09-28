@@ -29,6 +29,8 @@ export const users = pgTable("users", {
   name: text("name").notNull(),
   passwordHash: text("password_hash").notNull(),
   role: roleEnum("role").notNull().default("player"),
+  /** sempre normalizado, em minúsculas; `mestre` é só da conta do Mestre */
+  username: text("username").notNull().unique(),
   ...timestamps,
 });
 
