@@ -38,7 +38,7 @@ export function completeSheet(over: Partial<Sheet> = {}): Sheet {
     predEscolhas: {},
     predEspec: "Briga (Agarramento)",
     predEspecNome: "Agarrar",
-    predPoder: "Força Prodigiosa",
+    predPoder: "Salto Elevado",
     skills: {
       ...base.skills,
       Atletismo: 2,

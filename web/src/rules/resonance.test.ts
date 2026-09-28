@@ -123,14 +123,14 @@ describe("rolagem de Ressonância", () => {
   it("sangue-fraco em Aguçada rola discrasia e poder de nível 2", () => {
     const roll = rollResonance(
       { intensidade: "Aguçada", sangueFraco: true, tipo: RANDOM },
-      dice([10, 3], [3, 1], [2, 1])
+      dice([10, 3], [3, 1], [2, 1], [2, 1])
     );
     expect(roll.discrasia?.nome).toBe("Frieza");
-    // Auspícios tem um só poder de nível 2: sai sem dado
+    // Auspícios 2: Premonição ou Revelar Temperamento (Panaceia é amálgama)
     expect(roll.poder).toMatchObject({ disciplina: "Auspícios", nivel: 2 });
     expect(roll.poder?.poder.name).toBe("Premonição");
     expect(diceLine(roll)).toBe(
-      "Ressonância d10: 3 · Discrasia d3: 1 · Disciplina d2: 1 · Aguçada (escolhida)"
+      "Ressonância d10: 3 · Discrasia d3: 1 · Disciplina d2: 1 · Poder d2: 1 · Aguçada (escolhida)"
     );
   });
 
@@ -154,7 +154,8 @@ describe("rolagem de Ressonância", () => {
     const nomes = (disc: string, nivel: number) =>
       thinBloodPowers(disc, nivel).map((p) => p.name);
     expect(nomes("Potência", 1)).toEqual(["Corpo Letal", "Salto Elevado"]);
-    expect(nomes("Dominação", 2)).toEqual(["Mesmerizar"]);
+    expect(nomes("Dominação", 2)).toEqual(["Mesmerismo", "Favor do Domitor"]);
+    expect(nomes("Oblívio", 1)).not.toContain("O Dom da Falsa Vida");
     expect(nomes("Feitiçaria de Sangue", 1)).not.toContain(
       "Criar Pedra de Sangue"
     );

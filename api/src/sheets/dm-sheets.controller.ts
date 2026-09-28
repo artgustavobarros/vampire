@@ -1,12 +1,4 @@
-import {
-  BadRequestException,
-  Body,
-  Controller,
-  Get,
-  Param,
-  ParseUUIDPipe,
-  Patch,
-} from "@nestjs/common";
+import { Body, Controller, Get, Param, Patch } from "@nestjs/common";
 import {
   ApiBadRequestResponse,
   ApiBearerAuth,
@@ -19,6 +11,7 @@ import {
 } from "@nestjs/swagger";
 import { errorResponseSchema } from "../common/error-response.schema.js";
 import { Roles } from "../common/roles.decorator.js";
+import { playerId } from "../common/uuid-pipes.js";
 import {
   type PatchSheetDto,
   patchSheetSchema,
@@ -31,10 +24,6 @@ import {
   type SheetResponse,
   SheetsService,
 } from "./sheets.service.js";
-
-const userId = new ParseUUIDPipe({
-  exceptionFactory: () => new BadRequestException("Jogador inválido."),
-});
 
 /** Fichas de todos os jogadores, só para o Mestre. */
 @ApiTags("sheets (Mestre)")
@@ -61,7 +50,7 @@ export class DmSheetsController {
   @ApiOkResponse({ standardSchema: playerSheetSchema })
   @ApiBadRequestResponse({ standardSchema: errorResponseSchema })
   @ApiNotFoundResponse({ standardSchema: errorResponseSchema })
-  get(@Param("userId", userId) id: string): Promise<PlayerSheet> {
+  get(@Param("userId", playerId) id: string): Promise<PlayerSheet> {
     return this.sheets.getFor(id);
   }
 
@@ -75,7 +64,7 @@ export class DmSheetsController {
   @ApiBadRequestResponse({ standardSchema: errorResponseSchema })
   @ApiNotFoundResponse({ standardSchema: errorResponseSchema })
   merge(
-    @Param("userId", userId) id: string,
+    @Param("userId", playerId) id: string,
     @Body({ schema: patchSheetSchema }) body: PatchSheetDto
   ): Promise<SheetResponse> {
     return this.sheets.mergeFor(id, body.patch);

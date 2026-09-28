@@ -703,7 +703,7 @@ describe("poderes por ponto", () => {
 
   it("tira amálgamas que perderam a Disciplina exigida", () => {
     const tenacidade = pw("Tenacidade", 2);
-    const bestas = pw("Bestas Resistentes", 2);
+    const bestas = pw("Feras Tenazes", 2);
     const gangrel = (animalismo: number) => [
       { nivel: 2, nome: "Fortitude", powers: [tenacidade, bestas] },
       { nivel: animalismo, nome: "Animalismo", powers: [] },
@@ -1076,7 +1076,7 @@ describe("Predador", () => {
       const ctx = predatorDiscipline("Ventrue", ventrue, "Potência");
       expect(ctx).toMatchObject({ atual: 0, doCla: false, novo: 1 });
       expect(names(ctx)).toEqual(
-        expect.arrayContaining(["1:Toque Letal", "1:Força Prodigiosa"])
+        expect.arrayContaining(["1:Corpo Letal", "1:Salto Elevado"])
       );
       expect(ctx.elegiveis.every((p) => p.level === 1)).toBe(true);
     });
@@ -1099,10 +1099,10 @@ describe("Predador", () => {
       ];
       expect(
         names(predatorDiscipline("Nosferatu", nosferatu(1), "Animalismo"))
-      ).not.toContain("3:Colmeia Desalmada");
+      ).not.toContain("3:Enxame Não-vivo");
       expect(
         names(predatorDiscipline("Nosferatu", nosferatu(2), "Animalismo"))
-      ).toContain("3:Colmeia Desalmada");
+      ).toContain("3:Enxame Não-vivo");
     });
 
     it("sem catálogo não tem elegíveis", () => {
@@ -1113,7 +1113,7 @@ describe("Predador", () => {
 
     it("poder escolhido só vale se for elegível", () => {
       const ctx = predatorDiscipline("Ventrue", ventrue, "Potência");
-      expect(predatorPower(ctx, "Toque Letal")?.name).toBe("Toque Letal");
+      expect(predatorPower(ctx, "Corpo Letal")?.name).toBe("Corpo Letal");
       expect(predatorPower(ctx, "Compelir")).toBeUndefined();
       expect(predatorPower(ctx, "")).toBeUndefined();
     });
@@ -1123,11 +1123,11 @@ describe("Predador", () => {
     const base = brujah({
       predador: "Gato de Rua",
       predDisc: "Potência",
-      predPoder: "Força Prodigiosa",
+      predPoder: "Salto Elevado",
     });
     const s = applyPredator(base);
     expect(s.disc[0].nivel).toBe(3);
-    expect(s.disc[0].powers.map((p) => p.nome)).toEqual(["Força Prodigiosa"]);
+    expect(s.disc[0].powers.map((p) => p.nome)).toEqual(["Salto Elevado"]);
   });
 
   it("poder numa Disciplina nova", () => {

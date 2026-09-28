@@ -223,6 +223,101 @@ describe("API (e2e)", () => {
     });
   });
 
+  describe("conta", () => {
+    const login = (identifier: string, password: string) =>
+      http().post("/api/auth/login").send({ identifier, password });
+
+    it("cadastro sem nome de usuário gera um a partir do nome", async () => {
+      const name = `Zé ${tag}`;
+      const first = await http()
+        .post("/api/auth/signup")
+        .send({ email: emailOf("gerado-1"), name, password: "segredo" })
+        .expect(201);
+      expect(first.body.user.username).toBe(`ze_${tag}`);
+      const second = await http()
+        .post("/api/auth/signup")
+        .send({
+          email: emailOf("gerado-2"),
+          name,
+          password: "segredo",
+          username: "  ",
+        })
+        .expect(201);
+      expect(second.body.user.username).toBe(`ze_${tag}2`);
+      await login(`ze_${tag}2`, "segredo").expect(200);
+    });
+
+    it("muda nome e nome de usuário, e entra com o novo", async () => {
+      const { token } = await signup("conta-usuario");
+      const username = `n_${tag}`;
+      const res = await http()
+        .patch("/api/me/account")
+        .set("Authorization", `Bearer ${token}`)
+        .send({
+          name: " Ana Souza ",
+          role: "dm",
+          username: username.toUpperCase(),
+        })
+        .expect(200);
+      expect(res.body).toMatchObject({
+        name: "Ana Souza",
+        role: "player",
+        username,
+      });
+      await login(username, "segredo").expect(200);
+      await login(usernameOf("conta-usuario"), "segredo").expect(401);
+    });
+
+    it("recusa o nome de usuário de outra conta", async () => {
+      const { token } = await signup("conta-conflito");
+      await signup("conta-dono");
+      const res = await http()
+        .patch("/api/me/account")
+        .set("Authorization", `Bearer ${token}`)
+        .send({ username: usernameOf("conta-dono") })
+        .expect(409);
+      expect(res.body.message).toBe("Nome de usuário já em uso.");
+    });
+
+    it("troca a senha só com a senha atual certa, sem derrubar a sessão", async () => {
+      const { token } = await signup("conta-senha");
+      const auth = { Authorization: `Bearer ${token}` };
+      const missing = await http()
+        .patch("/api/me/account")
+        .set(auth)
+        .send({ password: "nova123" })
+        .expect(400);
+      expect(missing.body.message).toBe("Informe a senha atual.");
+      const wrong = await http()
+        .patch("/api/me/account")
+        .set(auth)
+        .send({ currentPassword: "errada", password: "nova123" })
+        .expect(403);
+      expect(wrong.body.message).toBe("Senha atual incorreta.");
+      await http()
+        .patch("/api/me/account")
+        .set(auth)
+        .send({ currentPassword: "segredo", password: "nova123" })
+        .expect(200);
+      await login(emailOf("conta-senha"), "segredo").expect(401);
+      await login(emailOf("conta-senha"), "nova123").expect(200);
+      await http().get("/api/auth/me").set(auth).expect(200);
+    });
+
+    it("muda o e-mail com a senha atual", async () => {
+      const { token } = await signup("conta-email");
+      const email = emailOf("conta-email-novo");
+      const res = await http()
+        .patch("/api/me/account")
+        .set("Authorization", `Bearer ${token}`)
+        .send({ currentPassword: "segredo", email: email.toUpperCase() })
+        .expect(200);
+      expect(res.body.email).toBe(email);
+      await login(email, "segredo").expect(200);
+      await login(emailOf("conta-email"), "segredo").expect(401);
+    });
+  });
+
   describe("ficha", () => {
     let token: string;
     const auth = () => ({ Authorization: `Bearer ${token}` });
@@ -438,6 +533,7 @@ describe("API (e2e)", () => {
 
   describe("Mestre", () => {
     let dm: string;
+    let dmId: string;
     let player: { id: string; token: string };
     const asDm = () => ({ Authorization: `Bearer ${dm}` });
 
@@ -452,6 +548,7 @@ describe("API (e2e)", () => {
         username: "mestre",
       });
       dm = res.body.accessToken;
+      dmId = res.body.user.id;
       player = await signup("jogador-da-mesa");
       await http()
         .put("/api/me/sheet")
@@ -538,6 +635,77 @@ describe("API (e2e)", () => {
       expect(res.body.message).toBe("Apenas o Mestre pode fazer isso.");
     });
 
+    it("redefine a senha e o e-mail de um jogador sem a senha atual", async () => {
+      const target = await signup("senha-pelo-mestre");
+      const email = emailOf("senha-pelo-mestre-novo");
+      const res = await http()
+        .patch(`/api/accounts/${target.id}`)
+        .set(asDm())
+        .send({ email, password: "mesa123" })
+        .expect(200);
+      expect(res.body).toMatchObject({ email, id: target.id, role: "player" });
+      await http()
+        .post("/api/auth/login")
+        .send({ identifier: email, password: "mesa123" })
+        .expect(200);
+    });
+
+    it("não edita a conta do Mestre nem de quem não existe", async () => {
+      const missing = await Promise.all(
+        [dmId, "00000000-0000-4000-8000-000000000000"].map((id) =>
+          http()
+            .patch(`/api/accounts/${id}`)
+            .set(asDm())
+            .send({ name: "X" })
+            .expect(404)
+        )
+      );
+      for (const res of missing) {
+        expect(res.body.message).toBe("Jogador não encontrado.");
+      }
+      const invalid = await http()
+        .patch("/api/accounts/abc")
+        .set(asDm())
+        .send({ name: "X" })
+        .expect(400);
+      expect(invalid.body.message).toBe("Jogador inválido.");
+    });
+
+    it("jogador não edita a conta de outro", async () => {
+      const res = await http()
+        .patch(`/api/accounts/${player.id}`)
+        .set("Authorization", `Bearer ${player.token}`)
+        .send({ password: "invadido" })
+        .expect(403);
+      expect(res.body.message).toBe("Apenas o Mestre pode fazer isso.");
+    });
+
+    it("muda só o próprio nome, que sobrevive a uma nova subida", async () => {
+      const refused = await http()
+        .patch("/api/me/account")
+        .set(asDm())
+        .send({ currentPassword: "!@#ASD123asd", password: "outra123" })
+        .expect(403);
+      expect(refused.body.message).toBe(
+        "E-mail, usuário e senha do Mestre são definidos no servidor."
+      );
+      try {
+        await http()
+          .patch("/api/me/account")
+          .set(asDm())
+          .send({ name: "Narrador" })
+          .expect(200);
+        await app.get(AdminBootstrap).onApplicationBootstrap();
+        const me = await http().get("/api/auth/me").set(asDm()).expect(200);
+        expect(me.body).toMatchObject({ name: "Narrador", username: "mestre" });
+      } finally {
+        await http()
+          .patch("/api/me/account")
+          .set(asDm())
+          .send({ name: "Mestre" });
+      }
+    });
+
     it("troca de ADMIN_EMAIL passa o usuário mestre para a conta nova", async () => {
       const usernameBy = async (email: string) =>
         (
@@ -610,6 +778,8 @@ describe("API (e2e)", () => {
           "get /api/sheets",
           "get /api/sheets/{userId}",
           "patch /api/sheets/{userId}",
+          "patch /api/me/account",
+          "patch /api/accounts/{userId}",
           "get /api/health",
         ])
       );
@@ -623,8 +793,9 @@ describe("API (e2e)", () => {
         paths["/api/auth/signup"].post.requestBody.content["application/json"]
           .schema;
       expect(signupBody.required).toEqual(
-        expect.arrayContaining(["email", "name", "password", "username"])
+        expect.arrayContaining(["email", "name", "password"])
       );
+      expect(signupBody.required).not.toContain("username");
       expect(signupBody.properties.password.minLength).toBe(6);
 
       const login = paths["/api/auth/login"].post;

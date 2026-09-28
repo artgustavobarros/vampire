@@ -69,7 +69,7 @@ function renderWizard(sheet: Sheet, url: string) {
   return router;
 }
 
-const SALTO = /Salto Prodigioso/;
+const PODERIO = /Poderio/;
 const SANGUESSUGA = /^Sanguessuga/;
 const OSIRIS = /^Osíris/;
 const FAZENDEIRO = /^Fazendeiro/;
@@ -795,10 +795,10 @@ describe("regras do clã nos passos 5 a 7", () => {
       }),
       "/criar?passo=5"
     );
-    click(await screen.findByRole("button", { name: "Incluir Toque Letal" }));
+    click(await screen.findByRole("button", { name: "Incluir Corpo Letal" }));
     expect(await screen.findByRole("alert")).toHaveTextContent("Sem pontos");
     expect(
-      screen.queryByRole("button", { name: "Remover Toque Letal" })
+      screen.queryByRole("button", { name: "Remover Corpo Letal" })
     ).toBeNull();
   });
 
@@ -806,7 +806,7 @@ describe("regras do clã nos passos 5 a 7", () => {
     renderWizard(
       completeSheet({
         disc: [
-          { nivel: 2, nome: "Potência", powers: [pw("Toque Letal", 1)] },
+          { nivel: 2, nome: "Potência", powers: [pw("Corpo Letal", 1)] },
           { nivel: 1, nome: "Celeridade", powers: [] },
         ],
       }),
@@ -826,7 +826,7 @@ describe("regras do clã nos passos 5 a 7", () => {
           {
             nivel: 2,
             nome: "Potência",
-            powers: [pw("Toque Letal", 1), pw("Salto Prodigioso", 2)],
+            powers: [pw("Corpo Letal", 1), pw("Poderio", 2)],
           },
           { nivel: 1, nome: "Celeridade", powers: [] },
         ],
@@ -835,19 +835,19 @@ describe("regras do clã nos passos 5 a 7", () => {
     );
     click(await screen.findByLabelText("Segunda Disciplina +2"));
     expect(
-      screen.getByRole("button", { name: "Remover Toque Letal" })
+      screen.getByRole("button", { name: "Remover Corpo Letal" })
     ).toBeInTheDocument();
-    expect(screen.queryByRole("button", { name: SALTO })).toBeNull();
+    expect(screen.queryByRole("button", { name: PODERIO })).toBeNull();
   });
 
   it("nome do poder abre o painel sem alternar", async () => {
     renderWizard(completeSheet(), "/criar?passo=5");
-    click(await screen.findByRole("button", { name: "Toque Letal" }));
-    const dialog = await screen.findByRole("dialog", { name: "Toque Letal" });
+    click(await screen.findByRole("button", { name: "Corpo Letal" }));
+    const dialog = await screen.findByRole("dialog", { name: "Corpo Letal" });
     expect(dialog).toHaveTextContent("Rolagem, custo e duração");
     // o painel é modal: o resto da página fica fora da árvore acessível
     expect(
-      screen.getByRole("button", { hidden: true, name: "Incluir Toque Letal" })
+      screen.getByRole("button", { hidden: true, name: "Incluir Corpo Letal" })
     ).toHaveAttribute("aria-pressed", "false");
   });
 
@@ -1037,7 +1037,7 @@ describe("Predador aplicado na ficha", () => {
         )
       ).toBeInTheDocument();
       expect(
-        screen.queryByRole("button", { name: "Incluir Golpe Brutal" })
+        screen.queryByRole("button", { name: "Incluir Alimentação Brutal" })
       ).toBeNull();
     });
 
@@ -1065,23 +1065,23 @@ describe("Predador aplicado na ficha", () => {
       expect(await stepToast()).toHaveTextContent(
         "Escolha um poder de Potência"
       );
-      click("Incluir Toque Letal");
-      click("Incluir Força Prodigiosa");
+      click("Incluir Corpo Letal");
+      click("Incluir Salto Elevado");
       expect(screen.getByText("Poder escolhido")).toBeInTheDocument();
-      expect(pressed("Remover Força Prodigiosa")).toBe("true");
-      expect(pressed("Incluir Toque Letal")).toBe("false");
+      expect(pressed("Remover Salto Elevado")).toBe("true");
+      expect(pressed("Incluir Corpo Letal")).toBe("false");
     });
 
     it("nome do poder abre o painel sem escolher", async () => {
       await open();
       click(POTENCIA);
-      click("Toque Letal");
+      click("Corpo Letal");
       expect(
-        await screen.findByRole("dialog", { name: "Toque Letal" })
+        await screen.findByRole("dialog", { name: "Corpo Letal" })
       ).toBeInTheDocument();
       expect(
         screen
-          .getByRole("button", { hidden: true, name: "Incluir Toque Letal" })
+          .getByRole("button", { hidden: true, name: "Incluir Corpo Letal" })
           .getAttribute("aria-pressed")
       ).toBe("false");
     });
@@ -1089,7 +1089,7 @@ describe("Predador aplicado na ficha", () => {
     it("trocar a Disciplina limpa o poder", async () => {
       await open();
       click(POTENCIA);
-      click("Incluir Toque Letal");
+      click("Incluir Corpo Letal");
       click(DOMINACAO);
       click(POTENCIA);
       expect(screen.getByText("1 poder sem escolha")).toBeInTheDocument();
@@ -1186,7 +1186,7 @@ describe("Predador aplicado na ficha", () => {
     it("nome vazio bloqueia; renomeado é gravado", async () => {
       await open();
       click(POTENCIA);
-      click("Incluir Toque Letal");
+      click("Incluir Corpo Letal");
       click("Pontos em Contatos 1");
       click("Pontos em Recursos 2");
       const field = screen.getByLabelText("Especialidade em Ladroagem");
@@ -1212,7 +1212,7 @@ describe("Predador aplicado na ficha", () => {
       ["Celeridade", 1],
     ]);
     expect(stored().disc[0].powers.map((p) => p.nome)).toEqual([
-      "Força Prodigiosa",
+      "Salto Elevado",
     ]);
     expect(stored().humanidade).toBe(6);
     expect(predatorMerits()).toEqual(["Contatos (criminosos)"]);

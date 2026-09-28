@@ -151,7 +151,7 @@ export const SKILL_INFO: Readonly<
   ],
   Briga: [
     "Briga permite aos personagens atingirem seus alvos quando desferem golpes com punhos, botas ou garras. Contanto que você não empunhe uma arma, o ataque se qualifica como briga — desde um elegante aikijutsu até uma luta de rua suja e brutal.",
-    "Agarrões, Animais, Briga de Bar, Combate Esportivo, Em Forma de Fera de Protean, Lobisomens, Membros, Mortais Armados, Mortais Desarmados",
+    "Agarrões, Animais, Briga de Bar, Combate Esportivo, Em Forma de Besta de Protean, Lobisomens, Membros, Mortais Armados, Mortais Desarmados",
     [
       "Você teve uma criação difícil e precisou brigar pelo seu espaço. Ainda tem alguma ginga.",
       "Você recebeu treinamento para acertar alguém com força e precisão.",
@@ -428,7 +428,8 @@ export const DISC_INFO: Readonly<Record<string, string>> = {
   Domínio: "Controle da mente alheia pelo olhar e pela voz.",
   "Feitiçaria de Sangue": "Magia feita com vitae: rituais e poderes de sangue.",
   Fortitude: "Resistência sobrenatural a dano, dor e controle mental.",
-  Oblívio: "Manipulação das sombras e da energia dos mortos.",
+  Oblívio:
+    "Manipulação das sombras e da energia dos mortos: poderes e Cerimônias. Tirar 1 ou 10 na checagem de sangue de um poder de Oblívio dá uma Mácula.",
   Ofuscação:
     "Passar despercebido, sumir da mente dos outros, assumir outro rosto.",
   Potência: "Força física sobrenatural.",

@@ -157,11 +157,12 @@ async function request<T>(
   throw error;
 }
 
+/** Sem `username`, a API gera um a partir do nome. */
 export function signup(body: {
   email: string;
   name: string;
   password: string;
-  username: string;
+  username?: string;
 }): Promise<AuthResponse> {
   return request("POST", "/auth/signup", body, { auth: false });
 }
@@ -176,6 +177,29 @@ export function login(body: {
 
 export function me(): Promise<ApiUser> {
   return request("GET", "/auth/me");
+}
+
+/** Só os campos que mudam; `password` é a senha nova. */
+export interface AccountUpdate {
+  /** exigida para mudar e-mail ou senha da própria conta */
+  currentPassword?: string;
+  email?: string;
+  name?: string;
+  password?: string;
+  username?: string;
+}
+
+/** A própria conta; do Mestre, só o nome. */
+export function updateMyAccount(body: AccountUpdate): Promise<ApiUser> {
+  return request("PATCH", "/me/account", body);
+}
+
+/** Só o Mestre: a conta de um jogador, sem a senha atual dele. */
+export function updatePlayerAccount(
+  userId: string,
+  body: Omit<AccountUpdate, "currentPassword">
+): Promise<ApiUser> {
+  return request("PATCH", `/accounts/${encodeURIComponent(userId)}`, body);
 }
 
 export function getSheet(): Promise<SheetResponse> {

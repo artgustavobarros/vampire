@@ -27,6 +27,7 @@ const PAINEL_TABS = [
   ["coteries", "Página das coteries"],
   ["rodada", "Página da rodada"],
   ["bestiario", "Página do bestiário"],
+  ["conta", "Página da conta"],
 ] as const;
 
 function renderAt(
@@ -176,7 +177,9 @@ describe("rotas do Mestre", () => {
     expect(screen.queryByText("Sair da conta")).toBeNull();
     expect(useCharacterStore.getState().owner).toEqual({
       email: "ana@exemplo.com",
+      name: ana.name,
       userId: ana.id,
+      username: ana.username,
     });
   });
 
@@ -214,7 +217,7 @@ describe("rotas do Mestre", () => {
     expect(router.state.location.pathname).toBe("/ficha");
   });
 
-  it("o painel tem as cinco abas, nessa ordem", async () => {
+  it("o painel tem as seis abas, nessa ordem", async () => {
     renderAt("/personagens");
     await screen.findByText("Página da lista");
     const nav = screen.getByRole("navigation");
@@ -228,6 +231,7 @@ describe("rotas do Mestre", () => {
       "Ações",
       "Rodada",
       "Bestiário",
+      "Conta",
     ]);
   });
 
@@ -235,6 +239,7 @@ describe("rotas do Mestre", () => {
     ["/personagens/coteries", "Coteries", "Página das coteries"],
     ["/personagens/rodada", "Rodada", "Página da rodada"],
     ["/personagens/bestiario", "Bestiário", "Página do bestiário"],
+    ["/personagens/conta", "Conta", "Página da conta"],
   ])("em %s só a aba %s fica ativa", async (url, tab, text) => {
     renderAt(url);
     expect(await screen.findByText(text)).toBeInTheDocument();
@@ -244,7 +249,7 @@ describe("rotas do Mestre", () => {
     expect(active.map((l) => l.textContent)).toEqual([tab]);
   });
 
-  it.each(["coteries", "rodada", "bestiario", "acoes"])(
+  it.each(["coteries", "rodada", "bestiario", "acoes", "conta"])(
     "jogador que abre /personagens/%s volta para a própria ficha",
     async (path) => {
       const router = renderAt(`/personagens/${path}`, "player");

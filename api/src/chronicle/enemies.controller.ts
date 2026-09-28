@@ -22,6 +22,7 @@ import {
 } from "@nestjs/swagger";
 import { errorResponseSchema } from "../common/error-response.schema.js";
 import { Roles } from "../common/roles.decorator.js";
+import { enemyId } from "../common/uuid-pipes.js";
 import {
   type EnemyBodyDto,
   enemyBodySchema,
@@ -29,7 +30,6 @@ import {
   enemyRecordSchema,
 } from "./chronicle.schemas.js";
 import { EnemiesService, type EnemyRecord } from "./enemies.service.js";
-import { enemyId } from "./uuid-pipes.js";
 
 /** O Bestiário, só para o Mestre. */
 @ApiTags("enemies (Mestre)")

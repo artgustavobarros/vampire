@@ -6,8 +6,7 @@ import {
 import { ConfigService } from "@nestjs/config";
 import bcrypt from "bcryptjs";
 import type { Env } from "../config/env.js";
-import { UsersService } from "../users/users.service.js";
-import { BCRYPT_COST } from "./auth.service.js";
+import { BCRYPT_COST, UsersService } from "../users/users.service.js";
 
 /**
  * Garante a conta do Mestre a partir de `ADMIN_EMAIL` e `ADMIN_PASSWORD` a cada

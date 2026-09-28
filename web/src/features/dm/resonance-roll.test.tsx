@@ -133,7 +133,7 @@ describe("Rolagem de Ressonância", () => {
     expect(texto).toContain("Gratuito ou uma checagem de sangue · ");
     expect(
       card.getByText(
-        "Ressonância d10: 3 · Discrasia d3: 1 · Disciplina d2: 1 · Aguçada (escolhida)"
+        "Ressonância d10: 3 · Discrasia d3: 1 · Disciplina d2: 1 · Poder d2: 1 · Aguçada (escolhida)"
       )
     ).toBeInTheDocument();
   });

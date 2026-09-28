@@ -4,11 +4,19 @@
 Cadastro, entrada e sessão de jogadores na API com JWT (Bearer) e senhas em hash, com todas as rotas protegidas por padrão.
 ## Requirements
 ### Requirement: Criar conta
-A API SHALL expor `POST /api/auth/signup`, público, recebendo `{ name, username, email, password }`. O e-mail e o nome de usuário MUST ser normalizados (sem espaços nas pontas, minúsculas) e o nome sem espaços nas pontas. A senha MUST ser guardada apenas como hash (bcrypt). Em caso de sucesso, a API responde `201` com `{ accessToken, user: { id, email, name, role, username } }`. A confirmação de senha (`password2`) continua sendo só do `web`.
+A API SHALL expor `POST /api/auth/signup`, público, recebendo `{ name, email, password }` e, opcionalmente, `username`. O e-mail e o nome de usuário MUST ser normalizados (sem espaços nas pontas, minúsculas) e o nome sem espaços nas pontas. Se `username` vier ausente, vazio ou só com espaços, a API MUST gerar o nome de usuário a partir do nome (ver "Nome de usuário gerado"); se vier preenchido, MUST usar o informado, sem gerar outro. A senha MUST ser guardada apenas como hash (bcrypt). Em caso de sucesso, a API responde `201` com `{ accessToken, user: { id, email, name, role, username } }`. A confirmação de senha (`password2`) continua sendo só do `web`.
 
 #### Scenario: Cadastro válido
 - **WHEN** o cliente envia nome, nome de usuário válido e livre, e-mail válido ainda não cadastrado e senha com pelo menos 6 caracteres
 - **THEN** a conta é criada, a senha é gravada como hash e a resposta traz o token e o jogador com o nome de usuário
+
+#### Scenario: Cadastro sem nome de usuário
+- **WHEN** o cliente envia `{ name: "Vitória Salles", email, password }` sem `username`
+- **THEN** a conta é criada com o nome de usuário `vitoria_salles`
+
+#### Scenario: Nome de usuário vazio
+- **WHEN** o cliente envia `username: "   "`
+- **THEN** a API gera o nome de usuário a partir do nome, sem responder `400`
 
 #### Scenario: E-mail normalizado
 - **WHEN** o cliente envia `"  Vitoria@Exemplo.COM "`
@@ -23,19 +31,15 @@ A API SHALL expor `POST /api/auth/signup`, público, recebendo `{ name, username
 - **THEN** a API responde `409` com a mensagem `E-mail já cadastrado. Use "Entrar".`
 
 #### Scenario: Nome de usuário já em uso
-- **WHEN** já existe conta com o mesmo nome de usuário normalizado, ou o nome de usuário é `mestre`
+- **WHEN** o cliente informa um nome de usuário que já existe (normalizado), ou `mestre`
 - **THEN** a API responde `409` com a mensagem `Nome de usuário já em uso.`
 
 #### Scenario: Nome ausente
 - **WHEN** o nome está vazio ou só com espaços
 - **THEN** a API responde `400` com a mensagem `Informe o nome.`
 
-#### Scenario: Nome de usuário ausente
-- **WHEN** o nome de usuário está vazio ou só com espaços
-- **THEN** a API responde `400` com a mensagem `Informe o nome de usuário.`
-
 #### Scenario: Nome de usuário inválido
-- **WHEN** o nome de usuário normalizado não segue `^[a-z][a-z0-9_.]{2,19}$` (ex.: `ab`, `1ana`, `ana souza`, `ana@x`)
+- **WHEN** o nome de usuário informado, depois de normalizado, não segue `^[a-z][a-z0-9_.]{2,19}$` (ex.: `ab`, `1ana`, `ana souza`, `ana@x`)
 - **THEN** a API responde `400` com a mensagem `Nome de usuário: 3 a 20 letras, números, _ ou ., começando por letra.`
 
 #### Scenario: E-mail ou senha ausentes
@@ -176,4 +180,34 @@ Toda conta SHALL ter um nome de usuário (`username`) único, guardado normaliza
 #### Scenario: Mestre existente
 - **WHEN** a migração roda com uma conta `role: "dm"`
 - **THEN** essa conta recebe o nome de usuário `mestre`
+
+### Requirement: Nome de usuário gerado
+Quando o cadastro não informa nome de usuário, a API SHALL gerar um a partir do nome da pessoa, sempre no formato `^[a-z][a-z0-9_.]{2,19}$`:
+1. tirar os acentos (decompor em NFD e remover as marcas) e passar para minúsculas;
+2. trocar cada sequência de caracteres fora de `a-z` e `0-9` por um único `_` e tirar `_` das pontas;
+3. se o resultado ficar vazio, usar `jogador`; se não começar por letra, prefixar `u`;
+4. cortar em 17 caracteres (tirando `_` que sobrar no fim) e, se ficar com menos de 3, completar com `_`;
+5. se a base já estiver em uso ou for `mestre`, acrescentar `2`, `3`, … até achar um livre.
+
+Se dois cadastros simultâneos gerarem o mesmo nome de usuário, a API MUST tentar o próximo sufixo em vez de responder `409`.
+
+#### Scenario: Nome com acento e espaço
+- **WHEN** o nome é `"Vitória Salles"`
+- **THEN** o nome de usuário gerado é `vitoria_salles`
+
+#### Scenario: Colisão
+- **WHEN** já existe `vitoria_salles` e outra pessoa chamada "Vitória Salles" se cadastra sem nome de usuário
+- **THEN** a conta nova recebe `vitoria_salles2`
+
+#### Scenario: Nome curto ou sem letras
+- **WHEN** o nome é `"Al"` ou `"李"`
+- **THEN** o nome de usuário gerado é `al_` ou `jogador` (com sufixo se já existir)
+
+#### Scenario: Nome longo
+- **WHEN** o nome é `"Maria Aparecida dos Santos Oliveira"`
+- **THEN** o nome de usuário gerado tem no máximo 20 caracteres, contando o sufixo, e começa por `maria_aparecida`
+
+#### Scenario: Nome igual ao do Mestre
+- **WHEN** o nome é `"Mestre"`
+- **THEN** o nome de usuário gerado é `mestre2` (ou o próximo livre), nunca `mestre`
 
