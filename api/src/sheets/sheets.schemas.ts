@@ -1,4 +1,5 @@
 import { z } from "zod";
+import { publicUserSchema } from "../users/users.schemas.js";
 
 const INVALID = "Ficha inválida.";
 
@@ -23,6 +24,13 @@ export const sheetResponseSchema = z.object({
   }),
   updatedAt: z.iso.datetime().nullable(),
 });
+
+/** Um jogador e sua ficha, na lista do Mestre. */
+export const playerSheetSchema = sheetResponseSchema.extend({
+  user: publicUserSchema,
+});
+
+export const playerSheetListSchema = z.array(playerSheetSchema);
 
 export type SheetData = z.infer<typeof sheetObject>;
 export type ReplaceSheetDto = z.infer<typeof replaceSheetSchema>;

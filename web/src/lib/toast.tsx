@@ -83,10 +83,12 @@ export function apiErrorMessage(err: unknown): string {
   const status = statusOf(err);
   const message = messageOf(err);
   let msg = "Não foi possível falar com o servidor. Verifique a conexão.";
-  if (status === 401 || status === 403) {
+  if (status === 401) {
     msg = "Sua sessão expirou. Entre de novo para continuar.";
+  } else if (status === 403) {
+    msg = message || "Você não tem permissão para fazer isso.";
   } else if (status === 404) {
-    msg = "Não encontramos o que você pediu.";
+    msg = message || "Não encontramos o que você pediu.";
   } else if (status === 409) {
     msg = "Essa ficha foi alterada em outro lugar. Recarregue antes de salvar.";
   } else if (status === 400 || status === 422) {

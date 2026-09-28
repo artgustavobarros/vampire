@@ -7,8 +7,9 @@ export const Route = createFileRoute("/")({ component: Home });
 
 function Home() {
   const user = usePlayerStore((s) => s.user);
+  const role = usePlayerStore((s) => s.role);
   const criada = useCharacterStore((s) => s.sheet.criada);
-  const target = homeTarget({ criada, user });
+  const target = homeTarget({ criada, role, user });
   return target === "/criar" ? (
     <Navigate replace search={{ passo: 1 }} to="/criar" />
   ) : (

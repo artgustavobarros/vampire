@@ -79,7 +79,10 @@ export async function authenticate(
     }
     const res = await login({ email, password });
     setToken(res.accessToken);
-    ({ sheet } = await getSheet());
+    // o Mestre não tem ficha própria
+    if (res.user.role === "player") {
+      ({ sheet } = await getSheet());
+    }
     usePlayerStore.getState().login(res.user, sheet);
     return true;
   } catch (err) {

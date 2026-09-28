@@ -2,7 +2,7 @@
  * API falsa em memória no lugar do `fetch`, com os mesmos endpoints, status
  * e mensagens da API real (`api/`). Instalada em `setup.ts` para todo teste.
  */
-import { API_URL, type ApiUser, setToken } from "#/lib/api";
+import { API_URL, type ApiUser, type Role, setToken } from "#/lib/api";
 import type { Sheet } from "#/lib/types";
 import { usePlayerStore } from "#/stores/player-store";
 
@@ -22,6 +22,8 @@ export interface FakeCall {
 const STATUS_TEXT: Record<number, string> = {
   400: "Bad Request",
   401: "Unauthorized",
+  403: "Forbidden",
+  404: "Not Found",
   409: "Conflict",
   500: "Internal Server Error",
 };
@@ -53,11 +55,30 @@ function issueToken(email: string): string {
   return token;
 }
 
-const publicUser = ({ email, id, name }: Account): ApiUser => ({
+const publicUser = ({ email, id, name, role }: Account): ApiUser => ({
   email,
   id,
   name,
+  role,
 });
+
+const LOCKED = "Atributos e Habilidades só podem ser alterados pelo Mestre.";
+
+/** A trava da API: ficha criada não muda `attrs`/`skills` pelo `/me/sheet`. */
+function locked(account: Account, incoming: Record<string, unknown>): boolean {
+  if (account.sheet?.criada !== true) {
+    return false;
+  }
+  return ["attrs", "skills"].some(
+    (k) =>
+      k in incoming &&
+      JSON.stringify(incoming[k]) !== JSON.stringify(account.sheet?.[k])
+  );
+}
+
+function merge(account: Account, patch: Record<string, unknown>) {
+  account.sheet = { ...account.sheet, ...patch };
+}
 
 function sheetResponse(account: Account) {
   return {
@@ -107,17 +128,58 @@ function route(call: FakeCall): Response {
     return json(200, publicUser(account));
   }
   if (call.path === "/me/sheet") {
-    if (call.method === "PUT") {
-      account.sheet = body.sheet as Record<string, unknown>;
-    } else if (call.method === "PATCH") {
-      account.sheet = {
-        ...account.sheet,
-        ...(body.patch as Record<string, unknown>),
-      };
-    }
-    return json(200, sheetResponse(account));
+    return meRoute(call, account, body);
+  }
+  if (call.path.startsWith("/sheets")) {
+    return dmRoute(call, account, body);
   }
   return error(404, "Not Found");
+}
+
+function meRoute(
+  call: FakeCall,
+  account: Account,
+  body: Record<string, unknown>
+): Response {
+  const incoming = (body.sheet ?? body.patch ?? {}) as Record<string, unknown>;
+  if (call.method !== "GET" && locked(account, incoming)) {
+    return error(403, LOCKED);
+  }
+  if (call.method === "PUT") {
+    account.sheet = incoming;
+  } else if (call.method === "PATCH") {
+    merge(account, incoming);
+  }
+  return json(200, sheetResponse(account));
+}
+
+function dmRoute(
+  call: FakeCall,
+  account: Account,
+  body: Record<string, unknown>
+): Response {
+  if (account.role !== "dm") {
+    return error(403, "Apenas o Mestre pode fazer isso.");
+  }
+  const players = [...accounts.values()].filter((a) => a.role === "player");
+  if (call.path === "/sheets" && call.method === "GET") {
+    return json(
+      200,
+      players
+        .sort((a, b) => a.name.localeCompare(b.name))
+        .map((a) => ({ ...sheetResponse(a), user: publicUser(a) }))
+    );
+  }
+  const id = decodeURIComponent(call.path.slice("/sheets/".length));
+  const target = players.find((a) => a.id === id);
+  if (!target) {
+    return error(404, "Jogador não encontrado.");
+  }
+  if (call.method === "PATCH") {
+    merge(target, body.patch as Record<string, unknown>);
+    return json(200, sheetResponse(target));
+  }
+  return json(200, { ...sheetResponse(target), user: publicUser(target) });
 }
 
 export const fakeApi = {
@@ -158,8 +220,12 @@ export const fakeApi = {
    * Cria a conta com a ficha, guarda o token e entra, como depois de um
    * login bem-sucedido.
    */
-  login(sheet: Sheet | null = null, email = "ana@exemplo.com"): ApiUser {
-    const account = fakeApi.seed({ email, sheet });
+  login(
+    sheet: Sheet | null = null,
+    email = "ana@exemplo.com",
+    role: Role = "player"
+  ): ApiUser {
+    const account = fakeApi.seed({ email, role, sheet });
     setToken(issueToken(email));
     usePlayerStore.getState().login(publicUser(account), sheet);
     return publicUser(account);
@@ -176,11 +242,13 @@ export const fakeApi = {
     email,
     name = "Ana",
     password = "123456",
+    role = "player",
     sheet = null,
   }: {
     email: string;
     name?: string;
     password?: string;
+    role?: Role;
     sheet?: Sheet | Record<string, unknown> | null;
   }): Account {
     nextId += 1;
@@ -189,6 +257,7 @@ export const fakeApi = {
       id: `user-${nextId}`,
       name,
       password,
+      role,
       sheet: sheet as Record<string, unknown> | null,
     };
     accounts.set(email, account);

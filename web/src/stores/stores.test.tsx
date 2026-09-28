@@ -137,8 +137,23 @@ describe("contas na API", () => {
       })
     ).toBe(true);
     expect(player().user).toBe("ana@exemplo.com");
+    expect(player().role).toBe("player");
     expect(character().sheet.nome).toBe("Ana");
     expect(fakeApi.calls.at(-1)?.auth).toBe(`Bearer ${getToken()}`);
+  });
+
+  it("o Mestre entra sem buscar ficha própria", async () => {
+    fakeApi.seed({ email: "admin@admin.com", password: "senha1", role: "dm" });
+    expect(
+      await authenticate({
+        email: "admin@admin.com",
+        mode: "login",
+        password: "senha1",
+      })
+    ).toBe(true);
+    expect(player()).toMatchObject({ role: "dm", user: "admin@admin.com" });
+    expect(character().owner).toBeNull();
+    expect(fakeApi.calls.some((c) => c.path === "/me/sheet")).toBe(false);
   });
 
   it("sem conexão ao entrar mostra o aviso de conexão", async () => {
@@ -205,9 +220,22 @@ describe("restauração da sessão", () => {
     expect(character().sheet.attrs.Vigor).toBe(1);
   });
 
+  it("restaura o Mestre sem ficha aberta", async () => {
+    fakeApi.seed({
+      email: "admin@admin.com",
+      role: "dm",
+      sheet: { criada: true, nome: "Não é do Mestre" },
+    });
+    setToken(fakeApi.tokenFor("admin@admin.com"));
+    await player().restore();
+    expect(player()).toMatchObject({ ready: true, role: "dm" });
+    expect(character().owner).toBeNull();
+    expect(character().sheet.nome).toBeUndefined();
+  });
+
   it("sem token fica pronto sem chamar a API", async () => {
     await player().restore();
-    expect(player()).toMatchObject({ ready: true, user: null });
+    expect(player()).toMatchObject({ ready: true, role: null, user: null });
     expect(fakeApi.calls).toHaveLength(0);
   });
 
@@ -362,10 +390,80 @@ describe("gravação da ficha", () => {
     patchSheet({ fome: 5, nome: "Teste" });
     player().logout();
     expect(player().name).toBeNull();
+    expect(player().role).toBeNull();
     expect(character().owner).toBeNull();
     expect(character().hungerAlert).toBeNull();
     expect(character().sheet.nome).toBeUndefined();
     await vi.advanceTimersByTimeAsync(SAVE_DELAY);
     expect(patches()).toHaveLength(0);
+  });
+});
+
+describe("ficha aberta pelo Mestre", () => {
+  function seedPlayers() {
+    const a = fakeApi.seed({
+      email: "a@exemplo.com",
+      sheet: { ...blankSheet(), criada: true, nome: "A" },
+    });
+    const b = fakeApi.seed({
+      email: "b@exemplo.com",
+      sheet: { ...blankSheet(), criada: true, nome: "B" },
+    });
+    fakeApi.login(null, "admin@admin.com", "dm");
+    return { a, b };
+  }
+
+  it("abre a ficha do jogador e grava em /sheets/:id, sem a trava", async () => {
+    vi.useFakeTimers();
+    const { a } = seedPlayers();
+    await character().openPlayerSheet(a.id);
+    expect(character().owner).toEqual({ email: "a@exemplo.com", userId: a.id });
+    expect(character().sheet.nome).toBe("A");
+
+    patchSheet({ attrs: { ...character().sheet.attrs, Força: 4 } });
+    await vi.advanceTimersByTimeAsync(SAVE_DELAY);
+    expect(patches().map((c) => c.path)).toEqual([`/sheets/${a.id}`]);
+    expect(fakeApi.sheet("a@exemplo.com")?.attrs).toMatchObject({ Força: 4 });
+  });
+
+  it("trocar de ficha envia a pendência para o dono anterior", async () => {
+    vi.useFakeTimers();
+    const { a, b } = seedPlayers();
+    await character().openPlayerSheet(a.id);
+    patchSheet({ fome: 4 });
+    await character().openPlayerSheet(b.id);
+    await vi.advanceTimersByTimeAsync(SAVE_DELAY);
+
+    expect(patches().map((c) => c.path)).toEqual([`/sheets/${a.id}`]);
+    expect(fakeApi.sheet("a@exemplo.com")?.fome).toBe(4);
+    expect(fakeApi.sheet("b@exemplo.com")?.fome).toBe(1);
+    expect(character().sheet.nome).toBe("B");
+  });
+
+  it("abertura mais nova vence a anterior", async () => {
+    const { a, b } = seedPlayers();
+    await Promise.all([
+      character().openPlayerSheet(a.id),
+      character().openPlayerSheet(b.id),
+    ]);
+    expect(character().sheet.nome).toBe("B");
+  });
+
+  it("jogador inexistente lança o 404 da API", async () => {
+    seedPlayers();
+    await expect(character().openPlayerSheet("user-x")).rejects.toMatchObject({
+      message: "Jogador não encontrado.",
+      status: 404,
+    });
+  });
+});
+
+describe("trava das Características para o jogador", () => {
+  it("a API recusa mudar atributo de ficha criada", async () => {
+    vi.useFakeTimers();
+    fakeApi.login({ ...blankSheet(), criada: true });
+    patchSheet({ attrs: { ...character().sheet.attrs, Força: 3 } });
+    await vi.advanceTimersByTimeAsync(SAVE_DELAY);
+    expect(fakeApi.sheet()?.attrs).toMatchObject({ Força: 1 });
   });
 });

@@ -7,13 +7,7 @@ import {
   type PredatorAdjustment,
   type PredatorDisciplineOption,
 } from "#/data/predators";
-import type {
-  Discipline,
-  Merit,
-  Power,
-  PredatorBonus,
-  Sheet,
-} from "#/lib/types";
+import type { Discipline, Merit, Sheet } from "#/lib/types";
 import { potencyFromGeneration } from "./generation";
 import { addPower, isThinBlood, toPower } from "./wizard";
 
@@ -187,14 +181,12 @@ export function applyPredator(sheet: Sheet): Sheet {
   }
   const next: Sheet = { ...sheet };
   const disciplina = sheet.predDisc?.trim() ?? "";
-  let novaDisciplina = false;
   const template = (POWERS[disciplina] ?? []).find(
     (p) => p.name === sheet.predPoder
   );
   const poder = template ? toPower(template) : undefined;
   if (disciplina) {
     const has = sheet.disc.some((d) => sameDiscipline(d.nome, disciplina));
-    novaDisciplina = !has;
     next.disc = has
       ? sheet.disc.map((d) =>
           sameDiscipline(d.nome, disciplina)
@@ -210,63 +202,15 @@ export function applyPredator(sheet: Sheet): Sheet {
           { nivel: 1, nome: disciplina, powers: poder ? [poder] : [] },
         ];
   }
-  const before = sheet.humanidade || 0;
-  next.humanidade = clamp(before + sumOf(predator, "humanidade"), 0, 10);
+  next.humanidade = clamp(
+    (sheet.humanidade || 0) + sumOf(predator, "humanidade"),
+    0,
+    10
+  );
   next.meritos = [
     ...(sheet.meritos ?? []),
     ...predatorMerits(predator, sheet.predEscolhas),
   ];
-  next.predBonus = {
-    disciplina,
-    humanidade: next.humanidade - before,
-    novaDisciplina,
-    poder: poder?.nome,
-    potencia: sumOf(predator, "potencia"),
-  };
-  return next;
-}
-
-/** Tira a primeira ocorrência do poder: uma cópia manual sobrevive. */
-function withoutPower(powers: Power[], nome: string | undefined): Power[] {
-  const i = nome ? powers.findIndex((p) => p.nome === nome) : -1;
-  return i < 0 ? powers : powers.filter((_, j) => j !== i);
-}
-
-function withoutDisciplineBonus(
-  disc: Discipline[],
-  { disciplina: nome, novaDisciplina: nova, poder }: PredatorBonus
-): Discipline[] {
-  if (!nome) {
-    return disc;
-  }
-  if (nova) {
-    return disc.filter((d) => !sameDiscipline(d.nome, nome));
-  }
-  return disc.map((d) =>
-    sameDiscipline(d.nome, nome)
-      ? {
-          ...d,
-          nivel: Math.max(0, d.nivel - 1),
-          powers: withoutPower(d.powers, poder),
-        }
-      : d
-  );
-}
-
-/** Desfaz `applyPredator`; sem nada aplicado, devolve a mesma ficha. */
-export function removePredator(sheet: Sheet): Sheet {
-  const bonus = sheet.predBonus;
-  const hasMerits = sheet.meritos?.some(isPredatorMerit) ?? false;
-  if (!(bonus || hasMerits)) {
-    return sheet;
-  }
-  const next: Sheet = { ...sheet, predBonus: undefined };
-  if (hasMerits) {
-    next.meritos = (sheet.meritos ?? []).filter((m) => !isPredatorMerit(m));
-  }
-  if (bonus) {
-    next.disc = withoutDisciplineBonus(sheet.disc, bonus);
-    next.humanidade = clamp((sheet.humanidade || 0) - bonus.humanidade, 0, 10);
-  }
+  next.predBonus = { potencia: sumOf(predator, "potencia") };
   return next;
 }

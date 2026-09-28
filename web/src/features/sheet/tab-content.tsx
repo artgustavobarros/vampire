@@ -1,14 +1,14 @@
 import type { SheetTab } from "./tabs";
 import { AcoesTab } from "./tabs/acoes-tab";
+import { CaracteristicasTab } from "./tabs/caracteristicas-tab";
 import { DisciplinasTab } from "./tabs/disciplinas-tab";
-import { FichaTab } from "./tabs/ficha-tab";
 import { NotasTab } from "./tabs/notas-tab";
 import { ResumoTab } from "./tabs/resumo-tab";
 import { SessoesTab } from "./tabs/sessoes-tab";
 
 export function SheetTabContent({ tab }: { tab: SheetTab }) {
   switch (tab) {
-    case "disciplinas":
+    case "disciplinas-e-sangue":
       return <DisciplinasTab />;
     case "acoes":
       return <AcoesTab />;
@@ -19,6 +19,6 @@ export function SheetTabContent({ tab }: { tab: SheetTab }) {
     case "sessoes":
       return <SessoesTab />;
     default:
-      return <FichaTab />;
+      return <CaracteristicasTab />;
   }
 }

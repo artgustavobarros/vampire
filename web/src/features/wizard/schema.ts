@@ -16,7 +16,6 @@ import {
   predatorChoiceStatus,
   predatorDiscipline,
   predatorPower,
-  removePredator,
 } from "#/rules/predator";
 import { splitPredatorSpecialty } from "#/rules/specialties";
 import {
@@ -70,9 +69,8 @@ export type WizardKey = keyof WizardValues;
 
 const emptyDiscipline = (): Discipline => ({ nivel: 0, nome: "", powers: [] });
 
-/** Valores do assistente, lidos da ficha sem o Predador aplicado. */
-export function sheetToWizard(applied: Sheet): WizardValues {
-  const sheet = removePredator(applied);
+/** Valores do assistente, lidos da ficha em criação. */
+export function sheetToWizard(sheet: Sheet): WizardValues {
   const disc = sheet.disc.slice(0, 2).map((d) => ({
     ...d,
     powers: d.powers.slice(),

@@ -7,6 +7,7 @@ import { UsersModule } from "../users/users.module.js";
 import { AuthController } from "./auth.controller.js";
 import { AuthService } from "./auth.service.js";
 import { JwtAuthGuard } from "./jwt-auth.guard.js";
+import { RolesGuard } from "./roles.guard.js";
 
 @Module({
   controllers: [AuthController],
@@ -24,6 +25,11 @@ import { JwtAuthGuard } from "./jwt-auth.guard.js";
       }),
     }),
   ],
-  providers: [AuthService, { provide: APP_GUARD, useClass: JwtAuthGuard }],
+  // a ordem importa: primeiro identifica o usuário, depois checa o papel
+  providers: [
+    AuthService,
+    { provide: APP_GUARD, useClass: JwtAuthGuard },
+    { provide: APP_GUARD, useClass: RolesGuard },
+  ],
 })
 export class AuthModule {}

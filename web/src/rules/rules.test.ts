@@ -20,7 +20,7 @@ import {
   potencyNote,
   sireNote,
 } from "./generation";
-import { adjustHumanity, stains, toggleStain } from "./humanity";
+import { stains, toggleStain } from "./humanity";
 import { hungerAlertFor } from "./hunger";
 import {
   applyPredator,
@@ -30,7 +30,6 @@ import {
   predatorDiscipline,
   predatorMerits,
   predatorPower,
-  removePredator,
 } from "./predator";
 import {
   predatorSpecialty,
@@ -373,10 +372,6 @@ describe("humanidade", () => {
   });
   it("fichas só com contagem marcam as últimas caixas", () => {
     expect(stains(sheet({ manchas: 2 })).slice(8)).toEqual([true, true]);
-  });
-  it("nível limitado a 0–10", () => {
-    expect(adjustHumanity(sheet({ humanidade: 10 }), 1)).toBe(10);
-    expect(adjustHumanity(sheet({ humanidade: 0 }), -1)).toBe(0);
   });
 });
 
@@ -942,12 +937,7 @@ describe("Predador", () => {
       "Recursos",
       "Contatos (criminosos)",
     ]);
-    expect(s.predBonus).toEqual({
-      disciplina: "Potência",
-      humanidade: -1,
-      novaDisciplina: false,
-      potencia: 0,
-    });
+    expect(s.predBonus).toEqual({ potencia: 0 });
   });
 
   it("Disciplina nova entra com 1 ponto", () => {
@@ -955,16 +945,13 @@ describe("Predador", () => {
       brujah({ predador: "Sereia", predDisc: "Fortitude" })
     );
     expect(s.disc.at(-1)).toEqual({ nivel: 1, nome: "Fortitude", powers: [] });
-    expect(s.predBonus?.novaDisciplina).toBe(true);
   });
 
-  it("Humanidade limitada e delta real", () => {
+  it("Humanidade limitada", () => {
     const up = applyPredator(
       brujah({ humanidade: 10, predador: "Fazendeiro", predDisc: "Animalismo" })
     );
     expect(up.humanidade).toBe(10);
-    expect(up.predBonus?.humanidade).toBe(0);
-    expect(removePredator(up).humanidade).toBe(10);
     expect(
       applyPredator(brujah({ predador: "Fazendeiro", predDisc: "Animalismo" }))
         .humanidade
@@ -1002,21 +989,6 @@ describe("Predador", () => {
     expect(applyPredator(ralo)).toBe(ralo);
     const none = brujah();
     expect(applyPredator(none)).toBe(none);
-    expect(removePredator(none)).toBe(none);
-  });
-
-  it("remover desfaz o que foi aplicado", () => {
-    for (const [predador, predDisc] of [
-      ["Gato de Rua", "Potência"],
-      ["Sereia", "Fortitude"],
-    ]) {
-      const base = brujah({ predador, predDisc });
-      const back = removePredator(applyPredator(base));
-      expect(back.disc).toEqual(base.disc);
-      expect(back.humanidade).toBe(base.humanidade);
-      expect(back.meritos).toEqual(base.meritos);
-      expect(back.predBonus).toBeUndefined();
-    }
   });
 
   describe("predatorDiscipline", () => {
@@ -1072,7 +1044,7 @@ describe("Predador", () => {
     });
   });
 
-  it("poder do Predador entra com o ponto e sai ao remover", () => {
+  it("poder do Predador entra com o ponto", () => {
     const base = brujah({
       predador: "Gato de Rua",
       predDisc: "Potência",
@@ -1081,8 +1053,6 @@ describe("Predador", () => {
     const s = applyPredator(base);
     expect(s.disc[0].nivel).toBe(3);
     expect(s.disc[0].powers.map((p) => p.nome)).toEqual(["Força Prodigiosa"]);
-    expect(s.predBonus?.poder).toBe("Força Prodigiosa");
-    expect(removePredator(s).disc).toEqual(base.disc);
   });
 
   it("poder numa Disciplina nova", () => {
@@ -1099,24 +1069,6 @@ describe("Predador", () => {
       nome: "Dominação",
       powers: [{ nivel: 1, nome: "Compelir" }],
     });
-  });
-
-  it("remover tira uma só cópia do poder", () => {
-    const applied = applyPredator(
-      brujah({
-        predador: "Gato de Rua",
-        predDisc: "Potência",
-        predPoder: "Força Prodigiosa",
-      })
-    );
-    const copy = { nivel: 1, nome: "Força Prodigiosa" };
-    const manual = {
-      ...applied,
-      disc: applied.disc.map((d, i) =>
-        i === 0 ? { ...d, powers: [...d.powers, copy] } : d
-      ),
-    };
-    expect(removePredator(manual).disc[0].powers).toEqual([copy]);
   });
 
   it("linhas do Predador fora da cota 7/2", () => {

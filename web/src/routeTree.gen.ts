@@ -13,8 +13,13 @@ import { Route as IndexRouteImport } from './routes/index'
 import { Route as CriarRouteImport } from './routes/criar'
 import { Route as EntrarRouteImport } from './routes/entrar'
 import { Route as FichaRouteImport } from './routes/ficha'
+import { Route as PersonagensRouteImport } from './routes/personagens'
 import { Route as FichaIndexRouteImport } from './routes/ficha.index'
 import { Route as FichaAbaRouteImport } from './routes/ficha.$aba'
+import { Route as PersonagensIndexRouteImport } from './routes/personagens.index'
+import { Route as PersonagensIdRouteImport } from './routes/personagens.$id'
+import { Route as PersonagensIdIndexRouteImport } from './routes/personagens.$id.index'
+import { Route as PersonagensIdAbaRouteImport } from './routes/personagens.$id.$aba'
 
 const IndexRoute = IndexRouteImport.update({
   id: '/',
@@ -36,6 +41,11 @@ const FichaRoute = FichaRouteImport.update({
   path: '/ficha',
   getParentRoute: () => rootRouteImport,
 } as any)
+const PersonagensRoute = PersonagensRouteImport.update({
+  id: '/personagens',
+  path: '/personagens',
+  getParentRoute: () => rootRouteImport,
+} as any)
 const FichaIndexRoute = FichaIndexRouteImport.update({
   id: '/',
   path: '/',
@@ -46,14 +56,39 @@ const FichaAbaRoute = FichaAbaRouteImport.update({
   path: '/$aba',
   getParentRoute: () => FichaRoute,
 } as any)
+const PersonagensIndexRoute = PersonagensIndexRouteImport.update({
+  id: '/',
+  path: '/',
+  getParentRoute: () => PersonagensRoute,
+} as any)
+const PersonagensIdRoute = PersonagensIdRouteImport.update({
+  id: '/$id',
+  path: '/$id',
+  getParentRoute: () => PersonagensRoute,
+} as any)
+const PersonagensIdIndexRoute = PersonagensIdIndexRouteImport.update({
+  id: '/',
+  path: '/',
+  getParentRoute: () => PersonagensIdRoute,
+} as any)
+const PersonagensIdAbaRoute = PersonagensIdAbaRouteImport.update({
+  id: '/$aba',
+  path: '/$aba',
+  getParentRoute: () => PersonagensIdRoute,
+} as any)
 
 export interface FileRoutesByFullPath {
   '/': typeof IndexRoute
   '/criar': typeof CriarRoute
   '/entrar': typeof EntrarRoute
   '/ficha': typeof FichaRouteWithChildren
+  '/personagens': typeof PersonagensRouteWithChildren
   '/ficha/$aba': typeof FichaAbaRoute
+  '/personagens/$id': typeof PersonagensIdRouteWithChildren
   '/ficha/': typeof FichaIndexRoute
+  '/personagens/': typeof PersonagensIndexRoute
+  '/personagens/$id/$aba': typeof PersonagensIdAbaRoute
+  '/personagens/$id/': typeof PersonagensIdIndexRoute
 }
 export interface FileRoutesByTo {
   '/': typeof IndexRoute
@@ -61,6 +96,9 @@ export interface FileRoutesByTo {
   '/entrar': typeof EntrarRoute
   '/ficha/$aba': typeof FichaAbaRoute
   '/ficha': typeof FichaIndexRoute
+  '/personagens': typeof PersonagensIndexRoute
+  '/personagens/$id/$aba': typeof PersonagensIdAbaRoute
+  '/personagens/$id': typeof PersonagensIdIndexRoute
 }
 export interface FileRoutesById {
   __root__: typeof rootRouteImport
@@ -68,22 +106,51 @@ export interface FileRoutesById {
   '/criar': typeof CriarRoute
   '/entrar': typeof EntrarRoute
   '/ficha': typeof FichaRouteWithChildren
+  '/personagens': typeof PersonagensRouteWithChildren
   '/ficha/$aba': typeof FichaAbaRoute
+  '/personagens/$id': typeof PersonagensIdRouteWithChildren
   '/ficha/': typeof FichaIndexRoute
+  '/personagens/': typeof PersonagensIndexRoute
+  '/personagens/$id/$aba': typeof PersonagensIdAbaRoute
+  '/personagens/$id/': typeof PersonagensIdIndexRoute
 }
 export interface FileRouteTypes {
   fileRoutesByFullPath: FileRoutesByFullPath
-  fullPaths: '/' | '/criar' | '/entrar' | '/ficha' | '/ficha/$aba' | '/ficha/'
+  fullPaths:
+    | '/'
+    | '/criar'
+    | '/entrar'
+    | '/ficha'
+    | '/personagens'
+    | '/ficha/$aba'
+    | '/personagens/$id'
+    | '/ficha/'
+    | '/personagens/'
+    | '/personagens/$id/$aba'
+    | '/personagens/$id/'
   fileRoutesByTo: FileRoutesByTo
-  to: '/' | '/criar' | '/entrar' | '/ficha/$aba' | '/ficha'
+  to:
+    | '/'
+    | '/criar'
+    | '/entrar'
+    | '/ficha/$aba'
+    | '/ficha'
+    | '/personagens'
+    | '/personagens/$id/$aba'
+    | '/personagens/$id'
   id:
     | '__root__'
     | '/'
     | '/criar'
     | '/entrar'
     | '/ficha'
+    | '/personagens'
     | '/ficha/$aba'
+    | '/personagens/$id'
     | '/ficha/'
+    | '/personagens/'
+    | '/personagens/$id/$aba'
+    | '/personagens/$id/'
   fileRoutesById: FileRoutesById
 }
 export interface RootRouteChildren {
@@ -91,6 +158,7 @@ export interface RootRouteChildren {
   CriarRoute: typeof CriarRoute
   EntrarRoute: typeof EntrarRoute
   FichaRoute: typeof FichaRouteWithChildren
+  PersonagensRoute: typeof PersonagensRouteWithChildren
 }
 
 declare module '@tanstack/react-router' {
@@ -123,6 +191,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof FichaRouteImport
       parentRoute: typeof rootRouteImport
     }
+    '/personagens': {
+      id: '/personagens'
+      path: '/personagens'
+      fullPath: '/personagens'
+      preLoaderRoute: typeof PersonagensRouteImport
+      parentRoute: typeof rootRouteImport
+    }
     '/ficha/': {
       id: '/ficha/'
       path: '/'
@@ -136,6 +211,34 @@ declare module '@tanstack/react-router' {
       fullPath: '/ficha/$aba'
       preLoaderRoute: typeof FichaAbaRouteImport
       parentRoute: typeof FichaRoute
+    }
+    '/personagens/': {
+      id: '/personagens/'
+      path: '/'
+      fullPath: '/personagens/'
+      preLoaderRoute: typeof PersonagensIndexRouteImport
+      parentRoute: typeof PersonagensRoute
+    }
+    '/personagens/$id': {
+      id: '/personagens/$id'
+      path: '/$id'
+      fullPath: '/personagens/$id'
+      preLoaderRoute: typeof PersonagensIdRouteImport
+      parentRoute: typeof PersonagensRoute
+    }
+    '/personagens/$id/': {
+      id: '/personagens/$id/'
+      path: '/'
+      fullPath: '/personagens/$id/'
+      preLoaderRoute: typeof PersonagensIdIndexRouteImport
+      parentRoute: typeof PersonagensIdRoute
+    }
+    '/personagens/$id/$aba': {
+      id: '/personagens/$id/$aba'
+      path: '/$aba'
+      fullPath: '/personagens/$id/$aba'
+      preLoaderRoute: typeof PersonagensIdAbaRouteImport
+      parentRoute: typeof PersonagensIdRoute
     }
   }
 }
@@ -152,11 +255,40 @@ const FichaRouteChildren: FichaRouteChildren = {
 
 const FichaRouteWithChildren = FichaRoute._addFileChildren(FichaRouteChildren)
 
+interface PersonagensIdRouteChildren {
+  PersonagensIdAbaRoute: typeof PersonagensIdAbaRoute
+  PersonagensIdIndexRoute: typeof PersonagensIdIndexRoute
+}
+
+const PersonagensIdRouteChildren: PersonagensIdRouteChildren = {
+  PersonagensIdAbaRoute: PersonagensIdAbaRoute,
+  PersonagensIdIndexRoute: PersonagensIdIndexRoute,
+}
+
+const PersonagensIdRouteWithChildren = PersonagensIdRoute._addFileChildren(
+  PersonagensIdRouteChildren,
+)
+
+interface PersonagensRouteChildren {
+  PersonagensIdRoute: typeof PersonagensIdRouteWithChildren
+  PersonagensIndexRoute: typeof PersonagensIndexRoute
+}
+
+const PersonagensRouteChildren: PersonagensRouteChildren = {
+  PersonagensIdRoute: PersonagensIdRouteWithChildren,
+  PersonagensIndexRoute: PersonagensIndexRoute,
+}
+
+const PersonagensRouteWithChildren = PersonagensRoute._addFileChildren(
+  PersonagensRouteChildren,
+)
+
 const rootRouteChildren: RootRouteChildren = {
   IndexRoute: IndexRoute,
   CriarRoute: CriarRoute,
   EntrarRoute: EntrarRoute,
   FichaRoute: FichaRouteWithChildren,
+  PersonagensRoute: PersonagensRouteWithChildren,
 }
 export const routeTree = rootRouteImport
   ._addFileChildren(rootRouteChildren)

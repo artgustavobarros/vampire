@@ -11,7 +11,8 @@ interface TraitGridProps {
   infoKind: "attr" | "skill";
   /** largura mínima da coluna (auto-fit) */
   minColumn: number;
-  onChange: (name: string, value: number) => void;
+  /** omitido = pontos somente leitura */
+  onChange?: (name: string, value: number) => void;
   /** especialidades por traço, em selos abaixo do nome que abrem o painel */
   specialties?: Record<string, readonly SpecialtyEntry[]>;
   /** cor do título do grupo: tinta (assistente) ou suave (ficha) */
@@ -70,7 +71,7 @@ export function TraitGrid({
                   </span>
                   <DotRating
                     label={name}
-                    onChange={(v) => onChange(name, v)}
+                    onChange={onChange && ((v) => onChange(name, v))}
                     value={values[name] || 0}
                   />
                 </div>

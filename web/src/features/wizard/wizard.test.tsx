@@ -21,8 +21,7 @@ import { InfoProvider } from "#/features/info/info-sheet";
 import { blankSheet } from "#/lib/sheet";
 import type { Sheet } from "#/lib/types";
 import { Route as CriarRoute } from "#/routes/criar";
-import { applyPredator } from "#/rules/predator";
-import { flushSheet, useCharacterStore } from "#/stores/character-store";
+import { useCharacterStore } from "#/stores/character-store";
 import { usePlayerStore } from "#/stores/player-store";
 import { resetStores } from "#/stores/test-utils";
 import { fakeApi } from "#/test/fake-api";
@@ -73,8 +72,6 @@ function renderWizard(sheet: Sheet, url: string) {
 const SALTO = /Salto Prodigioso/;
 const SANGUESSUGA = /^Sanguessuga/;
 const OSIRIS = /^Osíris/;
-const CONSENSUALISTA = /^Consensualista/;
-const FORTITUDE = /^Fortitude/;
 const FAZENDEIRO = /^Fazendeiro/;
 const SAQUEADOR = /^Saqueador/;
 const FEITICARIA = /^Feitiçaria de Sangue/;
@@ -866,18 +863,13 @@ describe("rota /criar", () => {
     expect(usePlayerStore.getState().user).toBeNull();
   });
 
-  it("refazer edita e substitui o mesmo personagem", async () => {
+  it("com a ficha criada vai para a ficha, mesmo pedindo refazer", async () => {
     renderWizard(
       completeSheet({ criada: true }),
       "/criar?passo=8&refazer=true"
     );
-    const nome = await screen.findByLabelText("Nome");
-    expect(screen.getByText("Refazer personagem")).toBeInTheDocument();
-    fireEvent.change(nome, { target: { value: "Bruno" } });
-    click("Concluir");
     expect(await screen.findByText("Página da ficha")).toBeInTheDocument();
-    await flushSheet();
-    expect(fakeApi.sheet(EMAIL)).toMatchObject({ criada: true, nome: "Bruno" });
+    expect(screen.queryByText("Refazer personagem")).toBeNull();
   });
 });
 
@@ -889,14 +881,6 @@ describe("Predador aplicado na ficha", () => {
     (stored().meritos ?? [])
       .filter((m) => m.origem === "predador")
       .map((m) => m.nome);
-  const gatoCeleridade = () =>
-    applyPredator(
-      completeSheet({
-        criada: true,
-        predDisc: "Celeridade",
-        predPoder: "Rapidez",
-      })
-    );
 
   it("escolha de uma opção seleciona só uma", async () => {
     renderWizard(completeSheet(), "/criar?passo=6");
@@ -1142,77 +1126,6 @@ describe("Predador aplicado na ficha", () => {
       "Força Prodigiosa",
     ]);
     expect(stored().humanidade).toBe(6);
-    expect(predatorMerits()).toEqual(["Contatos (criminosos)"]);
-  });
-
-  it("concluir o refazer não duplica o poder", async () => {
-    renderWizard(
-      applyPredator(completeSheet({ criada: true })),
-      "/criar?passo=8&refazer=true"
-    );
-    click(await screen.findByText("Concluir"));
-    expect(await screen.findByText("Página da ficha")).toBeInTheDocument();
-    expect(levels()[0]).toEqual(["Potência", 3]);
-    expect(stored().disc[0].powers.map((p) => p.nome)).toEqual([
-      "Força Prodigiosa",
-    ]);
-  });
-
-  it("refazer mostra o passo 5 com os pontos originais", async () => {
-    renderWizard(
-      applyPredator(completeSheet({ criada: true })),
-      "/criar?passo=5&refazer=true"
-    );
-    expect(await screen.findByText("Passo 5 de 8")).toBeInTheDocument();
-    expect(
-      screen.getByText("Distribuição completa: 2 e 1.")
-    ).toBeInTheDocument();
-  });
-
-  it("concluir o refazer não duplica", async () => {
-    renderWizard(gatoCeleridade(), "/criar?passo=8&refazer=true");
-    click(await screen.findByText("Concluir"));
-    expect(await screen.findByText("Página da ficha")).toBeInTheDocument();
-    expect(stored().humanidade).toBe(6);
-    expect(levels()).toEqual([
-      ["Potência", 2],
-      ["Celeridade", 2],
-    ]);
-    expect(predatorMerits()).toEqual(["Contatos (criminosos)"]);
-  });
-
-  it("trocar de Predador no refazer troca o que foi aplicado", async () => {
-    renderWizard(gatoCeleridade(), "/criar?passo=6&refazer=true");
-    click(await screen.findByRole("button", { name: CONSENSUALISTA }));
-    click("Medicina (Flebotomia)");
-    click(FORTITUDE);
-    click("Incluir Resiliência");
-    click("Continuar");
-    click(await screen.findByText("Passo 7 de 8").then(() => "Continuar"));
-    click(await screen.findByText("Concluir"));
-    expect(await screen.findByText("Página da ficha")).toBeInTheDocument();
-    expect(levels()).toEqual([
-      ["Potência", 2],
-      ["Celeridade", 1],
-      ["Fortitude", 1],
-    ]);
-    expect(stored().disc[2].powers.map((p) => p.nome)).toEqual(["Resiliência"]);
-    expect(stored().humanidade).toBe(8);
-    expect(predatorMerits()).toEqual([
-      "Segredo Obscuro (Quebrador da Máscara)",
-      "Presa Excluída (sem consentimento)",
-    ]);
-  });
-
-  it("sair do refazer pelo passo 1 mantém o Predador aplicado", async () => {
-    renderWizard(gatoCeleridade(), "/criar?passo=2&refazer=true");
-    click(await screen.findByText("Voltar"));
-    await screen.findByText("Passo 1 de 8");
-    expect(stored().predBonus).toBeUndefined();
-    click("Voltar");
-    expect(await screen.findByText("Página da ficha")).toBeInTheDocument();
-    expect(stored().humanidade).toBe(6);
-    expect(levels()).toContainEqual(["Celeridade", 2]);
     expect(predatorMerits()).toEqual(["Contatos (criminosos)"]);
   });
 });

@@ -24,7 +24,3 @@ export function toggleStain(
   next[index] = !next[index];
   return { manchas: next.filter(Boolean).length, manchasIdx: next };
 }
-
-export function adjustHumanity(sheet: Sheet, delta: number): number {
-  return Math.min(10, Math.max(0, (sheet.humanidade || 0) + delta));
-}

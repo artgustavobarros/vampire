@@ -2,6 +2,7 @@ import { Body, Controller, Get, Patch, Put } from "@nestjs/common";
 import {
   ApiBadRequestResponse,
   ApiBearerAuth,
+  ApiForbiddenResponse,
   ApiOkResponse,
   ApiOperation,
   ApiTags,
@@ -38,6 +39,10 @@ export class SheetsController {
   @ApiOperation({ summary: "Gravar a ficha inteira" })
   @ApiOkResponse({ standardSchema: sheetResponseSchema })
   @ApiBadRequestResponse({ standardSchema: errorResponseSchema })
+  @ApiForbiddenResponse({
+    description: "Ficha criada: Atributos e Habilidades só pelo Mestre",
+    standardSchema: errorResponseSchema,
+  })
   replace(
     @CurrentUser() user: User,
     @Body({ schema: replaceSheetSchema }) body: ReplaceSheetDto
@@ -52,6 +57,10 @@ export class SheetsController {
   })
   @ApiOkResponse({ standardSchema: sheetResponseSchema })
   @ApiBadRequestResponse({ standardSchema: errorResponseSchema })
+  @ApiForbiddenResponse({
+    description: "Ficha criada: Atributos e Habilidades só pelo Mestre",
+    standardSchema: errorResponseSchema,
+  })
   merge(
     @CurrentUser() user: User,
     @Body({ schema: patchSheetSchema }) body: PatchSheetDto

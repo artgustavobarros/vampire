@@ -40,9 +40,11 @@ export function AuthCard({ mode }: { mode: "login" | "signup" }) {
       return;
     }
     setPassword("");
+    const { role, user } = usePlayerStore.getState();
     const target = homeTarget({
       criada: useCharacterStore.getState().sheet.criada,
-      user: usePlayerStore.getState().user,
+      role,
+      user,
     });
     navigate({
       search: target === "/criar" ? { passo: 1 } : undefined,

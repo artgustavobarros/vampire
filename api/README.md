@@ -60,12 +60,21 @@ A documentação interativa (Swagger UI) fica em [`/api/docs`](http://localhost:
 | `GET` | `/api/health` | — | — | `200 { status: "ok", db: "up" }` ou `503 { status: "error", db: "down" }` |
 | `POST` | `/api/auth/signup` | — | `{ name, email, password }` | `201 { accessToken, user }` |
 | `POST` | `/api/auth/login` | — | `{ email, password }` | `200 { accessToken, user }` |
-| `GET` | `/api/auth/me` | ✓ | — | `200 { id, email, name }` |
+| `GET` | `/api/auth/me` | ✓ | — | `200 { id, email, name, role }` |
 | `GET` | `/api/me/sheet` | ✓ | — | `200 { sheet, updatedAt }` (`sheet: null` se ainda não existe) |
 | `PUT` | `/api/me/sheet` | ✓ | `{ sheet }` | `200 { sheet, updatedAt }` — substitui a ficha inteira |
 | `PATCH` | `/api/me/sheet` | ✓ | `{ patch }` | `200 { sheet, updatedAt }` — mescla os campos de primeiro nível |
+| `GET` | `/api/sheets` | Mestre | — | `200 [{ user, sheet, updatedAt }]` — todos os jogadores, por nome |
+| `GET` | `/api/sheets/:userId` | Mestre | — | `200 { user, sheet, updatedAt }` |
+| `PATCH` | `/api/sheets/:userId` | Mestre | `{ patch }` | `200 { sheet, updatedAt }` — como o `PATCH /me/sheet`, sem a trava |
 
-`user` é `{ id, email, name }`. A ficha é o JSON `Sheet` do web (`web/src/lib/types.ts`), guardado como veio: a API só confere que é um objeto e que o corpo tem até 1 MB. O `PATCH` faz a mesma mescla rasa do `patch` do character store (`attrs` enviado substitui o `attrs` inteiro).
+`user` é `{ id, email, name, role }`. A ficha é o JSON `Sheet` do web (`web/src/lib/types.ts`), guardado como veio: a API só confere que é um objeto e que o corpo tem até 1 MB. O `PATCH` faz a mesma mescla rasa do `patch` do character store (`attrs` enviado substitui o `attrs` inteiro).
+
+### Papéis
+
+Todo cadastro é `player`. A migração `0001_roles` cria a conta do Mestre (`role: "dm"`): **`admin@admin.com` / `!@#ASD123asd`**. Fora de desenvolvimento, troque a senha direto no banco (`UPDATE users SET password_hash = '<bcrypt>' WHERE email = 'admin@admin.com'`). O papel é lido do banco a cada requisição, então mudar `users.role` vale na hora.
+
+Com a ficha criada (`criada: true`), o jogador não muda mais `attrs` nem `skills` pelo `/me/sheet` (`403`); valores iguais aos gravados passam. Só o Mestre, por `/api/sheets/:userId`, altera Atributos e Habilidades.
 
 ### Erros
 
@@ -73,8 +82,10 @@ Sempre `{ statusCode, message, error }`, com `message` em português pronta para
 
 | Status | `message` |
 |---|---|
-| `400` | `Informe o e-mail.`, `E-mail inválido.`, `Informe a senha.`, `Informe o nome.`, `A senha precisa ter pelo menos 6 caracteres.`, `Ficha inválida.`, `JSON inválido.` |
+| `400` | `Informe o e-mail.`, `E-mail inválido.`, `Informe a senha.`, `Informe o nome.`, `A senha precisa ter pelo menos 6 caracteres.`, `Ficha inválida.`, `JSON inválido.`, `Jogador inválido.` |
 | `401` | `E-mail ou senha incorretos.`, `Entre para continuar.`, `Sessão expirada. Entre novamente.` |
+| `403` | `Apenas o Mestre pode fazer isso.`, `Atributos e Habilidades só podem ser alterados pelo Mestre.` |
+| `404` | `Jogador não encontrado.` |
 | `409` | `E-mail já cadastrado. Use "Entrar".` |
 | `413` | `A requisição passou do limite de 1 MB.` |
 | `500` | `Algo deu errado. Tente novamente.` |

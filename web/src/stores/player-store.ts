@@ -5,6 +5,7 @@ import {
   getSheet,
   getToken,
   me,
+  type Role,
   setToken,
 } from "#/lib/api";
 import { apiError } from "#/lib/toast";
@@ -14,12 +15,14 @@ export interface PlayerState {
   name: string | null;
   /** sessão já foi restaurada (só acontece no cliente) */
   ready: boolean;
+  /** `dm` = Mestre, sem ficha própria */
+  role: Role | null;
   /** e-mail do jogador */
   user: string | null;
 }
 
 export interface PlayerActions {
-  /** Entra como `user` com a ficha já buscada na API. */
+  /** Entra como `user` com a ficha já buscada na API (ignorada para o Mestre). */
   login: (user: ApiUser, sheet: unknown) => void;
   logout: () => void;
   /** Restaura a sessão pelo token salvo. Chamado no cliente, depois da hidratação. */
@@ -54,11 +57,15 @@ export const usePlayerStore = create<PlayerState & PlayerActions>()(
 
     return {
       login(user, sheet) {
-        set({ name: user.name, user: user.email });
-        useCharacterStore.getState().load(user.email, sheet);
+        set({ name: user.name, role: user.role, user: user.email });
+        if (user.role === "dm") {
+          useCharacterStore.getState().clear();
+        } else {
+          useCharacterStore.getState().load({ email: user.email }, sheet);
+        }
       },
       logout() {
-        set({ name: null, user: null });
+        set({ name: null, role: null, user: null });
         useCharacterStore.getState().clear();
       },
       name: null,
@@ -72,6 +79,7 @@ export const usePlayerStore = create<PlayerState & PlayerActions>()(
         });
         return restoring;
       },
+      role: null,
       user: null,
     };
   }

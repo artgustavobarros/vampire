@@ -14,6 +14,7 @@ function makeUser(overrides: Partial<User> = {}): User {
     id: "user-1",
     name: "Vitória",
     passwordHash: bcrypt.hashSync("segredo", 4),
+    role: "player",
     updatedAt: now,
     ...overrides,
   };
@@ -54,7 +55,12 @@ describe("AuthService", () => {
       });
       expect(result).toEqual({
         accessToken: "token",
-        user: { email: "vitoria@exemplo.com", id: "user-1", name: "Vitória" },
+        user: {
+          email: "vitoria@exemplo.com",
+          id: "user-1",
+          name: "Vitória",
+          role: "player",
+        },
       });
     });
 

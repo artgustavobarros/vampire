@@ -13,7 +13,7 @@ import { logout } from "#/lib/auth";
 import { notify } from "#/lib/toast";
 import type { Sheet } from "#/lib/types";
 import { cn } from "#/lib/utils";
-import { applyPredator, removePredator } from "#/rules/predator";
+import { applyPredator } from "#/rules/predator";
 import { initialAttributes } from "#/rules/wizard";
 import { patchSheet, useCharacterStore } from "#/stores/character-store";
 import { collectErrorMessages, formatStepErrors } from "./error-messages";
@@ -90,13 +90,7 @@ const STEP_RESOLVERS: Resolver<WizardValues>[] = STEP_SCHEMAS.map((schema) =>
   )
 );
 
-export function WizardShell({
-  step,
-  refazer = false,
-}: {
-  step: number;
-  refazer?: boolean;
-}) {
+export function WizardShell({ step }: { step: number }) {
   const navigate = useNavigate();
   const current = STEPS[step - 1];
   const Body = current.body;
@@ -119,8 +113,8 @@ export function WizardShell({
   });
 
   /**
-   * Grava os campos sobre a ficha sem o Predador aplicado e zera erros e
-   * estado de envio para o próximo passo. `finish` ajusta a ficha gravada.
+   * Grava os campos na ficha e zera erros e estado de envio para o próximo
+   * passo. `finish` ajusta a ficha gravada.
    */
   const commit = (
     fields: readonly WizardKey[],
@@ -128,30 +122,19 @@ export function WizardShell({
     finish: (sheet: Sheet) => Sheet = (sheet) => sheet
   ) => {
     const values = form.getValues();
-    const base = removePredator(useCharacterStore.getState().sheet);
+    const base = useCharacterStore.getState().sheet;
     patchSheet(
       finish({ ...base, ...wizardToPatch(values, fields, base), ...extra })
     );
     form.reset(values);
   };
 
-  const go = (passo: number) =>
-    navigate({
-      search: refazer ? { passo, refazer } : { passo },
-      to: "/criar",
-    });
+  const go = (passo: number) => navigate({ search: { passo }, to: "/criar" });
 
   const back = () => {
-    // sair do refazer devolve a ficha com o Predador aplicado
-    commit(
-      stepFields(step),
-      {},
-      step === 1 && refazer ? applyPredator : undefined
-    );
+    commit(stepFields(step));
     if (step > 1) {
       go(step - 1);
-    } else if (refazer) {
-      navigate({ params: { aba: "ficha" }, to: "/ficha/$aba" });
     } else {
       logout().then(() => navigate({ to: "/entrar" }));
     }
@@ -165,7 +148,7 @@ export function WizardShell({
           disc: sheet.disc.filter((d) => d.nome.trim()),
         })
       );
-      navigate({ params: { aba: "ficha" }, to: "/ficha/$aba" });
+      navigate({ params: { aba: "caracteristicas" }, to: "/ficha/$aba" });
       return;
     }
     const fields = [...stepFields(step)];
@@ -191,7 +174,7 @@ export function WizardShell({
     <div className="mx-auto max-w-205 px-4 py-6">
       <div className="mb-2 flex items-baseline justify-between gap-3">
         <div className="font-label font-semibold text-ink text-xs uppercase leading-none tracking-[.12em]">
-          {refazer ? "Refazer personagem" : "Criação de personagem"}
+          Criação de personagem
         </div>
         <div className="text-base text-ink-soft">
           Passo {step} de {STEPS.length}

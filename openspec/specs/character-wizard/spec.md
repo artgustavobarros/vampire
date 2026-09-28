@@ -4,7 +4,7 @@
 Assistente de criação de personagem em 8 passos com as regras de distribuição de Vampiro: A Máscara V5.
 ## Requirements
 ### Requirement: Assistente em 8 passos
-O assistente SHALL guiar a criação em 8 passos, nesta ordem: Clã e senhor; Atributos; Habilidades; Especialidades; Disciplinas; Predador; Vantagens e defeitos; Detalhes finais. Cada passo MUST mostrar título, dica em itálico, "Passo N de 8" e uma barra de progresso com 8 segmentos preenchidos até o passo atual. Os valores de um passo MUST ser gravados na ficha quando o passo é validado em "Continuar" ou "Concluir", e MUST ser gravados sem validação ao clicar "Voltar". Alterações dentro de um passo não são gravadas a cada tecla.
+O assistente SHALL guiar a criação em 8 passos, nesta ordem: Clã e senhor; Atributos; Habilidades; Especialidades; Disciplinas; Predador; Vantagens e defeitos; Detalhes finais. Cada passo MUST mostrar título, dica em itálico, "Passo N de 8" e uma barra de progresso com 8 segmentos preenchidos até o passo atual. Os valores de um passo MUST ser gravados na ficha quando o passo é validado em "Continuar" ou "Concluir", e MUST ser gravados sem validação ao clicar "Voltar". Alterações dentro de um passo não são gravadas a cada tecla. O assistente MUST NOT ter modo de refazer: ele só existe enquanto a ficha não está criada.
 
 #### Scenario: Navegar para frente
 - **WHEN** o passo 3 está válido e o usuário clica "Continuar"
@@ -16,15 +16,11 @@ O assistente SHALL guiar a criação em 8 passos, nesta ordem: Clã e senhor; At
 
 #### Scenario: Voltar do primeiro passo
 - **WHEN** o usuário clica "Voltar" no passo 1
-- **THEN** volta para a ficha se estiver no modo refazer, ou sai e vai para a tela de entrada caso contrário
+- **THEN** sai e vai para a tela de entrada
 
 #### Scenario: Concluir
 - **WHEN** o passo 8 está válido e o usuário clica "Concluir"
-- **THEN** a ficha é gravada com `criada: true`, disciplinas sem nome são descartadas e a ficha abre na aba Ficha
-
-#### Scenario: Refazer personagem
-- **WHEN** o usuário escolhe "Refazer personagem" no menu da ficha
-- **THEN** o assistente abre no passo 1 em modo refazer, com os dados atuais preenchidos
+- **THEN** a ficha é gravada com `criada: true`, disciplinas sem nome são descartadas e a ficha abre na aba Características
 
 ### Requirement: Passo 1 — Clã e geração
 O passo SHALL listar os clãs em cartões selecionáveis (nome e disciplinas do clã), mostrar Perdição e Compulsão do clã escolhido, o campo do nome do senhor e um seletor de Geração com 13 opções (16ª a 4ª), sem campo livre de Geração nem de Potência de Sangue. A Potência de Sangue inicial MUST ser derivada da Geração pela tabela do livro: 16ª–14ª 0, 13ª–10ª 1, 9ª–8ª 2, 7ª–6ª 3, 5ª 4, 4ª 5. Abaixo do seletor, o passo MUST mostrar a nota de Potência ("Geração 9ª — Potência de Sangue 2.", ou "Escolha a Geração para definir a Potência de Sangue." sem Geração) e, numa segunda linha, a Geração do senhor: "Seu senhor é da <N-1>ª Geração (você é sempre uma Geração acima do senhor)." ou, sem Geração, "Você é sempre uma Geração acima do seu senhor.". O rótulo "Geração" MUST abrir o painel da Geração (ver `trait-info`). Os títulos da Perdição e da Compulsão MUST ser gatilhos do painel lateral (ver `trait-info`).
@@ -420,19 +416,23 @@ O assistente SHALL abrir no máximo o primeiro passo cujos dados gravados na fic
 - **THEN** o assistente abre no passo 2
 
 ### Requirement: Um personagem por jogador
-Cada jogador SHALL ter no máximo um personagem, guardado em `vtm5.sheet.<email>`. Com a ficha já criada (`criada: true`), `/criar` MUST redirecionar para a ficha, exceto no modo refazer (`refazer=true`), que edita o mesmo personagem e, ao concluir, substitui a ficha existente.
+Cada jogador SHALL ter no máximo um personagem, gravado na API como a sua ficha. Com a ficha já criada (`criada: true`), `/criar` MUST redirecionar para a aba Características, ignorando o antigo parâmetro `refazer=true`: depois da criação, Atributos e Habilidades só podem ser alterados pelo Mestre. O Mestre não tem personagem próprio e, ao abrir `/criar`, MUST ser redirecionado para `/personagens`.
 
 #### Scenario: Criar com personagem existente
 - **WHEN** o jogador tem a ficha criada e abre `/criar?passo=1`
-- **THEN** é redirecionado para a aba Ficha
+- **THEN** é redirecionado para a aba Características
+
+#### Scenario: Refazer com personagem existente
+- **WHEN** o jogador tem a ficha criada e abre `/criar?passo=1&refazer=true`
+- **THEN** é redirecionado para a aba Características e a ficha não muda
 
 #### Scenario: Primeira criação
 - **WHEN** o jogador não tem ficha criada e abre `/criar?passo=1`
 - **THEN** o assistente abre no passo 1
 
-#### Scenario: Refazer substitui o mesmo personagem
-- **WHEN** o jogador refaz o personagem, troca o nome para "Bruno" e conclui
-- **THEN** a mesma ficha em `vtm5.sheet.<email>` passa a ter o nome "Bruno" e nenhuma outra ficha é criada
+#### Scenario: Mestre no assistente
+- **WHEN** o Mestre abre `/criar?passo=1`
+- **THEN** é redirecionado para `/personagens`
 
 ### Requirement: Dicas dos passos 6 e 7
 A dica do passo 6 SHALL ser "Como você caça define perícias e Disciplinas extras. Sangues-ralos não têm." e a do passo 7 SHALL ser "Sete pontos em vantagens, dois em defeitos além dos do Predador.".
@@ -455,7 +455,7 @@ Ao clicar "Concluir" no passo 8, o assistente SHALL aplicar o Predador escolhido
 - **Potência de Sangue**: a soma dos ajustes `potencia` MUST ser somada à Potência derivada da Geração, limitada a 10.
 - **Vantagens e Defeitos**: cada ajuste `merito` MUST virar uma linha em `meritos` com o tipo e os pontos do ajuste e o nome "<nome> (<detalhe>)" (ou só "<nome>" sem detalhe); cada ajuste `escolha` MUST virar uma linha por opção com pontos em `predEscolhas`, com o tipo do ajuste e os pontos escolhidos. Linhas do Predador com o mesmo nome e o mesmo tipo MUST virar uma linha só, com os pontos somados. Essas linhas MUST ser marcadas com `origem: "predador"` e MUST NOT entrar nas somas de 7 vantagens e 2 defeitos.
 
-O que foi aplicado à Disciplina, à Humanidade e à Potência MUST ficar registrado na ficha (`predBonus`: Disciplina, se ela foi acrescentada, o nome do poder acrescentado, e os deltas efetivamente aplicados de Humanidade e Potência). Uma ficha que já tem `predBonus` ou linhas de mérito com `origem: "predador"` MUST NOT receber o Predador de novo. Sangue Fraco, ou ficha sem Predador, MUST NOT receber nada nem `predBonus`.
+A aplicação MUST ficar registrada na ficha em `predBonus`, que guarda só a Potência somada pelo Predador (`{ potencia }`) e marca que o Predador já foi aplicado. Uma ficha que já tem `predBonus` ou linhas de mérito com `origem: "predador"` MUST NOT receber o Predador de novo. Sangue Fraco, ou ficha sem Predador, MUST NOT receber nada nem `predBonus`.
 
 #### Scenario: Ponto em Disciplina do clã
 - **WHEN** o passo 5 tem Potência 2 e Celeridade 1, o Predador é "Gato de Rua" com Disciplina "Potência" e poder "Força Prodigiosa", e o usuário conclui
@@ -500,33 +500,6 @@ O que foi aplicado à Disciplina, à Humanidade e à Potência MUST ficar regist
 #### Scenario: Sangue-ralo sem Predador aplicado
 - **WHEN** o clã é "Sangue Fraco" e o usuário conclui
 - **THEN** Disciplinas, Humanidade, Potência de Sangue e `meritos` ficam como os passos deixaram e a ficha não tem `predBonus`
-
-### Requirement: Refazer sem o Predador aplicado
-No modo refazer, o assistente SHALL trabalhar sobre os valores da ficha sem o Predador aplicado: os valores iniciais do formulário e a verificação do primeiro passo incompleto MUST desconsiderar o ponto da Disciplina, a Disciplina acrescentada, o poder acrescentado pelo Predador, o ajuste de Humanidade registrado em `predBonus` e as linhas de `meritos` com `origem: "predador"`. A primeira gravação de um passo MUST remover da ficha o Predador aplicado e apagar `predBonus`. Ao concluir, o Predador MUST ser aplicado de novo conforme "Predador aplicado ao concluir", com o Predador e as escolhas desse momento. Ao clicar "Voltar" no passo 1 do modo refazer, a ficha MUST voltar a ter o Predador aplicado antes de exibir a ficha.
-
-#### Scenario: Passo 5 mostra os pontos originais
-- **WHEN** a ficha concluída tem Potência 3 porque o "Gato de Rua" deu 1 ponto e o poder "Força Prodigiosa" a uma Potência 2, e o usuário abre o refazer no passo 5
-- **THEN** o slot de Potência mostra 2 pontos, só os poderes do passo 5, e o passo é válido
-
-#### Scenario: Passo 7 sem as linhas do Predador
-- **WHEN** a ficha concluída com "Sereia" tem 7 pontos de vantagens do passo 7 mais "Bonito" do Predador, e o usuário abre o refazer no passo 7
-- **THEN** o passo lista só as linhas do passo 7 e mostra "7/7 pts em vantagens"
-
-#### Scenario: Concluir o refazer não duplica
-- **WHEN** a ficha concluída com "Gato de Rua" e Disciplina "Celeridade" tem Humanidade 6 e o usuário refaz sem trocar o Predador e conclui
-- **THEN** a ficha continua com Humanidade 6, um só ponto de Celeridade do Predador e uma só linha "Contatos (criminosos)"
-
-#### Scenario: Concluir o refazer não duplica o poder
-- **WHEN** a ficha concluída com "Gato de Rua" tem Potência 3 com "Força Prodigiosa" do Predador e o usuário refaz sem trocar nada e conclui
-- **THEN** a ficha continua com Potência 3 e uma só "Força Prodigiosa"
-
-#### Scenario: Trocar de Predador no refazer
-- **WHEN** a ficha concluída com "Gato de Rua" (Celeridade 1 acrescentada, Humanidade 6) é refeita com "Consensualista" e Disciplina "Fortitude", e o usuário conclui
-- **THEN** a ficha não tem mais Celeridade nem "Contatos (criminosos)", ganha Fortitude conforme a regra de Disciplina, as linhas "Segredo Obscuro (Quebrador da Máscara)" e "Presa Excluída (sem consentimento)" e fica com Humanidade 8
-
-#### Scenario: Sair do refazer pelo passo 1
-- **WHEN** o usuário abre o refazer de uma ficha com "Gato de Rua" e Disciplina "Celeridade", avança até o passo 2, volta ao passo 1 e clica "Voltar"
-- **THEN** a aba Ficha mostra a Humanidade, a Celeridade e as linhas de mérito com o Predador aplicado
 
 ### Requirement: Disciplina do Predador em cartões
 No passo 6, as duas Disciplinas do Predador SHALL aparecer como cartões lado a lado, sob o rótulo "Disciplina — um ponto em uma", cada um com o nome da Disciplina e uma linha de contexto em rótulo Karla:

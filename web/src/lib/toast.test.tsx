@@ -77,7 +77,7 @@ describe("notify", () => {
 describe("apiError", () => {
   it.each([
     [401, "Sua sessão expirou. Entre de novo para continuar."],
-    [403, "Sua sessão expirou. Entre de novo para continuar."],
+    [403, "Você não tem permissão para fazer isso."],
     [404, "Não encontramos o que você pediu."],
     [
       409,
@@ -90,6 +90,14 @@ describe("apiError", () => {
     renderLast();
     expect(screen.getByRole("alert")).toHaveTextContent(`Erro ${status}`);
     expect(screen.getByRole("alert")).toHaveTextContent(msg);
+  });
+
+  it("403 usa a mensagem do servidor", () => {
+    apiError({ message: "Apenas o Mestre pode fazer isso.", status: 403 });
+    renderLast();
+    expect(
+      screen.getByText("Apenas o Mestre pode fazer isso.")
+    ).toBeInTheDocument();
   });
 
   it("400 usa a mensagem do servidor", () => {

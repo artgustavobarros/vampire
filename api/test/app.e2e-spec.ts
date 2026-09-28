@@ -1,6 +1,6 @@
 import type { NestExpressApplication } from "@nestjs/platform-express";
 import { Test } from "@nestjs/testing";
-import { eq } from "drizzle-orm";
+import { eq, like } from "drizzle-orm";
 import request from "supertest";
 import { afterAll, beforeAll, describe, expect, it } from "vitest";
 import { AppModule } from "../src/app.module.js";
@@ -40,7 +40,8 @@ describe("API (e2e)", () => {
   });
 
   afterAll(async () => {
-    await db.delete(users).where(eq(users.email, emailOf("removido")));
+    // todas as contas desta execução (e as fichas, em cascata)
+    await db.delete(users).where(like(users.email, emailOf("%")));
     await app?.close();
   });
 
@@ -67,6 +68,7 @@ describe("API (e2e)", () => {
         email,
         id: expect.any(String),
         name: "Vitória",
+        role: "player",
       });
 
       const loginRes = await http()
@@ -80,6 +82,19 @@ describe("API (e2e)", () => {
         .expect(200);
       expect(meRes.body).toEqual(signupRes.body.user);
       expect(meRes.body).not.toHaveProperty("passwordHash");
+    });
+
+    it("todo cadastro nasce jogador, mesmo pedindo outro papel", async () => {
+      const res = await http()
+        .post("/api/auth/signup")
+        .send({
+          email: emailOf("quer-ser-mestre"),
+          name: "Esperto",
+          password: "segredo",
+          role: "dm",
+        })
+        .expect(201);
+      expect(res.body.user.role).toBe("player");
     });
 
     it("recusa e-mail repetido", async () => {
@@ -295,6 +310,168 @@ describe("API (e2e)", () => {
     });
   });
 
+  describe("trava das Características", () => {
+    let token: string;
+    const auth = () => ({ Authorization: `Bearer ${token}` });
+    const criada = {
+      attrs: { Força: 2, Vigor: 1 },
+      criada: true,
+      fome: 1,
+      skills: { Briga: 1 },
+    };
+
+    beforeAll(async () => {
+      ({ token } = await signup("trava"));
+    });
+
+    it("durante a criação, Atributos e Habilidades são livres", async () => {
+      await http()
+        .put("/api/me/sheet")
+        .set(auth())
+        .send({ sheet: { attrs: { Força: 1 }, criada: false } })
+        .expect(200);
+      await http()
+        .patch("/api/me/sheet")
+        .set(auth())
+        .send({ patch: { skills: { Briga: 3 } } })
+        .expect(200);
+    });
+
+    it("o patch que conclui a criação passa", async () => {
+      const res = await http()
+        .patch("/api/me/sheet")
+        .set(auth())
+        .send({ patch: criada })
+        .expect(200);
+      expect(res.body.sheet).toMatchObject(criada);
+    });
+
+    it.each([
+      [
+        "PATCH de atributo",
+        "patch",
+        { patch: { attrs: { Força: 3, Vigor: 1 } } },
+      ],
+      ["PATCH de habilidade", "patch", { patch: { skills: { Briga: 2 } } }],
+      ["PATCH apagando atributos", "patch", { patch: { attrs: null } }],
+      ["PUT sem habilidades", "put", { sheet: { attrs: criada.attrs } }],
+    ] as const)("recusa %s com a ficha criada", async (_caso, method, body) => {
+      const res = await http()
+        [method]("/api/me/sheet")
+        .set(auth())
+        .send(body)
+        .expect(403);
+      expect(res.body.message).toBe(
+        "Atributos e Habilidades só podem ser alterados pelo Mestre."
+      );
+      const { body: saved } = await http()
+        .get("/api/me/sheet")
+        .set(auth())
+        .expect(200);
+      expect(saved.sheet).toMatchObject(criada);
+    });
+
+    it("aceita valores iguais em outra ordem e os demais campos", async () => {
+      const res = await http()
+        .patch("/api/me/sheet")
+        .set(auth())
+        .send({ patch: { attrs: { Força: 2, Vigor: 1 }, fome: 3 } })
+        .expect(200);
+      expect(res.body.sheet.fome).toBe(3);
+    });
+  });
+
+  describe("Mestre", () => {
+    let dm: string;
+    let player: { id: string; token: string };
+    const asDm = () => ({ Authorization: `Bearer ${dm}` });
+
+    beforeAll(async () => {
+      const res = await http()
+        .post("/api/auth/login")
+        .send({ email: "admin@admin.com", password: "!@#ASD123asd" })
+        .expect(200);
+      expect(res.body.user).toMatchObject({
+        email: "admin@admin.com",
+        role: "dm",
+      });
+      dm = res.body.accessToken;
+      player = await signup("jogador-da-mesa");
+      await http()
+        .put("/api/me/sheet")
+        .set("Authorization", `Bearer ${player.token}`)
+        .send({ sheet: { attrs: { Força: 2 }, criada: true, nome: "Vitória" } })
+        .expect(200);
+    });
+
+    it("GET /auth/me devolve o papel", async () => {
+      const res = await http().get("/api/auth/me").set(asDm()).expect(200);
+      expect(res.body.role).toBe("dm");
+    });
+
+    it("lista os jogadores com as fichas, sem o Mestre", async () => {
+      const semFicha = await signup("sem-ficha");
+      const { body } = await http().get("/api/sheets").set(asDm()).expect(200);
+      const byId = new Map(
+        body.map((item: { user: { id: string } }) => [item.user.id, item])
+      );
+      expect(byId.get(player.id)).toMatchObject({
+        sheet: { nome: "Vitória" },
+        user: { email: emailOf("jogador-da-mesa"), role: "player" },
+      });
+      expect(byId.get(semFicha.id)).toMatchObject({
+        sheet: null,
+        updatedAt: null,
+      });
+      expect(
+        body.some((item: { user: { role: string } }) => item.user.role === "dm")
+      ).toBe(false);
+    });
+
+    it("lê e muda Atributos de ficha criada", async () => {
+      const read = await http()
+        .get(`/api/sheets/${player.id}`)
+        .set(asDm())
+        .expect(200);
+      expect(read.body).toMatchObject({
+        sheet: { nome: "Vitória" },
+        user: { email: emailOf("jogador-da-mesa"), id: player.id },
+      });
+      const res = await http()
+        .patch(`/api/sheets/${player.id}`)
+        .set(asDm())
+        .send({ patch: { attrs: { Força: 4 }, fome: 2 } })
+        .expect(200);
+      expect(res.body.sheet).toMatchObject({
+        attrs: { Força: 4 },
+        fome: 2,
+        nome: "Vitória",
+      });
+    });
+
+    it("404 para jogador inexistente e 400 para id inválido", async () => {
+      const missing = await http()
+        .get("/api/sheets/00000000-0000-4000-8000-000000000000")
+        .set(asDm())
+        .expect(404);
+      expect(missing.body.message).toBe("Jogador não encontrado.");
+      await http().get("/api/sheets/abc").set(asDm()).expect(400);
+    });
+
+    it.each([
+      ["listar", "get", "/api/sheets"],
+      ["ler outra ficha", "get", "/api/sheets/:id"],
+      ["mudar outra ficha", "patch", "/api/sheets/:id"],
+    ] as const)("jogador não pode %s", async (_caso, method, path) => {
+      const res = await http()
+        [method](path.replace(":id", player.id))
+        .set("Authorization", `Bearer ${player.token}`)
+        .send({ patch: { fome: 5 } })
+        .expect(403);
+      expect(res.body.message).toBe("Apenas o Mestre pode fazer isso.");
+    });
+  });
+
   describe("CORS", () => {
     it("libera a origem do web", async () => {
       const res = await http()
@@ -338,6 +515,9 @@ describe("API (e2e)", () => {
           "get /api/me/sheet",
           "put /api/me/sheet",
           "patch /api/me/sheet",
+          "get /api/sheets",
+          "get /api/sheets/{userId}",
+          "patch /api/sheets/{userId}",
           "get /api/health",
         ])
       );

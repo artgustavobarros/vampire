@@ -41,10 +41,13 @@ function RootComponent() {
   );
 }
 
+/** ficha do jogador ou ficha aberta pelo Mestre (não a lista) */
+const SHEET_PATH = /^\/(ficha|personagens\/[^/]+)(\/|$)/;
+
 /** Na ficha os avisos sobem acima da barra inferior preta. */
 function AppToaster() {
   const onSheet = useRouterState({
-    select: (s) => s.location.pathname.startsWith("/ficha"),
+    select: (s) => SHEET_PATH.test(s.location.pathname),
   });
   return <Toaster bottom={onSheet ? 96 : 16} />;
 }

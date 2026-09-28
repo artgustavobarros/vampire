@@ -1,5 +1,5 @@
 import { toast } from "sonner";
-import { ApiError, patchSheet } from "#/lib/api";
+import { ApiError } from "#/lib/api";
 import { apiErrorMessage, notify } from "#/lib/toast";
 import type { Sheet } from "#/lib/types";
 
@@ -15,12 +15,21 @@ export interface SheetSync {
   schedule: (keys: string[]) => void;
 }
 
+/** Envia um `PATCH` para onde a ficha aberta é gravada. */
+export type SheetWrite = (
+  patch: Record<string, unknown>,
+  options: { keepalive?: boolean }
+) => Promise<unknown>;
+
 /**
  * Grava a ficha na API com um `PATCH` das chaves mudadas, lendo os valores
  * atuais na hora do envio. Um envio por vez; o que muda durante um envio
  * fica pendente para o próximo.
  */
-export function createSheetSync(read: () => Sheet): SheetSync {
+export function createSheetSync(
+  read: () => Sheet,
+  write: SheetWrite
+): SheetSync {
   const pending = new Set<string>();
   let timer: ReturnType<typeof setTimeout> | undefined;
   let inFlight: Promise<void> | null = null;
@@ -42,7 +51,7 @@ export function createSheetSync(read: () => Sheet): SheetSync {
     const patch = Object.fromEntries(keys.map((k) => [k, sheet[k] ?? null]));
     const gen = generation;
     try {
-      await patchSheet(patch, { keepalive });
+      await write(patch, { keepalive });
       if (failToast && gen === generation) {
         toast.dismiss(failToast);
         failToast = null;

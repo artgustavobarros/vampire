@@ -31,14 +31,11 @@ export interface Merit {
   tipo: MeritKind;
 }
 
-/** O que o Predador somou à ficha ao concluir, para desfazer sem duplicar. */
+/**
+ * Marca que o Predador já foi somado à ficha ao concluir (para não somar
+ * duas vezes) e guarda a Potência que ele deu, somada à da Geração.
+ */
 export interface PredatorBonus {
-  disciplina: string;
-  humanidade: number;
-  /** a Disciplina não existia e foi acrescentada com 1 ponto */
-  novaDisciplina: boolean;
-  /** nome do poder acrescentado junto com o ponto */
-  poder?: string;
   potencia: number;
 }
 

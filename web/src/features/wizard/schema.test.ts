@@ -2,7 +2,6 @@ import { describe, expect, it } from "vitest";
 import { clanBaneText, findClan } from "#/data/clans";
 import { blankSheet } from "#/lib/sheet";
 import type { Sheet } from "#/lib/types";
-import { applyPredator } from "#/rules/predator";
 import {
   ALL_FIELDS,
   firstIncompleteStep,
@@ -381,10 +380,6 @@ describe("firstIncompleteStep", () => {
     expect(firstIncompleteStep(completeSheet())).toBe(8);
     expect(isStepValid(8, values())).toBe(true);
   });
-
-  it("ficha com o Predador aplicado vai até o passo 8", () => {
-    expect(firstIncompleteStep(applyPredator(completeSheet()))).toBe(8);
-  });
 });
 
 describe("mapeamento ficha ↔ formulário", () => {
@@ -402,27 +397,6 @@ describe("mapeamento ficha ↔ formulário", () => {
     expect(sheetToWizard(completeSheet({ dist: "Especialista" })).dist).toBe(
       "Especialista"
     );
-  });
-
-  it("lê a ficha sem o Predador aplicado", () => {
-    const base = completeSheet({
-      predador: "Sereia",
-      predDisc: "Fascinação",
-      predEspec: "Persuasão (Seduzir)",
-    });
-    const v = sheetToWizard(applyPredator(base));
-    expect(v.disc.map((d) => [d.nome, d.nivel])).toEqual([
-      ["Potência", 2],
-      ["Celeridade", 1],
-    ]);
-    expect(v.meritos).toEqual(base.meritos);
-  });
-
-  it("lê a ficha sem o poder do Predador", () => {
-    const base = completeSheet();
-    const v = sheetToWizard(applyPredator(base));
-    expect(v.disc).toEqual(base.disc);
-    expect(v.predPoder).toBe("Força Prodigiosa");
   });
 
   it("ida e volta preserva os valores", () => {

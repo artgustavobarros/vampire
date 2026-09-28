@@ -1,13 +1,27 @@
+import { useId } from "react";
 import { Input } from "#/components/ui/input";
 import { DotRating } from "#/components/vtm/dot-rating";
 import { InfoButton, InfoTrigger } from "#/components/vtm/info-trigger";
-import { EmptyState } from "#/components/vtm/text";
+import {
+  SegmentedTabs,
+  SegmentedTabsContent,
+  SegmentedTabsList,
+  SegmentedTabsTrigger,
+} from "#/components/vtm/segmented-tabs";
+import { Chip } from "#/components/vtm/selectable";
+import { EmptyState, Panel, SectionTitle } from "#/components/vtm/text";
+import { RESONANCE_INTENSITIES, RESONANCES } from "#/data/fields";
 import type { Discipline } from "#/lib/types";
 import {
   patchSheet,
   useCharacterStore,
   useSheet,
 } from "#/stores/character-store";
+
+const PANEL_TITLE =
+  "mt-0 mb-4 font-label font-semibold text-ink-soft text-xs uppercase leading-none tracking-[.12em]";
+/** painel sempre montado: some só quando inativo abaixo de lg */
+const TAB_PANE = "max-lg:data-[state=inactive]:hidden";
 
 function updateDiscipline(index: number, change: Partial<Discipline>) {
   const disc = useCharacterStore
@@ -18,18 +32,101 @@ function updateDiscipline(index: number, change: Partial<Discipline>) {
 
 export function DisciplinasTab() {
   const sheet = useSheet();
+  const resonanceTitleId = useId();
+  const discTitleId = useId();
 
   return (
-    <>
-      {sheet.disc.map((d, i) => (
-        <DisciplineCard discipline={d} index={i} key={i} />
-      ))}
-      {sheet.disc.length === 0 && (
-        <EmptyState title="Nenhuma disciplina registrada">
-          As disciplinas e os poderes são definidos na criação do personagem.
-        </EmptyState>
-      )}
-    </>
+    // abaixo de lg, um bloco por vez; a partir de lg, os dois
+    <SegmentedTabs className="flex flex-col gap-8" defaultValue="ressonancia">
+      <SegmentedTabsList className="-mb-3 lg:hidden">
+        <SegmentedTabsTrigger value="ressonancia">
+          Ressonância
+        </SegmentedTabsTrigger>
+        <SegmentedTabsTrigger value="disciplinas">
+          Disciplinas
+        </SegmentedTabsTrigger>
+      </SegmentedTabsList>
+
+      <SegmentedTabsContent
+        aria-labelledby={resonanceTitleId}
+        className={TAB_PANE}
+        forceMount
+        value="ressonancia"
+      >
+        <ResonancePanel titleId={resonanceTitleId} />
+      </SegmentedTabsContent>
+
+      <SegmentedTabsContent
+        aria-labelledby={discTitleId}
+        className={TAB_PANE}
+        forceMount
+        value="disciplinas"
+      >
+        <SectionTitle className="max-lg:hidden" id={discTitleId}>
+          Disciplinas
+        </SectionTitle>
+        {sheet.disc.map((d, i) => (
+          <DisciplineCard discipline={d} index={i} key={i} />
+        ))}
+        {sheet.disc.length === 0 && (
+          <EmptyState title="Nenhuma disciplina registrada">
+            As disciplinas e os poderes são definidos na criação do personagem.
+          </EmptyState>
+        )}
+      </SegmentedTabsContent>
+    </SegmentedTabs>
+  );
+}
+
+function ResonancePanel({ titleId }: { titleId: string }) {
+  const sheet = useSheet();
+  return (
+    <Panel className="p-6">
+      <h3 className={PANEL_TITLE} id={titleId}>
+        <InfoTrigger
+          target={{
+            atual: [sheet.ressonancia, sheet.resIntensidade]
+              .filter(Boolean)
+              .join(" · "),
+            kind: "ressonancia",
+            marca: sheet.ressonancia,
+          }}
+        >
+          Ressonância
+        </InfoTrigger>
+      </h3>
+      <div className="flex flex-wrap gap-2">
+        {RESONANCES.map((r) => (
+          <Chip
+            key={r}
+            onClick={() =>
+              patchSheet({ ressonancia: sheet.ressonancia === r ? "" : r })
+            }
+            selected={sheet.ressonancia === r}
+          >
+            {r}
+          </Chip>
+        ))}
+      </div>
+      <div className="mt-4 mb-2 font-label font-semibold text-ink-faint text-xs uppercase leading-none tracking-[.12em]">
+        Intensidade
+      </div>
+      <div className="flex flex-wrap gap-2">
+        {RESONANCE_INTENSITIES.map((r) => (
+          <Chip
+            key={r}
+            onClick={() =>
+              patchSheet({
+                resIntensidade: sheet.resIntensidade === r ? "" : r,
+              })
+            }
+            selected={sheet.resIntensidade === r}
+          >
+            {r}
+          </Chip>
+        ))}
+      </div>
+    </Panel>
   );
 }
 

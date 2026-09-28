@@ -1,4 +1,11 @@
-import { jsonb, pgTable, text, timestamp, uuid } from "drizzle-orm/pg-core";
+import {
+  jsonb,
+  pgEnum,
+  pgTable,
+  text,
+  timestamp,
+  uuid,
+} from "drizzle-orm/pg-core";
 
 const timestamps = {
   createdAt: timestamp("created_at", { withTimezone: true })
@@ -9,12 +16,16 @@ const timestamps = {
     .defaultNow(),
 };
 
+/** `player` é todo cadastro; `dm` (Mestre) só vem das migrações. */
+export const roleEnum = pgEnum("user_role", ["player", "dm"]);
+
 export const users = pgTable("users", {
   /** sempre normalizado: sem espaços nas pontas e em minúsculas */
   email: text("email").notNull().unique(),
   id: uuid("id").primaryKey().defaultRandom(),
   name: text("name").notNull(),
   passwordHash: text("password_hash").notNull(),
+  role: roleEnum("role").notNull().default("player"),
   ...timestamps,
 });
 
@@ -30,3 +41,4 @@ export const sheets = pgTable("sheets", {
 });
 
 export type User = typeof users.$inferSelect;
+export type Role = User["role"];

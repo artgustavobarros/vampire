@@ -11,10 +11,14 @@ export const API_URL: string =
 
 const FALLBACK_MESSAGE = "Algo deu errado. Tente novamente.";
 
+/** `dm` é o Mestre: vê e edita a ficha de todos os jogadores. */
+export type Role = "player" | "dm";
+
 export interface ApiUser {
   email: string;
   id: string;
   name: string;
+  role: Role;
 }
 
 export interface AuthResponse {
@@ -25,6 +29,11 @@ export interface AuthResponse {
 export interface SheetResponse {
   sheet: Record<string, unknown> | null;
   updatedAt: string | null;
+}
+
+/** Um jogador e sua ficha, na lista do Mestre. */
+export interface PlayerSheetResponse extends SheetResponse {
+  user: ApiUser;
 }
 
 export class ApiError extends Error {
@@ -134,4 +143,28 @@ export function patchSheet(
   options: { keepalive?: boolean } = {}
 ): Promise<SheetResponse> {
   return request("PATCH", "/me/sheet", { patch }, options);
+}
+
+/** Só o Mestre: todos os jogadores com suas fichas. */
+export function listSheets(): Promise<PlayerSheetResponse[]> {
+  return request("GET", "/sheets");
+}
+
+/** Só o Mestre: a ficha de um jogador, com o jogador. */
+export function getPlayerSheet(userId: string): Promise<PlayerSheetResponse> {
+  return request("GET", `/sheets/${encodeURIComponent(userId)}`);
+}
+
+/** Só o Mestre: como `patchSheet`, na ficha de um jogador e sem a trava. */
+export function patchPlayerSheet(
+  userId: string,
+  patch: Record<string, unknown>,
+  options: { keepalive?: boolean } = {}
+): Promise<SheetResponse> {
+  return request(
+    "PATCH",
+    `/sheets/${encodeURIComponent(userId)}`,
+    { patch },
+    options
+  );
 }

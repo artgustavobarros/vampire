@@ -59,3 +59,29 @@ describe("aba Disciplinas", () => {
     expect(screen.queryByText("×")).toBeNull();
   });
 });
+
+describe("aba Disciplinas: abas Ressonância | Disciplinas", () => {
+  beforeEach(resetStores);
+
+  const panel = (name: string) =>
+    screen.getByRole("tabpanel", { name }) as HTMLElement;
+
+  it("abre em Ressonância, com os dois blocos montados", () => {
+    renderTab([]);
+    expect(panel("Ressonância")).toHaveAttribute("data-state", "active");
+    expect(panel("Disciplinas")).toHaveAttribute("data-state", "inactive");
+    expect(panel("Disciplinas")).toHaveClass(
+      "max-lg:data-[state=inactive]:hidden"
+    );
+  });
+
+  it("escolher ressonância e intensidade grava na ficha", () => {
+    renderTab([]);
+    const res = panel("Ressonância");
+    fireEvent.click(within(res).getByRole("button", { name: "Sanguínea" }));
+    fireEvent.click(within(res).getByRole("button", { name: "Intensa" }));
+    const { ressonancia, resIntensidade } = useCharacterStore.getState().sheet;
+    expect(ressonancia).toBe("Sanguínea");
+    expect(resIntensidade).toBe("Intensa");
+  });
+});
