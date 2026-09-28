@@ -37,14 +37,14 @@ Os três serviços de produção SHALL ter `restart: unless-stopped` e healthche
 - **THEN** `db`, `api` e `web` voltam sozinhos e os dados do volume `pgdata` continuam lá
 
 ### Requirement: Deploy contínuo pelo GitHub Actions
-O repositório SHALL ter o workflow `.github/workflows/deploy.yml` que, a cada push na `main` (e manualmente pelo `workflow_dispatch`), usa a action `hostinger/deploy-on-vps` para implantar o `docker-compose.prod.yml` do commit no VPS, com o nome de projeto `vampire`. A chave da API da Hostinger, `JWT_SECRET`, `POSTGRES_PASSWORD` e `ADMIN_PASSWORD` MUST vir de secrets do GitHub, e o ID do VPS, o `APP_HOST` e o `ADMIN_EMAIL` de variables do GitHub. Dois deploys MUST NOT rodar ao mesmo tempo.
+O repositório SHALL ter o workflow `.github/workflows/deploy.yml` que, a cada push na `main` (e manualmente pelo `workflow_dispatch`), usa a action `hostinger/deploy-on-vps` para implantar o `docker-compose.prod.yml` do commit no VPS, com o nome de projeto `vampire`. A chave da API da Hostinger, o ID do VPS, `APP_HOST`, `JWT_SECRET`, `POSTGRES_PASSWORD`, `ADMIN_EMAIL` e `ADMIN_PASSWORD` MUST vir de secrets do GitHub. Dois deploys MUST NOT rodar ao mesmo tempo.
 
 #### Scenario: Push na main
 - **WHEN** um commit chega na `main`
 - **THEN** o workflow pede à Hostinger o deploy daquele commit e o VPS reconstrói e sobe o projeto `vampire`
 
 #### Scenario: Configuração faltando
-- **WHEN** o workflow roda sem algum dos secrets ou variables obrigatórios
+- **WHEN** o workflow roda sem algum dos secrets obrigatórios
 - **THEN** ele falha antes de chamar a Hostinger, dizendo qual está faltando
 
 ### Requirement: CI antes do deploy

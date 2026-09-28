@@ -30,7 +30,7 @@
 
 **`CORS_ORIGIN=https://${APP_HOST}`.** Com mesma origem o CORS nem entra em jogo, mas o valor certo evita que o padrão `http://localhost:3000` libere alguma coisa por engano.
 
-**`APP_HOST` como variable do GitHub, não secret.** Não é segredo e fica visível nos logs, o que ajuda a depurar.
+**Toda a configuração do deploy como secret do GitHub.** Por escolha do dono do repositório, até o que não é segredo (ID do VPS, `APP_HOST`, `ADMIN_EMAIL`) fica em secrets: nada de configuração aparece no repositório público nem nos logs, que mostram `***` no lugar.
 
 **Sem rede externa.** Com o Traefik em `network_mode: host`, ele chega aos containers pelo IP deles na rede padrão do projeto (o host tem rota para as redes bridge do Docker). Declarar a `traefik-proxy` como `external` faria o `up` falhar, porque ela não existe. Testado localmente com um Traefik em modo host.
 
@@ -38,7 +38,7 @@
 
 **Healthchecks com `wget` do busybox.** As imagens são `node:24-alpine`, que já têm `wget`; não precisa instalar `curl`. Com healthcheck, o Traefik só roteia para o container depois que ele fica saudável.
 
-**Workflow com validação e `concurrency`.** Um passo antes da action confere os secrets e variables e falha com mensagem clara; `concurrency` impede dois deploys ao mesmo tempo. `workflow_dispatch` permite reimplantar sem commit.
+**Workflow com validação e `concurrency`.** Um passo antes da action confere os secrets e falha com mensagem clara; `concurrency` impede dois deploys ao mesmo tempo. `workflow_dispatch` permite reimplantar sem commit.
 
 **Mestre por variável, garantido na subida.** A migração `0001_roles` inseria `admin@admin.com` com senha em texto num comentário e hash no SQL; com o repositório público, isso daria o papel de Mestre em produção a qualquer um. O `INSERT` sai da migração (o journal do Drizzle não guarda hash, e bancos que já a aplicaram não a rodam de novo) e um provider `AdminBootstrap` faz upsert do Mestre em `onApplicationBootstrap`, com a senha de `ADMIN_PASSWORD`. A variável é a fonte da verdade: trocar o secret e reimplantar troca a senha. Alternativas: trocar a senha à mão depois do deploy (deixa uma janela com senha pública) ou promover a própria conta por SQL (sem caminho de recuperação).
 
@@ -55,7 +55,7 @@
 
 ## Migration Plan
 
-1. Usuário: confere o Traefik, cria o registro A, cria o repositório público, a chave da API e os secrets e variables.
+1. Usuário: confere o Traefik, cria o registro A, cria o repositório público, a chave da API e os secrets.
 2. Push na `main` dispara o primeiro deploy; a `api` aplica as migrações num banco vazio.
 3. Rollback: reverter o commit na `main` (novo deploy do anterior) ou parar o projeto `vampire` no Docker Manager. O volume `vampire_pgdata` não é apagado por redeploy.
 

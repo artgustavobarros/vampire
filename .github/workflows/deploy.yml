@@ -22,20 +22,20 @@ jobs:
     steps:
       - uses: actions/checkout@v5
 
-      - name: Conferir secrets e variables
+      - name: Conferir secrets
         env:
           HOSTINGER_API_KEY: ${{ secrets.HOSTINGER_API_KEY }}
           JWT_SECRET: ${{ secrets.JWT_SECRET }}
           POSTGRES_PASSWORD: ${{ secrets.POSTGRES_PASSWORD }}
           ADMIN_PASSWORD: ${{ secrets.ADMIN_PASSWORD }}
-          HOSTINGER_VM_ID: ${{ vars.HOSTINGER_VM_ID }}
-          APP_HOST: ${{ vars.APP_HOST }}
-          ADMIN_EMAIL: ${{ vars.ADMIN_EMAIL }}
+          HOSTINGER_VM_ID: ${{ secrets.HOSTINGER_VM_ID }}
+          APP_HOST: ${{ secrets.APP_HOST }}
+          ADMIN_EMAIL: ${{ secrets.ADMIN_EMAIL }}
         run: |
           missing=0
           for name in HOSTINGER_API_KEY JWT_SECRET POSTGRES_PASSWORD ADMIN_PASSWORD HOSTINGER_VM_ID APP_HOST ADMIN_EMAIL; do
             if [ -z "${!name}" ]; then
-              echo "::error::Falta $name (Settings → Secrets and variables → Actions)"
+              echo "::error::Falta $name (Settings → Secrets and variables → Actions → Secrets)"
               missing=1
             fi
           done
@@ -58,12 +58,12 @@ jobs:
         uses: hostinger/deploy-on-vps@v2
         with:
           api-key: ${{ secrets.HOSTINGER_API_KEY }}
-          virtual-machine: ${{ vars.HOSTINGER_VM_ID }}
+          virtual-machine: ${{ secrets.HOSTINGER_VM_ID }}
           project-name: vampire
           docker-compose-path: docker-compose.prod.yml
           environment-variables: |
-            APP_HOST=${{ vars.APP_HOST }}
+            APP_HOST=${{ secrets.APP_HOST }}
             JWT_SECRET=${{ secrets.JWT_SECRET }}
             POSTGRES_PASSWORD=${{ secrets.POSTGRES_PASSWORD }}
-            ADMIN_EMAIL=${{ vars.ADMIN_EMAIL }}
+            ADMIN_EMAIL=${{ secrets.ADMIN_EMAIL }}
             ADMIN_PASSWORD=${{ secrets.ADMIN_PASSWORD }}
