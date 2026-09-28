@@ -27,6 +27,30 @@ Para trocar portas ou o segredo do JWT, copie `.env.example` para `.env` nesta p
 
 Os dados ficam no volume `vampire_pgdata`: `docker compose down` mantém, `docker compose down -v` apaga.
 
+## Deploy (Hostinger)
+
+Produção roda no VPS Hostinger com o `docker-compose.prod.yml`, atrás do Traefik do Docker Manager. Tudo fica num domínio só: `https://<APP_HOST>/api` vai para a `api` e o resto para o `web`. Nenhuma porta é publicada, e o banco só existe na rede interna.
+
+A cada push na `main`, o workflow `.github/workflows/deploy.yml` pede à Hostinger que o VPS clone o commit e suba o projeto `vampire`. O build acontece no VPS. Para reimplantar sem commit, rode o workflow **Deploy** pela aba Actions.
+
+Pré-requisitos, feitos uma vez:
+
+1. **Traefik** rodando no VPS como projeto próprio do Docker Manager (catálogo → Traefik), com o entrypoint `websecure` e o cert resolver `letsencrypt`. O template da Hostinger usa `network_mode: host`, então o compose do vampire não entra em rede nenhuma do Traefik.
+2. **DNS**: registro `A` do subdomínio (`APP_HOST`) apontando para o IP do VPS. O HTTPS sai sozinho no primeiro acesso.
+3. **GitHub** (Settings → Secrets and variables → Actions):
+
+| Nome | Tipo | Valor |
+|---|---|---|
+| `HOSTINGER_API_KEY` | secret | chave em hPanel → Perfil → API |
+| `JWT_SECRET` | secret | `openssl rand -hex 32` |
+| `POSTGRES_PASSWORD` | secret | `openssl rand -hex 32` (não troque depois do primeiro deploy) |
+| `HOSTINGER_VM_ID` | variable | número do `srvNNNNNN.hstgr.cloud` |
+| `APP_HOST` | variable | o subdomínio, ex. `vampiro.artbarros.tech` |
+
+Os dois segredos precisam ter só letras e números: a action os coloca numa linha de shell e a senha entra na `DATABASE_URL`. O workflow confere isso antes de chamar a Hostinger.
+
+O workflow fica verde quando a Hostinger aceita o pedido, não quando o app sobe. Acompanhe build e logs no Docker Manager, no projeto `vampire`. Os dados ficam no volume `vampire_pgdata` do VPS e sobrevivem aos redeploys. Para voltar atrás, reverta o commit na `main`.
+
 ## Desenvolver
 
 ```bash

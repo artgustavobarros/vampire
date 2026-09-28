@@ -5,7 +5,8 @@
 **/.env
 **/*.tsbuildinfo
 **/Dockerfile
-docker-compose.yml
+docker-compose*.yml
+.github
 .git
 .agent
 .agents

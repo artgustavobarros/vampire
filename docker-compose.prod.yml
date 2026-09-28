@@ -1,0 +1,75 @@
+# Produção no VPS Hostinger, atrás do Traefik do Docker Manager (veja o README).
+# Nenhuma porta é publicada: o Traefik recebe 80/443 e manda /api para a api e o
+# resto para o web, tudo no mesmo domínio (APP_HOST). Aquele Traefik roda com
+# network_mode: host e alcança os containers pelo IP na rede padrão do projeto.
+name: vampire
+
+services:
+  db:
+    image: postgres:17-alpine
+    restart: unless-stopped
+    environment:
+      POSTGRES_USER: vampire
+      # só letras e números: a senha também entra na DATABASE_URL da api
+      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD:?defina POSTGRES_PASSWORD}
+      POSTGRES_DB: vampire
+    volumes:
+      - pgdata:/var/lib/postgresql/data
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U vampire -d vampire"]
+      interval: 5s
+      timeout: 5s
+      retries: 10
+
+  api:
+    build:
+      context: .
+      dockerfile: api/Dockerfile
+    restart: unless-stopped
+    depends_on:
+      db:
+        condition: service_healthy
+    environment:
+      PORT: 3333
+      DATABASE_URL: postgres://vampire:${POSTGRES_PASSWORD:?defina POSTGRES_PASSWORD}@db:5432/vampire
+      JWT_SECRET: ${JWT_SECRET:?defina JWT_SECRET}
+      JWT_EXPIRES_IN: ${JWT_EXPIRES_IN:-7d}
+      CORS_ORIGIN: https://${APP_HOST:?defina APP_HOST}
+    healthcheck:
+      test: ["CMD", "wget", "-q", "-O", "/dev/null", "http://127.0.0.1:3333/api/health"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+      start_period: 20s
+    labels:
+      - traefik.enable=true
+      - traefik.http.routers.vampire-api.rule=Host(`${APP_HOST:?defina APP_HOST}`) && PathPrefix(`/api`)
+      - traefik.http.routers.vampire-api.entrypoints=websecure
+      - traefik.http.routers.vampire-api.tls.certresolver=letsencrypt
+      - traefik.http.routers.vampire-api.service=vampire-api
+      - traefik.http.services.vampire-api.loadbalancer.server.port=3333
+
+  web:
+    build:
+      context: .
+      dockerfile: web/Dockerfile
+      args:
+        # mesma origem: o navegador chama https://APP_HOST/api
+        VITE_API_URL: /api
+    restart: unless-stopped
+    healthcheck:
+      test: ["CMD", "wget", "-q", "-O", "/dev/null", "http://127.0.0.1:3000/"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+      start_period: 10s
+    labels:
+      - traefik.enable=true
+      - traefik.http.routers.vampire-web.rule=Host(`${APP_HOST:?defina APP_HOST}`)
+      - traefik.http.routers.vampire-web.entrypoints=websecure
+      - traefik.http.routers.vampire-web.tls.certresolver=letsencrypt
+      - traefik.http.routers.vampire-web.service=vampire-web
+      - traefik.http.services.vampire-web.loadbalancer.server.port=3000
+
+volumes:
+  pgdata:
