@@ -7,6 +7,7 @@ import {
   RouterProvider,
 } from "@tanstack/react-router";
 import { render, screen } from "@testing-library/react";
+import userEvent from "@testing-library/user-event";
 import { toast } from "sonner";
 import { afterEach, describe, expect, it } from "vitest";
 import { Toaster } from "#/components/ui/sonner";
@@ -14,6 +15,8 @@ import { InfoProvider } from "#/features/info/info-sheet";
 import type { Role } from "#/lib/api";
 import { blankSheet } from "#/lib/sheet";
 import { Route as PersonagensRoute } from "#/routes/personagens";
+import { Route as PainelRoute } from "#/routes/personagens._painel";
+import { Route as AcoesRoute } from "#/routes/personagens._painel.acoes";
 import { Route as PlayerSheetRoute } from "#/routes/personagens.$id";
 import { useCharacterStore } from "#/stores/character-store";
 import { resetStores } from "#/stores/test-utils";
@@ -38,10 +41,20 @@ function renderAt(url: string, role: Role = "dm") {
     getParentRoute: () => root,
     path: "/personagens",
   });
+  const painel = createRoute({
+    component: PainelRoute.options.component,
+    getParentRoute: () => personagens,
+    id: "_painel",
+  });
   const list = createRoute({
     component: () => <div>Página da lista</div>,
-    getParentRoute: () => personagens,
+    getParentRoute: () => painel,
     path: "/",
+  });
+  const acoes = createRoute({
+    component: AcoesRoute.options.component,
+    getParentRoute: () => painel,
+    path: "acoes",
   });
   const player = createRoute({
     component: PlayerSheetRoute.options.component,
@@ -58,11 +71,20 @@ function renderAt(url: string, role: Role = "dm") {
     getParentRoute: () => root,
     path: "/ficha",
   });
+  const entrar = createRoute({
+    component: () => <div>Página de entrada</div>,
+    getParentRoute: () => root,
+    path: "/entrar",
+  });
   const router = createRouter({
     history: createMemoryHistory({ initialEntries: [url] }),
     routeTree: root.addChildren([
-      personagens.addChildren([list, player.addChildren([aba])]),
+      personagens.addChildren([
+        painel.addChildren([list, acoes]),
+        player.addChildren([aba]),
+      ]),
       ficha,
+      entrar,
     ]),
   });
   render(<RouterProvider router={router} />);
@@ -75,6 +97,50 @@ afterEach(() => {
 });
 
 describe("rotas do Mestre", () => {
+  it("entra no painel com a Lista de personagens ativa", async () => {
+    renderAt("/personagens");
+    expect(await screen.findByText("Página da lista")).toBeInTheDocument();
+    expect(screen.getByText("Ana")).toBeInTheDocument();
+    expect(screen.getByText("Mestre")).toBeInTheDocument();
+    expect(
+      screen.getByRole("link", { name: "Lista de personagens" })
+    ).toHaveAttribute("aria-current", "page");
+    expect(screen.getByRole("link", { name: "Ações" })).not.toHaveAttribute(
+      "aria-current"
+    );
+  });
+
+  it("a aba Ações abre a Rolagem de Ressonância", async () => {
+    const router = renderAt("/personagens");
+    await userEvent.click(await screen.findByRole("link", { name: "Ações" }));
+    expect(
+      await screen.findByText("Rolagem de Ressonância")
+    ).toBeInTheDocument();
+    expect(router.state.location.pathname).toBe("/personagens/acoes");
+    expect(screen.getByRole("link", { name: "Ações" })).toHaveAttribute(
+      "aria-current",
+      "page"
+    );
+    expect(
+      screen.getByRole("link", { name: "Lista de personagens" })
+    ).not.toHaveAttribute("aria-current");
+  });
+
+  it("Sair da conta encerra a sessão", async () => {
+    const router = renderAt("/personagens/acoes");
+    await userEvent.click(
+      await screen.findByRole("button", { name: "Sair da conta" })
+    );
+    expect(await screen.findByText("Página de entrada")).toBeInTheDocument();
+    expect(router.state.location.pathname).toBe("/entrar");
+  });
+
+  it("jogador que abre Ações volta para a própria ficha", async () => {
+    const router = renderAt("/personagens/acoes", "player");
+    expect(await screen.findByText("Página da ficha")).toBeInTheDocument();
+    expect(router.state.location.pathname).toBe("/ficha");
+  });
+
   it("abre a ficha do jogador com o layout da ficha", async () => {
     const ana = fakeApi.seed({
       email: "ana@exemplo.com",
@@ -83,6 +149,8 @@ describe("rotas do Mestre", () => {
     renderAt(`/personagens/${ana.id}/notas`);
     expect(await screen.findByText("conteúdo da aba")).toBeInTheDocument();
     expect(screen.getByText("Vitória Salles")).toBeInTheDocument();
+    // a ficha fica fora do painel
+    expect(screen.queryByText("Sair da conta")).toBeNull();
     expect(useCharacterStore.getState().owner).toEqual({
       email: "ana@exemplo.com",
       userId: ana.id,

@@ -96,6 +96,9 @@ describe("Lista de personagens", () => {
     expect(
       await screen.findByText("Nenhum jogador cadastrado ainda.")
     ).toBeInTheDocument();
+    // título e Sair ficam no painel do Mestre
+    expect(screen.queryByText("Lista de personagens")).toBeNull();
+    expect(screen.queryByRole("button", { name: "Sair" })).toBeNull();
   });
 
   it("falha ao buscar mostra o erro com Tentar de novo", async () => {
