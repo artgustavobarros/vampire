@@ -14,7 +14,7 @@ describe("cliente da API", () => {
   it("usa http://localhost:3333/api sem VITE_API_URL", async () => {
     expect(API_URL).toBe("http://localhost:3333/api");
     fakeApi.seed({ email: "a@b.co", password: "123456" });
-    await login({ email: "a@b.co", password: "123456" });
+    await login({ identifier: "a@b.co", password: "123456" });
     expect(fakeApi.calls[0]).toMatchObject({
       method: "POST",
       path: "/auth/login",
@@ -24,7 +24,7 @@ describe("cliente da API", () => {
   it("manda o Bearer só quando há token", async () => {
     fakeApi.seed({ email: "a@b.co", password: "123456" });
     setToken("qualquer");
-    await login({ email: "a@b.co", password: "123456" });
+    await login({ identifier: "a@b.co", password: "123456" });
     expect(fakeApi.calls[0].auth).toBeNull();
 
     setToken(fakeApi.tokenFor("a@b.co"));
@@ -38,6 +38,7 @@ describe("cliente da API", () => {
       email: "a@b.co",
       name: "A",
       password: "123456",
+      username: "outro",
     }).catch((e: unknown) => e);
     expect(err).toBeInstanceOf(ApiError);
     expect(err).toMatchObject({
@@ -66,9 +67,9 @@ describe("cliente da API", () => {
   it("401 do login não encerra a sessão", async () => {
     fakeApi.login(blankSheet());
     await expect(
-      login({ email: "ana@exemplo.com", password: "errada" })
+      login({ identifier: "ana@exemplo.com", password: "errada" })
     ).rejects.toMatchObject({
-      message: "E-mail ou senha incorretos.",
+      message: "E-mail, usuário ou senha incorretos.",
       status: 401,
     });
     expect(usePlayerStore.getState().user).toBe("ana@exemplo.com");

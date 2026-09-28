@@ -18,6 +18,8 @@ describe("crônica: coteries, Bestiário e rodada (e2e)", () => {
   const enemyIds: string[] = [];
   const run = `${Date.now()}-${Math.random().toString(36).slice(2, 8)}`;
   const emailOf = (name: string) => `${name}-${run}@e2e.test`;
+  const tag = Math.random().toString(36).slice(2, 10);
+  let players = 0;
 
   const http = () => request(app.getHttpServer());
   const asDm = () => ({ Authorization: `Bearer ${dm}` });
@@ -27,9 +29,15 @@ describe("crônica: coteries, Bestiário e rodada (e2e)", () => {
     name: string,
     sheet: Record<string, unknown> | null = { criada: true, nome: name }
   ): Promise<{ id: string; token: string }> {
+    players += 1;
     const res = await http()
       .post("/api/auth/signup")
-      .send({ email: emailOf(name), name, password: "segredo" })
+      .send({
+        email: emailOf(name),
+        name,
+        password: "segredo",
+        username: `c${players}_${tag}`,
+      })
       .expect(201);
     const token = res.body.accessToken;
     if (sheet) {
@@ -92,7 +100,7 @@ describe("crônica: coteries, Bestiário e rodada (e2e)", () => {
       .where(eq(rounds.id, 1));
     const res = await http()
       .post("/api/auth/login")
-      .send({ email: "admin@admin.com", password: "!@#ASD123asd" })
+      .send({ identifier: "admin@admin.com", password: "!@#ASD123asd" })
       .expect(200);
     dm = res.body.accessToken;
   });

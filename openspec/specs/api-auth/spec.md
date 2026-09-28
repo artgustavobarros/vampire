@@ -4,27 +4,43 @@
 Cadastro, entrada e sessão de jogadores na API com JWT (Bearer) e senhas em hash, com todas as rotas protegidas por padrão.
 ## Requirements
 ### Requirement: Criar conta
-A API SHALL expor `POST /api/auth/signup`, público, recebendo `{ name, email, password }`. O e-mail MUST ser normalizado (sem espaços nas pontas, minúsculas) e o nome sem espaços nas pontas. A senha MUST ser guardada apenas como hash (bcrypt). Em caso de sucesso, a API responde `201` com `{ accessToken, user: { id, email, name } }`. A confirmação de senha (`password2`) continua sendo só do `web`.
+A API SHALL expor `POST /api/auth/signup`, público, recebendo `{ name, username, email, password }`. O e-mail e o nome de usuário MUST ser normalizados (sem espaços nas pontas, minúsculas) e o nome sem espaços nas pontas. A senha MUST ser guardada apenas como hash (bcrypt). Em caso de sucesso, a API responde `201` com `{ accessToken, user: { id, email, name, role, username } }`. A confirmação de senha (`password2`) continua sendo só do `web`.
 
 #### Scenario: Cadastro válido
-- **WHEN** o cliente envia nome, e-mail válido ainda não cadastrado e senha com pelo menos 6 caracteres
-- **THEN** a conta é criada, a senha é gravada como hash e a resposta traz o token e o jogador
+- **WHEN** o cliente envia nome, nome de usuário válido e livre, e-mail válido ainda não cadastrado e senha com pelo menos 6 caracteres
+- **THEN** a conta é criada, a senha é gravada como hash e a resposta traz o token e o jogador com o nome de usuário
 
 #### Scenario: E-mail normalizado
 - **WHEN** o cliente envia `"  Vitoria@Exemplo.COM "`
 - **THEN** a conta é criada com o e-mail `vitoria@exemplo.com`
 
+#### Scenario: Nome de usuário normalizado
+- **WHEN** o cliente envia `"  Vitoria_S "` como nome de usuário
+- **THEN** a conta é criada com o nome de usuário `vitoria_s`
+
 #### Scenario: E-mail já cadastrado
 - **WHEN** já existe conta com o mesmo e-mail normalizado
 - **THEN** a API responde `409` com a mensagem `E-mail já cadastrado. Use "Entrar".`
+
+#### Scenario: Nome de usuário já em uso
+- **WHEN** já existe conta com o mesmo nome de usuário normalizado, ou o nome de usuário é `mestre`
+- **THEN** a API responde `409` com a mensagem `Nome de usuário já em uso.`
 
 #### Scenario: Nome ausente
 - **WHEN** o nome está vazio ou só com espaços
 - **THEN** a API responde `400` com a mensagem `Informe o nome.`
 
+#### Scenario: Nome de usuário ausente
+- **WHEN** o nome de usuário está vazio ou só com espaços
+- **THEN** a API responde `400` com a mensagem `Informe o nome de usuário.`
+
+#### Scenario: Nome de usuário inválido
+- **WHEN** o nome de usuário normalizado não segue `^[a-z][a-z0-9_.]{2,19}$` (ex.: `ab`, `1ana`, `ana souza`, `ana@x`)
+- **THEN** a API responde `400` com a mensagem `Nome de usuário: 3 a 20 letras, números, _ ou ., começando por letra.`
+
 #### Scenario: E-mail ou senha ausentes
 - **WHEN** falta o e-mail ou a senha
-- **THEN** a API responde `400` com a mensagem `Informe e-mail e senha.`
+- **THEN** a API responde `400` com a mensagem `Informe o e-mail.` ou `Informe a senha.`
 
 #### Scenario: E-mail inválido
 - **WHEN** o e-mail não tem formato válido
@@ -35,19 +51,23 @@ A API SHALL expor `POST /api/auth/signup`, público, recebendo `{ name, email, p
 - **THEN** a API responde `400` com a mensagem `A senha precisa ter pelo menos 6 caracteres.`
 
 ### Requirement: Entrar
-A API SHALL expor `POST /api/auth/login`, público, recebendo `{ email, password }` com o e-mail normalizado como no cadastro. Com credenciais corretas, responde `200` com `{ accessToken, user: { id, email, name } }`. Para não revelar quais e-mails existem, e-mail desconhecido e senha errada MUST ter a mesma resposta.
+A API SHALL expor `POST /api/auth/login`, público, recebendo `{ identifier, password }`. O `identifier` MUST ser normalizado (sem espaços nas pontas, minúsculas); se contém `@`, é comparado ao e-mail das contas, senão ao nome de usuário. Com credenciais corretas, responde `200` com `{ accessToken, user: { id, email, name, role, username } }`. Para não revelar quais e-mails ou nomes de usuário existem, identificador desconhecido e senha errada MUST ter a mesma resposta, no mesmo tempo aproximado.
 
-#### Scenario: Credenciais corretas
-- **WHEN** e-mail e senha conferem com uma conta
+#### Scenario: Entrar com e-mail
+- **WHEN** o `identifier` é o e-mail de uma conta (em qualquer caixa, com ou sem espaços nas pontas) e a senha confere
+- **THEN** a API responde `200` com um novo token e o jogador
+
+#### Scenario: Entrar com nome de usuário
+- **WHEN** o `identifier` é o nome de usuário de uma conta (em qualquer caixa) e a senha confere
 - **THEN** a API responde `200` com um novo token e o jogador
 
 #### Scenario: Credenciais erradas
-- **WHEN** o e-mail não está cadastrado ou a senha não confere
-- **THEN** a API responde `401` com a mensagem `E-mail ou senha incorretos.`
+- **WHEN** o `identifier` não corresponde a nenhuma conta ou a senha não confere
+- **THEN** a API responde `401` com a mensagem `E-mail, usuário ou senha incorretos.`
 
 #### Scenario: Campos vazios
-- **WHEN** falta e-mail ou senha
-- **THEN** a API responde `400` com a mensagem `Informe e-mail e senha.`
+- **WHEN** falta o `identifier` ou a senha
+- **THEN** a API responde `400` com a mensagem `Informe o e-mail ou usuário.` ou `Informe a senha.`
 
 ### Requirement: Token JWT
 O `accessToken` SHALL ser um JWT assinado com `JWT_SECRET` (HS256), com `sub` = id do jogador e `email`, expirando conforme `JWT_EXPIRES_IN`. O cliente MUST enviá-lo no cabeçalho `Authorization: Bearer <token>`. Sair é responsabilidade do cliente (descartar o token); não há lista de revogação nesta etapa.
@@ -76,11 +96,11 @@ Toda rota SHALL exigir token válido, exceto as marcadas explicitamente como pú
 - **THEN** a requisição é processada normalmente
 
 ### Requirement: Jogador da sessão
-A API SHALL expor `GET /api/auth/me`, protegido, que devolve `{ id, email, name, role }` do usuário do token. É o equivalente a restaurar `vtm5.session` e ler `vtm5.name.<email>` no `web`.
+A API SHALL expor `GET /api/auth/me`, protegido, que devolve `{ id, email, name, role, username }` do usuário do token.
 
 #### Scenario: Restaurar sessão
 - **WHEN** o cliente chama `GET /api/auth/me` com um token válido
-- **THEN** a API responde `200` com id, e-mail, nome e papel do usuário, sem o hash da senha
+- **THEN** a API responde `200` com id, e-mail, nome, papel e nome de usuário, sem o hash da senha
 
 ### Requirement: Papéis de usuário
 Cada usuário SHALL ter um papel (`role`), `player` ou `dm`, guardado na tabela `users` com padrão `player`. Todo cadastro por `POST /api/auth/signup` MUST criar a conta com `role: "player"`, ignorando qualquer `role` enviado no corpo. A API MUST NOT expor rota para mudar o papel.
@@ -94,15 +114,23 @@ Cada usuário SHALL ter um papel (`role`), `player` ou `dm`, guardado na tabela 
 - **THEN** a conta é criada com `role: "player"`
 
 ### Requirement: Conta do Mestre
-A API SHALL garantir, ao subir, a conta do Mestre a partir das variáveis `ADMIN_EMAIL` e `ADMIN_PASSWORD`: se não existe conta com esse e-mail, cria uma com nome `Mestre`, a senha guardada só como hash bcrypt e `role: "dm"`; se já existe, MUST promovê-la a `dm` e redefinir a senha, sem criar outra conta. Sem as duas variáveis, nenhuma conta é criada, e definir só uma delas MUST impedir a API de subir. As migrações MUST NOT criar contas nem conter senhas. Em desenvolvimento (`api/.env.example` e `docker-compose.yml`) os valores padrão são `admin@admin.com` e `!@#ASD123asd`.
+A API SHALL garantir, ao subir, a conta do Mestre a partir das variáveis `ADMIN_EMAIL` e `ADMIN_PASSWORD`: se não existe conta com esse e-mail, cria uma com nome `Mestre`, nome de usuário `mestre`, a senha guardada só como hash bcrypt e `role: "dm"`; se já existe, MUST promovê-la a `dm`, dar a ela o nome de usuário `mestre` e redefinir a senha, sem criar outra conta. Se outra conta tinha o nome de usuário `mestre` (por exemplo, o Mestre anterior depois de trocar `ADMIN_EMAIL`), ela MUST receber outro nome de usuário antes, para a subida não falhar. Sem as duas variáveis, nenhuma conta é criada, e definir só uma delas MUST impedir a API de subir. As migrações MUST NOT criar contas nem conter senhas. Em desenvolvimento (`api/.env.example` e `docker-compose.yml`) os valores padrão são `admin@admin.com` e `!@#ASD123asd`.
 
 #### Scenario: Entrar como Mestre
-- **WHEN** a API sobe com `ADMIN_EMAIL` e `ADMIN_PASSWORD` e o cliente chama `POST /api/auth/login` com esses valores
+- **WHEN** a API sobe com `ADMIN_EMAIL` e `ADMIN_PASSWORD` e o cliente chama `POST /api/auth/login` com esse e-mail e senha
 - **THEN** a API responde `200` com o token e `user.role` igual a `"dm"`
+
+#### Scenario: Entrar como Mestre pelo nome de usuário
+- **WHEN** o cliente chama `POST /api/auth/login` com `identifier: "mestre"` e a senha de `ADMIN_PASSWORD`
+- **THEN** a API responde `200` com `user.role` igual a `"dm"` e `user.username` igual a `"mestre"`
 
 #### Scenario: Conta já existente
 - **WHEN** antes da subida já existia um jogador com o e-mail de `ADMIN_EMAIL`
-- **THEN** depois da subida há uma única conta com esse e-mail, com `role: "dm"` e a senha de `ADMIN_PASSWORD`
+- **THEN** depois da subida há uma única conta com esse e-mail, com `role: "dm"`, nome de usuário `mestre` e a senha de `ADMIN_PASSWORD`
+
+#### Scenario: Troca de ADMIN_EMAIL
+- **WHEN** a API sobe com um `ADMIN_EMAIL` diferente do Mestre anterior, que tinha o nome de usuário `mestre`
+- **THEN** a API sobe, a conta nova fica com `mestre` e a anterior com outro nome de usuário
 
 #### Scenario: Trocar a senha do Mestre
 - **WHEN** `ADMIN_PASSWORD` muda e a API sobe de novo
@@ -113,11 +141,11 @@ A API SHALL garantir, ao subir, a conta do Mestre a partir das variáveis `ADMIN
 - **THEN** não existe nenhuma conta com `role: "dm"`
 
 ### Requirement: Papel no usuário público
-O usuário devolvido por `POST /api/auth/signup`, `POST /api/auth/login` e `GET /api/auth/me` SHALL ser `{ id, email, name, role }`, sem o hash da senha.
+O usuário devolvido por `POST /api/auth/signup`, `POST /api/auth/login` e `GET /api/auth/me` SHALL ser `{ id, email, name, role, username }`, sem o hash da senha.
 
 #### Scenario: Login de jogador
 - **WHEN** um jogador comum entra
-- **THEN** a resposta traz `user.role` igual a `"player"`
+- **THEN** a resposta traz `user.role` igual a `"player"` e `user.username` com o nome de usuário da conta
 
 ### Requirement: Rotas restritas por papel
 Rotas marcadas como exclusivas de um papel SHALL exigir que o usuário do token tenha esse papel, lido do banco a cada requisição (não do token). Um usuário autenticado sem o papel MUST receber `403` com a mensagem `Apenas o Mestre pode fazer isso.`. Sem token válido, a resposta continua `401`.
@@ -133,4 +161,19 @@ Rotas marcadas como exclusivas de um papel SHALL exigir que o usuário do token 
 #### Scenario: Papel mudado depois do login
 - **WHEN** um usuário tem o papel trocado no banco enquanto seu token ainda é válido
 - **THEN** a próxima requisição já usa o papel novo
+
+### Requirement: Nome de usuário
+Toda conta SHALL ter um nome de usuário (`username`) único, guardado normalizado: sem espaços nas pontas e em minúsculas. Depois de normalizado, o nome de usuário MUST ter de 3 a 20 caracteres, só letras `a-z`, dígitos, `_` e `.`, e começar por letra (`^[a-z][a-z0-9_.]{2,19}$`); por isso nunca contém `@`. O nome `mestre` é reservado para a conta do Mestre. Contas que já existiam antes desta mudança MUST receber um nome de usuário gerado pela migração a partir da parte local do e-mail (caracteres inválidos viram `_`, prefixo `u` se não começar por letra, cortado para caber no limite e com sufixo numérico em caso de colisão), e a conta com `role: "dm"` recebe `mestre`.
+
+#### Scenario: Conta antiga ganha nome de usuário
+- **WHEN** a migração roda com um jogador `ana.souza@exemplo.com` sem nome de usuário
+- **THEN** a conta passa a ter o nome de usuário `ana.souza` e continua entrando com o e-mail
+
+#### Scenario: Colisão na migração
+- **WHEN** existem as contas `ana@exemplo.com` e `ana@outro.com`
+- **THEN** cada uma recebe um nome de usuário diferente (ex.: `ana` e `ana2`)
+
+#### Scenario: Mestre existente
+- **WHEN** a migração roda com uma conta `role: "dm"`
+- **THEN** essa conta recebe o nome de usuário `mestre`
 

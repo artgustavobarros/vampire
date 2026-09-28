@@ -31,10 +31,10 @@ Ao iniciar, o app SHALL exibir a tela de abertura ("Vampiro · A Máscara", "Abr
 - **THEN** a tela de abertura sai imediatamente, sem aguardar um tempo mínimo
 
 ### Requirement: Criar conta local
-O usuário SHALL poder criar uma conta informando nome, e-mail e senha duas vezes. A conta MUST ser criada na API (`POST /auth/signup`); o `web` confere antes, sem chamar a API, os campos vazios, o formato do e-mail, a senha de pelo menos 6 caracteres e a confirmação de senha. Erros de cadastro MUST ser exibidos como toast de erro (ver `notifications`), com a mensagem que a API devolver, e não como texto inline no formulário.
+O usuário SHALL poder criar uma conta informando nome, nome de usuário, e-mail e senha duas vezes, nessa ordem no formulário. A conta MUST ser criada na API (`POST /auth/signup`); o `web` confere antes, sem chamar a API, os campos vazios, o formato do nome de usuário (`^[a-z][a-z0-9_.]{2,19}$` depois de tirar os espaços das pontas e passar para minúsculas), o formato do e-mail, a senha de pelo menos 6 caracteres e a confirmação de senha. O campo "Nome de usuário" MUST usar `autoComplete="username"`, sem correção nem capitalização automáticas. Erros de cadastro MUST ser exibidos como toast de erro (ver `notifications`), com a mensagem que a API devolver, e não como texto inline no formulário.
 
 #### Scenario: Cadastro válido
-- **WHEN** o usuário preenche nome, um e-mail válido ainda não cadastrado e duas senhas iguais com pelo menos 6 caracteres e confirma
+- **WHEN** o usuário preenche nome, um nome de usuário válido e livre, um e-mail válido ainda não cadastrado e duas senhas iguais com pelo menos 6 caracteres e confirma
 - **THEN** a conta é criada na API, o token é salvo, a sessão é iniciada e o assistente de criação abre
 
 #### Scenario: Senhas diferentes
@@ -46,31 +46,47 @@ O usuário SHALL poder criar uma conta informando nome, e-mail e senha duas veze
 - **THEN** um toast de erro com a mensagem "A senha precisa ter pelo menos 6 caracteres." aparece e a API não é chamada
 
 #### Scenario: E-mail já cadastrado
-- **WHEN** a API responde `409`
+- **WHEN** a API responde `409` por causa do e-mail
 - **THEN** um toast de erro com a mensagem "E-mail já cadastrado. Use \"Entrar\"." é exibido
+
+#### Scenario: Nome de usuário já em uso
+- **WHEN** a API responde `409` por causa do nome de usuário
+- **THEN** um toast de erro com a mensagem "Nome de usuário já em uso." é exibido
 
 #### Scenario: Nome ausente
 - **WHEN** o nome está vazio no cadastro
 - **THEN** um toast de erro com a mensagem "Informe o nome." é exibido
+
+#### Scenario: Nome de usuário ausente
+- **WHEN** o nome de usuário está vazio no cadastro
+- **THEN** um toast de erro com a mensagem "Informe o nome de usuário." é exibido e a API não é chamada
+
+#### Scenario: Nome de usuário inválido
+- **WHEN** o nome de usuário tem menos de 3 ou mais de 20 caracteres, caracteres fora de letras, números, `_` e `.`, ou não começa por letra
+- **THEN** um toast de erro com a mensagem "Nome de usuário: 3 a 20 letras, números, _ ou ., começando por letra." é exibido e a API não é chamada
 
 #### Scenario: Sem erro inline
 - **WHEN** qualquer erro de cadastro ocorre
 - **THEN** nenhum parágrafo de erro é renderizado dentro do formulário
 
 ### Requirement: Entrar
-O usuário SHALL poder entrar com e-mail (normalizado para minúsculas, sem espaços) e senha de uma conta existente na API (`POST /auth/login`). Erros de entrada MUST ser exibidos como toast de erro, e não como texto inline no formulário. Enquanto a requisição corre, o botão de confirmar MUST ficar desabilitado com o texto "Entrando…" (ou "Criando…" no cadastro).
+O usuário SHALL poder entrar com e-mail ou nome de usuário, num único campo "E-mail ou usuário" (normalizado para minúsculas, sem espaços nas pontas), e senha de uma conta existente na API (`POST /auth/login` com `{ identifier, password }`). O campo MUST usar `autoComplete="username"` e não ser do tipo `email`. Na entrada o `web` confere só se os campos estão preenchidos, sem validar o formato do e-mail. Erros de entrada MUST ser exibidos como toast de erro, e não como texto inline no formulário. Enquanto a requisição corre, o botão de confirmar MUST ficar desabilitado com o texto "Entrando…" (ou "Criando…" no cadastro).
 
-#### Scenario: Credenciais corretas
-- **WHEN** e-mail e senha conferem com uma conta da API
+#### Scenario: Entrar com e-mail
+- **WHEN** o e-mail e a senha conferem com uma conta da API
 - **THEN** o token é gravado em `vtm5.token`, a ficha é lida por `GET /me/sheet` e a ficha (ou o assistente) do usuário é carregada
 
-#### Scenario: Credenciais erradas
-- **WHEN** a API responde `401` porque o e-mail não existe ou a senha não confere
-- **THEN** um toast de erro com a mensagem "E-mail ou senha incorretos." é exibido
+#### Scenario: Entrar com nome de usuário
+- **WHEN** o usuário digita o nome de usuário (em qualquer caixa) e a senha correta
+- **THEN** a sessão é iniciada da mesma forma que ao entrar com o e-mail
 
-#### Scenario: Campos vazios ou e-mail inválido
-- **WHEN** falta e-mail ou senha, ou o e-mail não tem formato válido
-- **THEN** um toast de erro com a mensagem "Informe e-mail e senha." ou "E-mail inválido." é exibido sem chamar a API
+#### Scenario: Credenciais erradas
+- **WHEN** a API responde `401` porque o e-mail ou usuário não existe ou a senha não confere
+- **THEN** um toast de erro com a mensagem "E-mail, usuário ou senha incorretos." é exibido
+
+#### Scenario: Campos vazios
+- **WHEN** falta o e-mail ou usuário, ou a senha
+- **THEN** um toast de erro com a mensagem "Informe o e-mail ou usuário." ou "Informe a senha." é exibido sem chamar a API
 
 #### Scenario: Aguardando a API
 - **WHEN** o usuário confirma o formulário de entrar ou criar conta
