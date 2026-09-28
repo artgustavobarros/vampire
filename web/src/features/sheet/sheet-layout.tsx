@@ -6,14 +6,12 @@ import {
   SheetTitle as DrawerTitle,
 } from "#/components/ui/sheet";
 import { HungerAlert } from "#/features/actions/hunger-alert";
-import {
-  RuleDialogProvider,
-  useRuleDialog,
-} from "#/features/actions/rule-dialog";
+import { RuleDialogProvider } from "#/features/actions/rule-dialog";
 import { logout } from "#/lib/auth";
 import { cn } from "#/lib/utils";
 import { useSheet } from "#/stores/character-store";
 import { usePlayerStore } from "#/stores/player-store";
+import { BottomBar } from "./bottom-bar";
 import { isSheetTab, tabLabel, visibleTabs } from "./tabs";
 
 const MENU_ITEM =
@@ -30,13 +28,17 @@ export function SheetLayout() {
 
   return (
     <RuleDialogProvider>
-      <div className="min-h-screen pb-24">
+      <div className="min-h-screen pb-84 sm:pb-52">
         <div className="mx-auto max-w-[1000px] pb-5">
           <header className="flex items-center justify-between gap-3 border-line border-b px-4 py-2">
             <div className="flex min-w-0 items-baseline gap-2">
-              <span className="truncate font-semibold text-xl leading-tight">
+              <Link
+                className="truncate font-semibold text-xl leading-tight focus-visible:outline-2 focus-visible:outline-ink"
+                params={{ aba: "ficha" }}
+                to="/ficha/$aba"
+              >
                 {name}
-              </span>
+              </Link>
               <span className="whitespace-nowrap font-label font-semibold text-ink text-xs uppercase leading-none tracking-[.12em]">
                 {tabLabel(current)}
               </span>
@@ -83,19 +85,6 @@ export function SheetLayout() {
                   </Link>
                 ))}
                 <button
-                  className={cn(MENU_ITEM, "text-left text-ink")}
-                  onClick={() => {
-                    setMenuOpen(false);
-                    navigate({
-                      search: { passo: 1, refazer: true },
-                      to: "/criar",
-                    });
-                  }}
-                  type="button"
-                >
-                  Refazer personagem
-                </button>
-                <button
                   className={cn(MENU_ITEM, "text-left text-blood")}
                   onClick={async () => {
                     setMenuOpen(false);
@@ -118,38 +107,5 @@ export function SheetLayout() {
       </div>
       <HungerAlert />
     </RuleDialogProvider>
-  );
-}
-
-function BottomBar() {
-  const sheet = useSheet();
-  const dialog = useRuleDialog();
-  const btn =
-    "cursor-pointer flex min-h-12 flex-1 items-center justify-center px-3 py-4 font-label font-semibold text-white text-xs uppercase leading-none tracking-widest hover:opacity-85 focus-visible:outline-2 focus-visible:outline-white";
-  return (
-    <div className="fixed inset-x-0 bottom-0 z-40 flex items-center gap-3 border-blood border-t-4 bg-ink px-4 py-3">
-      <button
-        className={cn(btn, "bg-blood")}
-        onClick={() => dialog.open("rouse")}
-        type="button"
-      >
-        Checagem de sangue
-      </button>
-      <div aria-live="polite" className="flex-none px-1 text-center">
-        <div className="font-label font-semibold text-white/60 text-xs uppercase leading-none tracking-[.12em]">
-          Fome
-        </div>
-        <div className="mt-1 font-bold font-label text-2xl text-ember leading-tight">
-          {sheet.fome || 0}
-        </div>
-      </div>
-      <button
-        className={cn(btn, "border border-white/35 bg-transparent")}
-        onClick={() => dialog.open("sleep")}
-        type="button"
-      >
-        Dormir
-      </button>
-    </div>
   );
 }

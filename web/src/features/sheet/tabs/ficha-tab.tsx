@@ -10,14 +10,12 @@ import {
 import { Chip } from "#/components/vtm/selectable";
 import { Panel, SectionTitle } from "#/components/vtm/text";
 import { HumanityTrack } from "#/components/vtm/tracks";
-import { autoFit, TraitGrid } from "#/components/vtm/trait-grid";
+import { TraitGrid } from "#/components/vtm/trait-grid";
 import { RESONANCE_INTENSITIES, RESONANCES } from "#/data/fields";
 import { ATTRIBUTE_GROUPS, SKILL_GROUPS } from "#/data/traits";
-import { cn } from "#/lib/utils";
 import { adjustHumanity, stains, toggleStain } from "#/rules/humanity";
 import { specialtiesBySkill } from "#/rules/specialties";
 import { patchSheet, useSheet } from "#/stores/character-store";
-import { CYCLE_HINT, TrackPanel } from "../track-panels";
 
 const PANEL_TITLE =
   "mt-0 mb-4 font-label font-semibold text-xs uppercase leading-none tracking-[.12em]";
@@ -32,7 +30,7 @@ export function FichaTab() {
   const skillsTitleId = useId();
   return (
     <>
-      {/* abaixo de lg, um bloco por vez; a partir de lg, os dois com as trilhas entre eles */}
+      {/* abaixo de lg, um bloco por vez; a partir de lg, os dois */}
       <SegmentedTabs
         className="mb-8 flex flex-col gap-8"
         defaultValue="atributos"
@@ -48,7 +46,7 @@ export function FichaTab() {
 
         <SegmentedTabsContent
           aria-labelledby={attrsTitleId}
-          className={cn(TAB_PANE, "lg:order-1")}
+          className={TAB_PANE}
           forceMount
           value="atributos"
         >
@@ -68,7 +66,7 @@ export function FichaTab() {
 
         <SegmentedTabsContent
           aria-labelledby={skillsTitleId}
-          className={cn(TAB_PANE, "lg:order-3")}
+          className={TAB_PANE}
           forceMount
           value="habilidades"
         >
@@ -86,11 +84,6 @@ export function FichaTab() {
             values={sheet.skills}
           />
         </SegmentedTabsContent>
-
-        <div className="grid gap-4 lg:order-2" style={autoFit(260)}>
-          <TrackPanel hint={CYCLE_HINT} track="vit" />
-          <TrackPanel hint="Autocontrole + Determinação" track="fdv" />
-        </div>
       </SegmentedTabs>
 
       <div className="flex flex-col gap-4">

@@ -7,5 +7,5 @@ export const settings = {
   /** conta nova recebe a ficha de exemplo */
   dadosDeExemplo: false,
   /** mostra a aba Sessões & XP */
-  mostrarXP: true,
+  mostrarXP: false,
 } as const;

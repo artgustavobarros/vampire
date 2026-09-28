@@ -37,22 +37,39 @@ export function DamageIcon({
 }
 
 interface DamageTrackProps {
+  className?: string;
   label: string;
   marks: readonly DamageMark[];
   onCycle: (index: number) => void;
+  /** `inverse`: caixas brancas sobre fundo tinta */
+  tone?: "ink" | "inverse";
 }
 
+const TRACK_TONES = {
+  ink: "border-ink bg-field focus-visible:outline-ink",
+  inverse: "border-white bg-white focus-visible:outline-white",
+} as const;
+
 /** Caixas de Vitalidade / Força de Vontade: vazio → superficial → agravado. */
-export function DamageTrack({ label, marks, onCycle }: DamageTrackProps) {
+export function DamageTrack({
+  className,
+  label,
+  marks,
+  onCycle,
+  tone = "ink",
+}: DamageTrackProps) {
   return (
     <fieldset
       aria-label={label}
-      className="m-0 flex flex-wrap gap-1 border-0 p-0"
+      className={cn("m-0 flex flex-wrap gap-1 border-0 p-0", className)}
     >
       {marks.map((m, i) => (
         <button
           aria-label={`${label} ${i + 1}: ${MARK_NAME[m]}`}
-          className="grid size-6 cursor-pointer place-items-center border border-ink bg-field focus-visible:outline-2 focus-visible:outline-ink focus-visible:outline-offset-1"
+          className={cn(
+            "grid size-6 cursor-pointer place-items-center border focus-visible:outline-2 focus-visible:outline-offset-1",
+            TRACK_TONES[tone]
+          )}
           key={i}
           onClick={() => onCycle(i)}
           type="button"

@@ -62,3 +62,15 @@ describe("aba Ficha: sem identificação", () => {
     expect(screen.queryByLabelText("Clã")).toBeNull();
   });
 });
+
+describe("aba Ficha: sem trilhas", () => {
+  beforeEach(resetStores);
+
+  it("não mostra Vitalidade nem Força de Vontade", () => {
+    renderTab();
+    expect(screen.queryByRole("group", { name: "Vitalidade" })).toBeNull();
+    expect(
+      screen.queryByRole("group", { name: "Força de Vontade" })
+    ).toBeNull();
+  });
+});

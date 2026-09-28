@@ -1,10 +1,10 @@
 import { settings } from "#/lib/settings";
 
 export const SHEET_TABS = [
-  { id: "ficha", label: "Ficha" },
+  { id: "ficha", label: "Características" },
   { id: "disciplinas", label: "Disciplinas" },
   { id: "acoes", label: "Ações" },
-  { id: "resumo", label: "Resumo" },
+  { id: "resumo", label: "Biografia" },
   { id: "notas", label: "Notas" },
   { id: "sessoes", label: "Sessões & XP" },
 ] as const;
@@ -27,5 +27,5 @@ export function isSheetTab(value: string): value is SheetTab {
 }
 
 export function tabLabel(tab: SheetTab): string {
-  return SHEET_TABS.find((t) => t.id === tab)?.label ?? "Ficha";
+  return SHEET_TABS.find((t) => t.id === tab)?.label ?? "Características";
 }

@@ -101,6 +101,27 @@ describe("DamageTrack", () => {
     fireEvent.click(box());
     expect(mark()).toBeUndefined();
   });
+
+  it("tom inverso mantém rótulos e ciclo", () => {
+    const onCycle = vi.fn();
+    render(
+      <DamageTrack
+        label="Força de Vontade"
+        marks={[0, 1, 2]}
+        onCycle={onCycle}
+        tone="inverse"
+      />
+    );
+    expect(
+      screen.getByRole("group", { name: "Força de Vontade" })
+    ).toBeInTheDocument();
+    const box = screen.getByRole("button", {
+      name: "Força de Vontade 2: superficial",
+    });
+    expect(box).toHaveClass("bg-white", "focus-visible:outline-white");
+    fireEvent.click(box);
+    expect(onCycle).toHaveBeenCalledWith(1);
+  });
 });
 
 describe("DamagePreview", () => {

@@ -1,15 +1,8 @@
-import type { ReactNode } from "react";
 import { InfoTrigger } from "#/components/vtm/info-trigger";
 import { Panel } from "#/components/vtm/text";
-import {
-  DamageIcon,
-  DamageTrack,
-  HumanityTrack,
-} from "#/components/vtm/tracks";
-import type { TrackKey } from "#/lib/types";
+import { DamageIcon, HumanityTrack } from "#/components/vtm/tracks";
 import { cn } from "#/lib/utils";
 import { stains, toggleStain } from "#/rules/humanity";
-import { cycleBox, trackBoxes, trackMax } from "#/rules/tracks";
 import { patchSheet, useSheet } from "#/stores/character-store";
 
 const TITLE =
@@ -23,42 +16,6 @@ export const CYCLE_HINT = (
     superficial → <DamageIcon className={INLINE_ICON} mark={2} /> agravado
   </>
 );
-
-export function TrackPanel({
-  track,
-  hint,
-  hintClassName,
-}: {
-  track: TrackKey;
-  hint: ReactNode;
-  hintClassName?: string;
-}) {
-  const sheet = useSheet();
-  const max = trackMax(sheet, track);
-  const marks = trackBoxes(sheet[track], max);
-  const label = track === "vit" ? "Vitalidade" : "Força de Vontade";
-  return (
-    <Panel>
-      <h3 className={cn(TITLE, "mt-0")}>
-        <InfoTrigger
-          target={{
-            atual: `Máximo ${max}`,
-            kind: track === "vit" ? "vitalidade" : "vontade",
-          }}
-        >
-          {label}
-        </InfoTrigger>{" "}
-        · máx {max}
-      </h3>
-      <DamageTrack
-        label={label}
-        marks={marks}
-        onCycle={(i) => patchSheet({ [track]: cycleBox(marks, i) })}
-      />
-      <div className={cn(HINT, hintClassName ?? "text-ink-faint")}>{hint}</div>
-    </Panel>
-  );
-}
 
 export function HumanityCompactPanel() {
   const sheet = useSheet();

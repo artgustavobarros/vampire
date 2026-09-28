@@ -4,7 +4,7 @@ import { autoFit } from "#/components/vtm/trait-grid";
 import { useRuleDialog } from "#/features/actions/rule-dialog";
 import { bloodSurgeNote } from "#/rules/actions";
 import { useSheet } from "#/stores/character-store";
-import { CYCLE_HINT, HumanityCompactPanel, TrackPanel } from "../track-panels";
+import { HumanityCompactPanel } from "../track-panels";
 
 export function AcoesTab() {
   const sheet = useSheet();
@@ -34,6 +34,14 @@ export function AcoesTab() {
       title: "Alimentar-se",
     },
     {
+      cta: "Dormir",
+      description:
+        "Encerra a noite: cura dano superficial, recupera Força de Vontade e oferece a checagem de sangue do despertar.",
+      red: false,
+      run: () => dialog.open("sleep"),
+      title: "Dormir",
+    },
+    {
       cta: "Testar",
       description:
         "Resiste à Besta com Autocontrole + Determinação contra a dificuldade da provocação.",
@@ -53,8 +61,6 @@ export function AcoesTab() {
   return (
     <>
       <div className="mb-6 grid gap-4" style={autoFit(260)}>
-        <TrackPanel hint={CYCLE_HINT} hintClassName="text-ink/55" track="vit" />
-        <TrackPanel hint={CYCLE_HINT} hintClassName="text-ink/55" track="fdv" />
         <HumanityCompactPanel />
       </div>
       <div className="grid gap-4" style={autoFit(280)}>
