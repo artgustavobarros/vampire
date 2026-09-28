@@ -1,7 +1,6 @@
 import { useId } from "react";
-import { Input } from "#/components/ui/input";
 import { DotRating } from "#/components/vtm/dot-rating";
-import { InfoButton, InfoTrigger } from "#/components/vtm/info-trigger";
+import { InfoTrigger } from "#/components/vtm/info-trigger";
 import {
   SegmentedTabs,
   SegmentedTabsContent,
@@ -22,6 +21,8 @@ const PANEL_TITLE =
   "mt-0 mb-4 font-label font-semibold text-ink-soft text-xs uppercase leading-none tracking-[.12em]";
 /** painel sempre montado: some só quando inativo abaixo de lg */
 const TAB_PANE = "max-lg:data-[state=inactive]:hidden";
+/** sem escolha gravada, a ficha vale como "Sem ressonância" */
+const NO_RESONANCE = "Sem ressonância";
 
 function updateDiscipline(index: number, change: Partial<Discipline>) {
   const disc = useCharacterStore
@@ -80,16 +81,17 @@ export function DisciplinasTab() {
 
 function ResonancePanel({ titleId }: { titleId: string }) {
   const sheet = useSheet();
+  const ressonancia = sheet.ressonancia || NO_RESONANCE;
   return (
     <Panel className="p-6">
       <h3 className={PANEL_TITLE} id={titleId}>
         <InfoTrigger
           target={{
-            atual: [sheet.ressonancia, sheet.resIntensidade]
+            atual: [ressonancia, sheet.resIntensidade]
               .filter(Boolean)
               .join(" · "),
             kind: "ressonancia",
-            marca: sheet.ressonancia,
+            marca: ressonancia,
           }}
         >
           Ressonância
@@ -99,10 +101,8 @@ function ResonancePanel({ titleId }: { titleId: string }) {
         {RESONANCES.map((r) => (
           <Chip
             key={r}
-            onClick={() =>
-              patchSheet({ ressonancia: sheet.ressonancia === r ? "" : r })
-            }
-            selected={sheet.ressonancia === r}
+            onClick={() => patchSheet({ ressonancia: r })}
+            selected={ressonancia === r}
           >
             {r}
           </Chip>
@@ -142,17 +142,12 @@ function DisciplineCard({
   return (
     <div className="mb-4 border border-line bg-surface">
       <div className="flex flex-wrap items-center gap-4 border-line-soft border-b p-4">
-        <Input
-          aria-label="Nome da disciplina"
+        <InfoTrigger
           className="min-w-0 flex-[1_1_100%] font-semibold text-2xl leading-tight sm:flex-1"
-          onChange={(e) => updateDiscipline(index, { nome: e.target.value })}
-          placeholder="Disciplina"
-          value={d.nome}
-        />
-        <InfoButton
-          aria-label={`Sobre ${label}`}
           target={{ key: d.nome, kind: "disc", nivel: d.nivel || 0 }}
-        />
+        >
+          {label}
+        </InfoTrigger>
         <DotRating
           className="flex-none gap-2"
           label={`Nível de ${label}`}
@@ -169,7 +164,7 @@ function DisciplineCard({
         const nome = p.nome || "Poder sem nome";
         return (
           <InfoTrigger
-            className="flex min-h-12 w-full min-w-0 items-center gap-3 border-line-soft border-b px-4 py-3 focus-visible:outline-ink focus-visible:-outline-offset-2"
+            className="flex min-h-12 w-full min-w-0 items-start gap-3 border-line-soft border-b px-4 py-3 focus-visible:outline-ink focus-visible:-outline-offset-2"
             key={j}
             target={{
               desc: p.desc,

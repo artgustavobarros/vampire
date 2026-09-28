@@ -85,3 +85,23 @@ describe("aba Disciplinas: abas Ressonância | Disciplinas", () => {
     expect(resIntensidade).toBe("Intensa");
   });
 });
+
+describe("aba Disciplinas: padrões", () => {
+  beforeEach(resetStores);
+
+  it("sem ressonância gravada, marca Sem ressonância", () => {
+    renderTab([]);
+    expect(
+      screen.getByRole("button", { name: "Sem ressonância" })
+    ).toHaveAttribute("aria-pressed", "true");
+  });
+
+  it("o nome da disciplina abre o painel, sem campo de edição", async () => {
+    renderTab([{ nivel: 2, nome: "Domínio", powers: [] }]);
+    expect(screen.queryByLabelText("Nome da disciplina")).toBeNull();
+    fireEvent.click(screen.getByRole("button", { name: "Domínio" }));
+    expect(
+      await screen.findByRole("dialog", { name: "Domínio" })
+    ).toBeInTheDocument();
+  });
+});

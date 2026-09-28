@@ -53,6 +53,9 @@ export function SheetLayout({ tabs }: { tabs: SheetTabsBase }) {
   const [menuOpen, setMenuOpen] = useState(false);
   const navigate = useNavigate();
   const name = sheet.nome || "Sem nome";
+  const lineage = [sheet.geracao && `${sheet.geracao} Geração`, sheet.cla]
+    .filter(Boolean)
+    .join(" · ");
 
   const signOut = async () => {
     await logout();
@@ -86,13 +89,20 @@ export function SheetLayout({ tabs }: { tabs: SheetTabsBase }) {
             </div>
           )}
           <header className="flex items-center justify-between gap-3 border-line border-b px-4 py-2">
-            <TabLink
-              aba={DEFAULT_TAB}
-              base={tabs}
-              className="min-w-0 truncate font-semibold text-2xl leading-tight sm:text-3xl focus-visible:outline-2 focus-visible:outline-ink"
-            >
-              {name}
-            </TabLink>
+            <div className="flex min-w-0 items-center gap-3">
+              <TabLink
+                aba={DEFAULT_TAB}
+                base={tabs}
+                className="min-w-0 truncate font-semibold text-2xl leading-tight focus-visible:outline-2 focus-visible:outline-ink sm:text-3xl"
+              >
+                {name}
+              </TabLink>
+              {lineage && (
+                <span className="mt-2 flex-none font-label font-semibold text-ink-soft text-xs uppercase leading-none tracking-[.12em]">
+                  {lineage}
+                </span>
+              )}
+            </div>
             <button
               aria-expanded={menuOpen}
               aria-label="Abrir menu"
