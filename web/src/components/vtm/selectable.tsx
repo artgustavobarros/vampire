@@ -18,11 +18,11 @@ export function SelectableCard({
     <button
       aria-pressed={selected}
       className={cn(
-        "block min-h-12 w-full cursor-pointer border p-3 text-left transition-[border-color,box-shadow,translate] duration-150 focus-visible:outline-2 focus-visible:outline-ink focus-visible:outline-offset-2",
+        "block min-h-12 w-full cursor-pointer border p-3 text-left transition-colors duration-150 focus-visible:outline-2 focus-visible:outline-ink focus-visible:outline-offset-2",
         selected
           ? "border-ink bg-ink text-white"
           : cn(
-              "border-line text-ink enabled:hover:border-ink enabled:hover:shadow-[3px_3px_0_var(--color-ink)] motion-safe:enabled:hover:-translate-y-0.5",
+              "border-line text-ink enabled:hover:border-blood",
               filled ? "bg-field" : "bg-transparent"
             ),
         className

@@ -1,11 +1,12 @@
 import { z } from "zod";
 import { clanBaneText, findClan, isAutoBaneText } from "#/data/clans";
-import { sameDiscipline } from "#/data/disciplines";
+import { findPower, sameDiscipline } from "#/data/disciplines";
 import {
   DEFAULT_DISTRIBUTION,
   SKILL_DISTRIBUTIONS,
 } from "#/data/distributions";
 import { GENERATIONS } from "#/data/generations";
+import { findMerit, meritPointOptions, meritRangeLabel } from "#/data/merits";
 import { findPredator } from "#/data/predators";
 import { ATTRIBUTES, REQUIRED_SPECIALTY_SKILLS } from "#/data/traits";
 import type { Discipline, Merit, Sheet } from "#/lib/types";
@@ -25,6 +26,7 @@ import {
   isThinBlood,
   meritStatus,
   skillDistributionCheck,
+  unmetAmalgams,
 } from "#/rules/wizard";
 
 /** Campos de identidade do passo 8 (clã, senhor, geração e predador têm passo próprio). */
@@ -311,6 +313,14 @@ const step5 = z
           path: ["disc", i, "powers"],
         });
       }
+      const [unmet] = unmetAmalgams(d.nome, d.powers, disc);
+      if (unmet) {
+        ctx.addIssue({
+          code: "custom",
+          message: `${unmet.nome} é amálgama: exige ${findPower(d.nome, unmet.nome)?.amalgam}`,
+          path: ["disc", i, "powers"],
+        });
+      }
     });
   });
 
@@ -389,23 +399,37 @@ const step6 = z
     }
   });
 
+const FREE_MERIT_POINTS = [1, 2, 3, 4, 5] as const;
+
 const step7 = z
   .object({
     cla: z.string(),
+    /** contexto: Falhas de Disciplina Enraizada exigem a Disciplina do passo 5 */
+    disc: z.array(discipline),
     meritos: z.array(
       z.object({
         nome: z.string().trim().min(1, "Informe o nome"),
-        pontos: z
-          .number()
-          .int()
-          .min(1, "Marque de 1 a 5 pontos")
-          .max(5, "Marque de 1 a 5 pontos"),
+        pontos: z.number().int(),
         tipo: z.enum(["vantagem", "defeito", "qualidade-sr", "defeito-sr"]),
       })
     ),
   })
-  .superRefine(({ cla, meritos }, ctx) => {
-    const status = meritStatus(meritos, cla);
+  .superRefine(({ cla, disc, meritos }, ctx) => {
+    meritos.forEach((m, i) => {
+      const canon = findMerit(m.nome);
+      const allowed = canon ? meritPointOptions(canon) : FREE_MERIT_POINTS;
+      if (!allowed.includes(m.pontos)) {
+        ctx.addIssue({
+          code: "custom",
+          message: canon
+            ? `Marque ${meritRangeLabel(allowed)} em ${canon.name}`
+            : "Marque de 1 a 5 pontos",
+          path: ["meritos", i, "pontos"],
+        });
+      }
+    });
+    const disciplinas = disc.map((d) => d.nome).filter(Boolean);
+    const status = meritStatus(meritos, cla, disciplinas);
     if (!status.ok) {
       ctx.addIssue({
         code: "custom",
@@ -440,7 +464,7 @@ const CONTEXT_FIELDS: Partial<Record<number, readonly WizardKey[]>> = {
   4: ["skills"],
   5: ["cla"],
   6: ["cla", "disc", "geracao"],
-  7: ["cla"],
+  7: ["cla", "disc"],
 };
 
 /** Campos gravados por passo (1-based), tirados dos shapes dos schemas. */

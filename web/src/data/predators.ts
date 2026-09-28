@@ -228,8 +228,8 @@ export const PREDATORS: readonly Predator[] = [
       { kind: "humanidade", label: "+1 de Humanidade", valor: 1 },
       {
         kind: "merito",
-        label: "Defeito Vegano ••",
-        nome: "Vegano",
+        label: "Defeito Fazendeiro ••",
+        nome: "Fazendeiro",
         pontos: 2,
         tipo: "defeito",
       },

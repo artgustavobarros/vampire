@@ -57,6 +57,19 @@ describe("painel Vantagens & Defeitos", () => {
     ]);
   });
 
+  it("pontos seguem o catálogo: fixo, até 6 e sem valor", () => {
+    renderPanel([
+      { nome: "Bonito", pontos: 2, tipo: "vantagem" },
+      { nome: "Aliados", pontos: 4, tipo: "vantagem" },
+      { nome: "Instinto Assassino", pontos: 0, tipo: "defeito" },
+    ]);
+    expect(screen.getByRole("button", { name: "Bonito 3" })).toBeDisabled();
+    expect(screen.getByRole("button", { name: "Aliados 6" })).toBeEnabled();
+    const defeitos = column("Defeitos");
+    expect(within(defeitos).getByText("—")).toBeInTheDocument();
+    expect(within(defeitos).queryByRole("group")).toBeNull();
+  });
+
   it("coluna vazia mostra o aviso", () => {
     renderPanel([{ nome: "Recursos", pontos: 3, tipo: "vantagem" }]);
     expect(screen.getByText("Nenhum defeito.")).toBeInTheDocument();

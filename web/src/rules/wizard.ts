@@ -1,6 +1,7 @@
 import { findClan } from "#/data/clans";
 import {
   DISCIPLINES,
+  findPower,
   type PowerTemplate,
   sameDiscipline,
 } from "#/data/disciplines";
@@ -8,6 +9,7 @@ import {
   DEFAULT_DISTRIBUTION,
   SKILL_DISTRIBUTIONS,
 } from "#/data/distributions";
+import { findMerit, meritClanAllowed, meritDisciplineMet } from "#/data/merits";
 import { ATTRIBUTES, SKILLS } from "#/data/traits";
 import type { Discipline, Merit, MeritKind, Power, Sheet } from "#/lib/types";
 
@@ -284,6 +286,44 @@ export function trimPowers(powers: readonly Power[], nivel: number): Power[] {
     .slice(0, nivel);
 }
 
+const AMALGAM_RE = /^(.+\S)\s+(\d)$/;
+
+/** Amálgama ("Ofuscação 2") satisfeito pelas Disciplinas da ficha; sem amálgama, sempre. */
+export function amalgamMet(
+  amalgam: string | undefined,
+  disc: readonly Discipline[]
+): boolean {
+  const match = amalgam ? AMALGAM_RE.exec(amalgam.trim()) : null;
+  if (!match) {
+    return true;
+  }
+  const [, nome, nivel] = match;
+  return disc.some(
+    (d) => sameDiscipline(d.nome, nome) && (d.nivel || 0) >= Number(nivel)
+  );
+}
+
+/** Poderes de `nome` cujo amálgama deixou de ser atendido por `disc`. */
+export function unmetAmalgams(
+  nome: string,
+  powers: readonly Power[],
+  disc: readonly Discipline[]
+): Power[] {
+  return powers.filter(
+    (p) => !amalgamMet(findPower(nome, p.nome)?.amalgam, disc)
+  );
+}
+
+/** Tira dos slots os poderes de amálgama que perderam a Disciplina exigida. */
+export function dropUnmetAmalgams(disc: readonly Discipline[]): Discipline[] {
+  return disc.map((d) => {
+    const unmet = new Set(unmetAmalgams(d.nome, d.powers, disc));
+    return unmet.size
+      ? { ...d, powers: d.powers.filter((p) => !unmet.has(p)) }
+      : d;
+  });
+}
+
 /** Motivo para não incluir mais um poder no slot; `null` quando cabe. */
 export function powerToggleBlock(
   nome: string,
@@ -381,10 +421,46 @@ function quotaGap(
   return "";
 }
 
+/** Pontos de um item do catálogo na lista (nome ou alias). */
+function meritPoints(meritos: readonly Merit[], name: string): number {
+  return Math.max(
+    0,
+    ...meritos
+      .filter((m) => findMerit(m.nome)?.name === name)
+      .map((m) => m.pontos || 0)
+  );
+}
+
+/** Pré-requisitos, clã e Disciplinas exigidas de cada linha do catálogo. */
+function meritRequirementGaps(
+  meritos: readonly Merit[],
+  cla: string | undefined,
+  disciplinas: readonly string[] | undefined
+): string[] {
+  return meritos.flatMap((m) => {
+    const canon = findMerit(m.nome);
+    if (!canon) {
+      return [];
+    }
+    const req = canon.requires;
+    if (req && "merit" in req && meritPoints(meritos, req.merit) < req.min) {
+      return [`${canon.name} exige ${req.merit} ${"•".repeat(req.min)}`];
+    }
+    if (!meritClanAllowed(canon, cla)) {
+      return [`${(cla ?? "").trim()} não pode ter ${canon.name}`];
+    }
+    if (req && "discipline" in req && !meritDisciplineMet(canon, disciplinas)) {
+      return [`${canon.name} exige a Disciplina ${req.discipline}`];
+    }
+    return [];
+  });
+}
+
 /** Linha de status do passo 7 (a mesma mensagem vai para o toast). */
 export function meritStatus(
   meritos: readonly Merit[] | undefined,
-  cla: string | undefined
+  cla: string | undefined,
+  disciplinas?: readonly string[]
 ): { message: string; ok: boolean; totals: MeritTotals } {
   const totals = meritTotals(meritos, cla);
   const pending = [
@@ -399,7 +475,8 @@ export function meritStatus(
       pending.push("igualar Defeitos de Sangue-Ralo às Qualidades");
     }
   }
-  const missing = pending.filter(Boolean);
+  pending.push(...meritRequirementGaps(meritos ?? [], cla, disciplinas));
+  const missing = [...new Set(pending.filter(Boolean))];
   return missing.length
     ? { message: `Falta: ${missing.join(" · ")}.`, ok: false, totals }
     : { message: "Distribuição completa.", ok: true, totals };

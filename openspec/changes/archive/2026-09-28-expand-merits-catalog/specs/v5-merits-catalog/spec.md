@@ -1,10 +1,7 @@
-# v5-merits-catalog Specification
+## MODIFIED Requirements
 
-## Purpose
-Catálogo canônico de Vantagens, Defeitos, Antecedentes e características exclusivas de Sangue-ralo (V5 PT-BR), com sugestões e autopreenchimento no assistente e suporte ao painel de informações.
-## Requirements
 ### Requirement: Catálogo de Qualidades e Defeitos de Sangue-ralo
-O catálogo em `web/src/data/merits/` SHALL fornecer as 14 Qualidades de Sangue-ralo (`THIN_BLOOD_MERITS`) e os 16 Defeitos de Sangue-ralo (`THIN_BLOOD_FLAWS`) do V5 (Corebook e Players Guide) em Português Brasileiro (PT-BR), contendo `name` (nome canônico), `aliases` (com o nome em inglês), `tipo` ("qualidade-sr" ou "defeito-sr"), `clans: ["Sangue-ralo"]` ("Sangue Fraco" é tratado como o mesmo clã), `source`, `description` (texto da regra só daquele item, sem trechos de outros itens nem cabeçalhos do livro) e `points` (1; a regra conta itens, não pontos). "Presença do Crepúsculo" (Twilight Presence) e "Fome Infinita" (Unending Hunger) MUST ser Defeitos SR. "Sinal Sobrenatural" (Supernatural Tell) MUST ter o alias "Conta Sobrenatural".
+O catálogo em `web/src/data/merits/` SHALL fornecer as 14 Qualidades de Sangue-ralo (`THIN_BLOOD_MERITS`) e os 16 Defeitos de Sangue-ralo (`THIN_BLOOD_FLAWS`) do V5 (Corebook e Players Guide) em Português Brasileiro (PT-BR), contendo `name` (nome canônico), `aliases` (com o nome em inglês), `tipo` ("qualidade-sr" ou "defeito-sr"), `clans: ["Sangue Fraco"]`, `source`, `description` (texto da regra só daquele item, sem trechos de outros itens nem cabeçalhos do livro) e `points` (1; a regra conta itens, não pontos). "Presença do Crepúsculo" (Twilight Presence) e "Fome Infinita" (Unending Hunger) MUST ser Defeitos SR. "Sinal Sobrenatural" (Supernatural Tell) MUST ter o alias "Conta Sobrenatural".
 
 #### Scenario: Consulta a Qualidades de Sangue-ralo
 - **WHEN** a aplicação consulta `THIN_BLOOD_MERITS`
@@ -82,6 +79,8 @@ O Passo 7 do assistente de criação (`web/src/features/wizard/step7-merits.tsx`
 - **WHEN** o usuário escolhe "Recursos" no combobox
 - **THEN** a linha é criada com 1 ponto e aceita de 1 a 5
 
+## ADDED Requirements
+
 ### Requirement: Modelo do item do catálogo
 Cada item SHALL ter `name`, `tipo`, `points`, `category`, `source` (livro de origem) e `description`, e MAY ter `aliases`, `parent` (Antecedente dono), `requires` (`{ merit, min }` ou `{ discipline }`), `clans`, `excludeClans`, `hidden` e `levels`. Quando `levels` existe, MUST ter um texto por valor permitido de `points`. Nomes e aliases MUST ser únicos no catálogo, sem diferença de maiúsculas e acentos. Todo item vindo do wiki MUST ter o nome em inglês entre os `aliases`.
 
@@ -122,4 +121,3 @@ Todo nome de mérito em `web/src/data/predators.ts` SHALL existir no catálogo (
 #### Scenario: Nomes do Predador
 - **WHEN** o teste percorre os méritos de `PREDATORS`
 - **THEN** `findMerit` encontra todos, exceto "Defeito Mítico"
-

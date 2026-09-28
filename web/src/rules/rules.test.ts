@@ -16,8 +16,11 @@ import { nextDotValue } from "./dots";
 import { feed } from "./feeding";
 import {
   bloodPotency,
+  generationFromSire,
   potencyFromGeneration,
   potencyNote,
+  SIRE_GENERATIONS,
+  sireGeneration,
   sireNote,
 } from "./generation";
 import { stains, toggleStain } from "./humanity";
@@ -47,9 +50,11 @@ import {
   vitalityMax,
 } from "./tracks";
 import {
+  amalgamMet,
   attributeQuotas,
   clanDisciplineOptions,
   disciplineDistribution,
+  dropUnmetAmalgams,
   effectiveMeritKind,
   initialAttributes,
   keepClanDisciplines,
@@ -529,6 +534,37 @@ describe("assistente", () => {
         ).ok
       ).toBe(true);
     });
+    it("cobra o Antecedente exigido pela sub-vantagem", () => {
+      const base: Merit[] = [
+        { nome: "Zerado", pontos: 1, tipo: "vantagem" },
+        { nome: "Recursos", pontos: 4, tipo: "vantagem" },
+        { nome: "Inimigo", pontos: 2, tipo: "defeito" },
+      ];
+      expect(
+        meritStatus(
+          [...base, { nome: "Máscara", pontos: 1, tipo: "vantagem" }],
+          "Brujah"
+        ).message
+      ).toBe("Falta: distribuir 1 pts em vantagens · Zerado exige Máscara ••.");
+      expect(
+        meritStatus(
+          [...base, { nome: "Máscara", pontos: 2, tipo: "vantagem" }],
+          "Brujah"
+        )
+      ).toMatchObject({ message: "Distribuição completa.", ok: true });
+    });
+    it("cobra o clã e a Disciplina exigidos", () => {
+      const meritos: Merit[] = [
+        { nome: "Recursos", pontos: 5, tipo: "vantagem" },
+        { nome: "Contatos", pontos: 2, tipo: "vantagem" },
+        { nome: "Vegano", pontos: 2, tipo: "defeito" },
+        { nome: "Instinto Assassino", pontos: 0, tipo: "defeito" },
+      ];
+      expect(meritStatus(meritos, "Ventrue", ["Dominação"]).message).toBe(
+        "Falta: Ventrue não pode ter Fazendeiro · Instinto Assassino exige a Disciplina Potência."
+      );
+      expect(meritStatus(meritos, "Brujah", ["Potência"]).ok).toBe(true);
+    });
   });
   describe("clanDisciplineOptions", () => {
     it("clã comum lista só as do clã", () => {
@@ -653,6 +689,31 @@ describe("poderes por ponto", () => {
       "A",
     ]);
   });
+
+  it("amálgama exige o nível da outra Disciplina", () => {
+    const dom = (obf: number) => [
+      { nivel: 2, nome: "Domínio", powers: [] },
+      { nivel: obf, nome: "Ofuscação", powers: [] },
+    ];
+    expect(amalgamMet(undefined, dom(0))).toBe(true);
+    expect(amalgamMet("Ofuscação 2", dom(1))).toBe(false);
+    expect(amalgamMet("Ofuscação 2", dom(2))).toBe(true);
+    expect(amalgamMet("Ofuscação 2", [dom(2)[0]])).toBe(false);
+  });
+
+  it("tira amálgamas que perderam a Disciplina exigida", () => {
+    const tenacidade = pw("Tenacidade", 2);
+    const bestas = pw("Bestas Resistentes", 2);
+    const gangrel = (animalismo: number) => [
+      { nivel: 2, nome: "Fortitude", powers: [tenacidade, bestas] },
+      { nivel: animalismo, nome: "Animalismo", powers: [] },
+    ];
+    const ok = gangrel(1);
+    expect(dropUnmetAmalgams(ok)).toEqual(ok);
+    expect(dropUnmetAmalgams(gangrel(0))[0].powers.map((p) => p.nome)).toEqual([
+      "Tenacidade",
+    ]);
+  });
 });
 
 describe("notas da geração", () => {
@@ -667,9 +728,17 @@ describe("notas da geração", () => {
 
   it("geração do senhor", () => {
     expect(sireNote("9ª")).toBe(
-      "Seu senhor é da 8ª Geração (você é sempre uma Geração acima do senhor)."
+      "Você é da 9ª Geração (sempre uma acima do seu senhor)."
     );
-    expect(sireNote("")).toBe("Você é sempre uma Geração acima do seu senhor.");
+    expect(sireNote("")).toBe(
+      "Você fica sempre uma Geração acima do seu senhor."
+    );
+    expect(sireGeneration("12ª")).toBe("11ª");
+    expect(sireGeneration("")).toBe("");
+    expect(generationFromSire("11ª")).toBe("12ª");
+    expect(generationFromSire("")).toBe("");
+    expect(SIRE_GENERATIONS[0]).toBe("15ª");
+    expect(SIRE_GENERATIONS.at(-1)).toBe("3ª");
   });
 });
 
@@ -852,15 +921,8 @@ describe("Predador", () => {
   });
 
   it("especialidades, Disciplinas e méritos batem com os catálogos", () => {
-    // méritos que só o Predador usa e ainda não estão em data/merits.ts
-    const fora = new Set([
-      "Sabujo de Sangue",
-      "Predador Óbvio",
-      "Refúgio Assustador",
-      "Refúgio Assombrado",
-      "Rejeitado",
-      "Defeito Mítico",
-    ]);
+    // rótulo de escolha ("qualquer Defeito Mítico"), não um item do catálogo
+    const fora = new Set(["Defeito Mítico"]);
     for (const p of PREDATORS) {
       for (const spec of p.specialties) {
         expect(SKILLS, `${p.name}: ${spec}`).toContain(
@@ -1028,6 +1090,19 @@ describe("Predador", () => {
       const disc = [{ nivel: 2, nome: "Potência", powers: [] }];
       expect(predatorDiscipline("Caitiff", disc, "Potência").doCla).toBe(true);
       expect(predatorDiscipline("Caitiff", disc, "Domínio").doCla).toBe(false);
+    });
+
+    it("amálgama só entra com a outra Disciplina no nível", () => {
+      const nosferatu = (obf: number) => [
+        { nivel: 2, nome: "Animalismo", powers: [] },
+        { nivel: obf, nome: "Ofuscação", powers: [] },
+      ];
+      expect(
+        names(predatorDiscipline("Nosferatu", nosferatu(1), "Animalismo"))
+      ).not.toContain("3:Colmeia Desalmada");
+      expect(
+        names(predatorDiscipline("Nosferatu", nosferatu(2), "Animalismo"))
+      ).toContain("3:Colmeia Desalmada");
     });
 
     it("sem catálogo não tem elegíveis", () => {

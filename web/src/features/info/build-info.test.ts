@@ -87,7 +87,9 @@ describe("buildInfo", () => {
       tipo: "vantagem",
     });
     expect(info.titulo).toBe("Recursos (herança)");
-    expect(info.desc).toBe("Dinheiro, bens e renda.");
+    expect(info.desc).toBe(
+      "Dinheiro e renda: herança, investimentos ou trabalho noturno."
+    );
     expect(current(info.niveis)).toEqual(["••"]);
   });
 
@@ -132,6 +134,54 @@ describe("buildInfo", () => {
     );
     expect(info.niveis.map((l) => l.txt)).toEqual(MERIT_SCALE_V);
     expect(current(info.niveis)).toEqual(["••"]);
+  });
+
+  it("mérito por alias traz o nome original e o livro", () => {
+    const info = buildInfo({
+      key: "Vegano",
+      kind: "merit",
+      pontos: 2,
+      tipo: "defeito",
+    });
+    expect(info.desc).toContain("gaste 2 de Força de Vontade");
+    expect(info.nota).toContain("Original: Farmer · Corebook");
+  });
+
+  it("mérito de custo fixo não tem lista de pontos", () => {
+    const info = buildInfo({
+      key: "Bonito",
+      kind: "merit",
+      pontos: 2,
+      tipo: "vantagem",
+    });
+    expect(info.niveis).toEqual([]);
+  });
+
+  it("pré-requisito no painel", () => {
+    const info = buildInfo({
+      key: "Zerado",
+      kind: "merit",
+      pontos: 1,
+      tipo: "vantagem",
+    });
+    expect(info.nota).toContain("Exige Máscara ••");
+  });
+
+  it("níveis de Aliados vão de 2 a 6", () => {
+    const info = buildInfo({
+      key: "Aliados",
+      kind: "merit",
+      pontos: 4,
+      tipo: "vantagem",
+    });
+    expect(info.niveis.map((l) => l.n)).toEqual([
+      "••",
+      "•••",
+      "••••",
+      "•••••",
+      "••••••",
+    ]);
+    expect(current(info.niveis)).toEqual(["••••"]);
   });
 
   it("poder do catálogo com checagem de sangue", () => {
@@ -296,9 +346,7 @@ describe("buildInfo", () => {
       tipo: "defeito-sr",
     });
     expect(info.kicker).toBe("Defeito");
-    expect(info.niveis[4].txt).toBe(
-      "Um ancião ou organização inteira caça você."
-    );
+    expect(info.niveis[4].txt).toBe("Uma organização inteira caça você.");
     const sr = buildInfo({
       key: "Olfato apurado",
       kind: "merit",

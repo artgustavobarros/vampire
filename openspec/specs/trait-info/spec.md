@@ -60,7 +60,7 @@ O conteúdo do painel SHALL ser montado por uma função pura a partir do tipo, 
 - **Disciplina**: kicker "Disciplina", descrição resolvida por nome canônico (`Dominação`, `Proteanismo`, `Alquimia de Sangue-ralo`) com suporte a variantes legadas (`Domínio`, `Protean`, `Alquimia de Sangue-fraco`), níveis 1–5 com os poderes do catálogo em cada nível e nota sobre limite por nível; selo "Nível N".
 - **Poder**: kicker "<Disciplina> · nível N", descrição do catálogo (ou a registrada), lista "Rolagem, custo e duração" com as linhas Rolagem, Custo e Duração, e nota "Este poder exige Rouse Check." quando aplicável. A Rolagem MUST ser extraída da descrição do catálogo quando ela cita "Atributo + Disciplina" (com "de <X>" e "vs. …"/"contra …" opcionais), e essa frase MUST sair da descrição (se a descrição ficar vazia, usa a original). Sem citação, a Rolagem MUST ser "Sem teste: efeito passivo, sempre ativo." quando a duração é "Passiva", ou "Sem teste: o efeito acontece ao ativar." nos demais casos. Poder fora do catálogo não tem lista.
 - **Geração** e **Potência de Sangue**: kicker "Sangue", sem lista de níveis, e uma tabela "Potência de Sangue" com uma linha por Potência (0 a 10) e as colunas Potência, Surto de Sangue, Dano recuperado (por Checagem de Sangue), Bônus de poder de Disciplina, Rerrolagem de Checagem para Disciplinas, Gravidade da Perdição e Penalidade de alimentação.
-- **Vantagem/Defeito**: consulta prioritariamente o catálogo `data/merits.ts` através de `findMerit(name)` e fallback para nomes comuns em `MERIT_INFO`; lista "O que cada ponto significa" com os 5 níveis (• a •••••) e o nível atual destacado quando aplicável. Para méritos e defeitos de Sangue-ralo, exibe a regra oficial completa da característica. Para mérito fora do catálogo, usa a escala genérica de vantagem ou de defeito, com o texto de fora do catálogo como descrição.
+- **Vantagem/Defeito**: consulta só o catálogo `data/merits/` através de `findMerit(name)` (nome, alias ou "Nome (detalhe)"); `MERIT_INFO` MUST NOT ter entradas de mérito. O kicker mostra o tipo; abaixo da descrição, a nota traz o nome em inglês e o livro de origem ("Original: <nome EN> · <livro>") e, quando há `requires`, a linha "Exige <Antecedente> <pontinhos>" ou "Exige a Disciplina <Disciplina>". A lista "O que cada ponto significa" usa os `levels` do item, uma linha por valor permitido, com o nível atual destacado; sem `levels`, um item com faixa usa a escala genérica de vantagem ou de defeito limitada aos valores permitidos, e um item de custo fixo não tem lista. Para méritos e defeitos de Sangue-ralo, exibe a regra completa da característica. Para mérito fora do catálogo, usa a escala genérica de 5 níveis, com o texto de fora do catálogo como descrição.
 - **Perdição do clã**: kicker "Perdição · <clã>", título com o nome da Perdição, descrição completa do catálogo `CLAN_FULL`, selo "Gravidade N", lista "Regra e rolagem" com os pares rótulo/texto e `{G}` trocado pela Gravidade, e nota "A Gravidade da Perdição vem da Potência de Sangue (atual: N).".
 - **Compulsão do clã**: kicker "Compulsão · <clã>", título com o nome da Compulsão, descrição completa, lista "Regra e rolagem" (Efeito, Termina) e nota sobre falha bestial.
 - Para clãs sem entrada em `CLAN_FULL` (Caitiff, Sangue Fraco), Perdição e Compulsão MUST usar o texto curto do clã, sem selo, sem lista e sem nota.
@@ -141,6 +141,18 @@ O conteúdo do painel SHALL ser montado por uma função pura a partir do tipo, 
 #### Scenario: Defeito SR
 - **WHEN** o painel abre para um "Defeito SR" chamado "Inimigo"
 - **THEN** o kicker é "Defeito" e os níveis são os textos próprios de Inimigo
+
+#### Scenario: Mérito por alias
+- **WHEN** o painel abre para o defeito "Vegano" com 2 pontos
+- **THEN** a descrição é a de "Fazendeiro" e a nota traz "Original: Farmer · Corebook"
+
+#### Scenario: Mérito de custo fixo sem lista
+- **WHEN** o painel abre para a vantagem "Bonito" com 2 pontos
+- **THEN** o painel mostra a descrição de Bonito e não mostra a lista "O que cada ponto significa"
+
+#### Scenario: Pré-requisito no painel
+- **WHEN** o painel abre para "Zerado"
+- **THEN** o painel traz a linha "Exige Máscara ••"
 
 ### Requirement: Gatilhos do painel
 O painel SHALL abrir a partir de: o nome de cada atributo e habilidade (ficha e assistente); cada selo de especialidade na seção Habilidades da aba Ficha; um botão **?** de 40×40px ao lado do nome de cada disciplina; a linha de cada poder na aba Disciplinas; o nome de cada poder nos cartões dos passos 5 e 6 do assistente; um botão **?** em cada linha de vantagem/defeito do passo 7; o nome de cada vantagem e defeito no painel "Vantagens & Defeitos" da aba Resumo (passando tipo e pontos atuais); os rótulos dos blocos Fome, Humanidade, Vitalidade, Força de Vontade, Ressonância e Potência de Sangue (este último no rodapé preto da aba Resumo); os títulos da Perdição e da Compulsão do clã no passo 1 do assistente; o rótulo da Geração no passo 1; e os rótulos "Vitalidade" e "Força de Vontade" da linha de derivados do passo 2 do assistente, com o selo "Máximo N" calculado a partir dos atributos atuais do formulário. O passo 5 MUST NOT ter gatilhos de Geração nem de Potência de Sangue. Todo gatilho MUST ser um `<button>` acessível por teclado, e um gatilho dentro de um cartão selecionável MUST NOT alternar a seleção do cartão.

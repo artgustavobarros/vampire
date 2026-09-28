@@ -7,11 +7,15 @@ import {
   POWERS,
   type PowerTemplate,
 } from "#/data/disciplines";
-import { findMerit } from "#/data/merits";
+import {
+  findMerit,
+  type MeritTemplate,
+  meritPointOptions,
+  meritRequirementLabel,
+} from "#/data/merits";
 import {
   ATTR_INFO,
   DISC_INFO,
-  MERIT_INFO,
   MERIT_SCALE_D,
   MERIT_SCALE_V,
   SKILL_INFO,
@@ -332,41 +336,60 @@ function meritNote(tipo: MeritKind): string {
   return "Vantagens custam os pontos marcados.";
 }
 
+/** Um nível por valor permitido; sem textos, faixa usa a escala genérica e custo fixo não tem lista. */
 function meritLevels(
-  levelsText: readonly string[] | undefined,
+  canon: MeritTemplate | undefined,
   defeito: boolean,
   pontos: number
-) {
-  const rows = levelsText ?? (defeito ? MERIT_SCALE_D : MERIT_SCALE_V);
-  return dotLevels(rows, pontos);
+): InfoLevel[] {
+  const scale = defeito ? MERIT_SCALE_D : MERIT_SCALE_V;
+  if (!canon) {
+    return dotLevels(scale, pontos);
+  }
+  const values = meritPointOptions(canon);
+  const texts =
+    canon.levels ??
+    (values.length > 1 ? values.map((v) => scale[v - 1] ?? "") : []);
+  return levels(
+    texts.map((txt, i) => ["•".repeat(values[i] ?? 0), txt] as const),
+    pontos ? "•".repeat(pontos) : ""
+  );
+}
+
+/** Nota do tipo, nome original e livro, e o pré-requisito. */
+function meritNoteLines(
+  canon: MeritTemplate | undefined,
+  tipo: MeritKind
+): string {
+  const original = canon?.aliases?.[0];
+  return [
+    meritNote(tipo),
+    canon && original ? `Original: ${original} · ${canon.source}` : "",
+    canon ? (meritRequirementLabel(canon) ?? "") : "",
+  ]
+    .filter(Boolean)
+    .join("\n");
 }
 
 function meritInfo(
   target: Extract<InfoTarget, { kind: "merit" }>
 ): InfoContent {
   const canon = findMerit(target.key);
-  const name = target.key.trim().toLowerCase();
-  const hit = MERIT_INFO.find(([prefix]) => name.startsWith(prefix));
-  const tipo = hit?.[1] ?? canon?.tipo ?? target.tipo;
+  const tipo = canon?.tipo ?? target.tipo;
   const defeito = tipo === "defeito" || tipo === "defeito-sr";
-  const levelsText = hit?.[4] ?? canon?.levels;
   const fallbackDesc = defeito
     ? "Defeito fora do catálogo. Combine o efeito com o Narrador."
     : "Vantagem fora do catálogo. Combine o efeito com o Narrador.";
-  const desc = hit?.[3] ?? canon?.description ?? fallbackDesc;
-  const kicker = meritKicker(tipo);
-  const niveis = meritLevels(levelsText, defeito, target.pontos);
   const fallbackTitle = defeito ? "Defeito sem nome" : "Vantagem sem nome";
-  const titulo = target.key.trim() || canon?.name || fallbackTitle;
 
   return {
     atual: points(target.pontos, "Sem pontos"),
-    desc,
-    kicker,
-    niveis,
+    desc: canon?.description ?? fallbackDesc,
+    kicker: meritKicker(tipo),
+    niveis: meritLevels(canon, defeito, target.pontos),
     nivelTit: "O que cada ponto significa",
-    nota: meritNote(tipo),
-    titulo,
+    nota: meritNoteLines(canon, tipo),
+    titulo: target.key.trim() || canon?.name || fallbackTitle,
   };
 }
 

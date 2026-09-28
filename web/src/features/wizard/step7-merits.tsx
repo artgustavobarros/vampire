@@ -4,11 +4,9 @@ import { InfoTrigger } from "#/components/vtm/info-trigger";
 import { EmptyState } from "#/components/vtm/text";
 import {
   findMerit,
-  type MeritTemplate,
   meritGroupLabel,
   meritPointOptions,
   meritRangeLabel,
-  sameMeritName,
 } from "#/data/merits";
 import { cn } from "#/lib/utils";
 import {
@@ -29,13 +27,6 @@ import {
 
 const FREE_POINTS = [1, 2, 3, 4, 5] as const;
 
-/** Item do catálogo pelo nome (aceita sufixo "(detalhe)"); nomes livres ficam fora. */
-function catalogMerit(nome: string): MeritTemplate | undefined {
-  const hit = findMerit(nome);
-  const base = nome.replace(/\s*\([^)]*\)/g, "");
-  return hit && sameMeritName(hit.name, base) ? hit : undefined;
-}
-
 const RULE =
   "Distribua 7 pontos em Vantagens e adquira 2 pontos de Defeitos além daqueles obtidos do seu Tipo de Predador.";
 const THIN_RULE =
@@ -47,12 +38,16 @@ export function Step7Merits() {
     control,
     name: "meritos",
   });
-  const [cla, meritos] = useWatch({ control, name: ["cla", "meritos"] });
+  const [cla, meritos, disc] = useWatch({
+    control,
+    name: ["cla", "meritos", "disc"],
+  });
+  const disciplinas = disc.map((d) => d.nome).filter(Boolean);
   const thin = isThinBlood(cla);
   const kinds = meritKinds(cla);
-  const status = meritStatus(meritos, cla);
+  const status = meritStatus(meritos, cla, disciplinas);
   const { totals } = status;
-  const taken = new Set(meritos.map((m) => catalogMerit(m.nome)));
+  const taken = new Set(meritos.map((m) => findMerit(m.nome)));
 
   return (
     <>
@@ -84,13 +79,13 @@ export function Step7Merits() {
         {status.message}
       </div>
       <MeritCombobox
+        context={{ cla, disciplinas }}
         isTaken={(m) => taken.has(m)}
         onPick={append}
-        thin={thin}
       />
       {fields.map((row, i) => {
         const nome = meritos[i]?.nome ?? row.nome;
-        const canon = catalogMerit(nome);
+        const canon = findMerit(nome);
         const allowed = canon ? meritPointOptions(canon) : FREE_POINTS;
         const tipo = effectiveMeritKind(meritos[i]?.tipo ?? row.tipo, cla);
         const pontos = meritos[i]?.pontos ?? 0;
@@ -138,19 +133,22 @@ export function Step7Merits() {
                   : "Fora do catálogo"}
               </div>
             </div>
-            <Controller
-              control={control}
-              name={`meritos.${i}.pontos`}
-              render={({ field }) => (
-                <DotRating
-                  allowed={allowed}
-                  label={`Pontos de ${nome}`}
-                  onChange={field.onChange}
-                  size="sm"
-                  value={field.value}
-                />
-              )}
-            />
+            {allowed.every((v) => v === 0) ? null : (
+              <Controller
+                control={control}
+                name={`meritos.${i}.pontos`}
+                render={({ field }) => (
+                  <DotRating
+                    allowed={allowed}
+                    count={Math.max(5, ...allowed)}
+                    label={`Pontos de ${nome}`}
+                    onChange={field.onChange}
+                    size="sm"
+                    value={field.value}
+                  />
+                )}
+              />
+            )}
             <button
               className={cn(ACTION, "cursor-pointer text-ink/55")}
               onClick={() => remove(i)}

@@ -259,20 +259,20 @@ Um Predador pode proibir clãs e limitar a Potência de Sangue: Fazendeiro e Saq
 - **THEN** a ficha é gravada com `predador`, `predEspec`, `predEspecNome`, `predDisc`, `predPoder` e `predEscolhas` vazios
 
 ### Requirement: Passo 7 — Vantagens e defeitos
-O passo SHALL escolher vantagens e defeitos por um combobox de busca sobre o catálogo (`web/src/data/merits.ts`) e mostrar os escolhidos numa lista abaixo dele. No topo, o passo MUST mostrar "X/7 pts em vantagens" e "Y/2 pts em defeitos", o texto da regra ("Distribua 7 pontos em Vantagens e adquira 2 pontos de Defeitos além daqueles obtidos do seu Tipo de Predador.") e uma linha de status: "Falta: " com os itens pendentes separados por " · " (ex.: "distribuir 3 pts em vantagens", "remover 1 pts de defeitos"), ou "Distribuição completa." em Moss `#2F6B3C`. Os defeitos do Predador MUST NOT entrar na soma.
+O passo SHALL escolher vantagens e defeitos por um combobox de busca sobre o catálogo (`web/src/data/merits/`) e mostrar os escolhidos numa lista abaixo dele. No topo, o passo MUST mostrar "X/7 pts em vantagens" e "Y/2 pts em defeitos", o texto da regra ("Distribua 7 pontos em Vantagens e adquira 2 pontos de Defeitos além daqueles obtidos do seu Tipo de Predador.") e uma linha de status: "Falta: " com os itens pendentes separados por " · " (ex.: "distribuir 3 pts em vantagens", "remover 1 pts de defeitos"), ou "Distribuição completa." em Moss `#2F6B3C`. Os defeitos do Predador MUST NOT entrar na soma.
 
 Combobox:
 - acima do campo, três abas com `aria-pressed`: "Todos" (padrão), "Vantagens" e "Defeitos"; a aba ativa tem fundo tinta e texto branco, as outras só contorno;
 - o campo tem o placeholder "Buscar vantagem ou defeito…", um ícone de lupa à esquerda e, à direita, "N opções" com o número de opções visíveis;
-- ao focar ou digitar, MUST abrir abaixo do campo uma lista (`role="listbox"`) com altura máxima e rolagem, agrupada por categoria na ordem do catálogo, com o cabeçalho de cada grupo fixo no topo durante a rolagem ("Antecedente" aparece como "Antecedentes");
-- cada opção MUST mostrar o nome, a faixa de pontos em pontinhos ("•" para custo fixo de 1, "••" para custo fixo de 2, "•–•••••" para faixa de 1 a 5), a marca "Na ficha" em Moss quando já está na lista de escolhidos, o selo do tipo à direita ("Vantagem" ou "Qualidade SR" em Moss, "Defeito" ou "Defeito SR" em Blood) e a descrição do catálogo numa linha;
-- a busca MUST ignorar maiúsculas e acentos e comparar com nome, categoria e descrição; a aba "Vantagens" mostra só `vantagem` e `qualidade-sr`, a aba "Defeitos" só `defeito` e `defeito-sr`;
+- ao focar ou digitar, MUST abrir abaixo do campo uma lista (`role="listbox"`) com altura máxima e rolagem, agrupada por categoria na ordem do catálogo, com o cabeçalho de cada grupo fixo no topo durante a rolagem ("Antecedente" aparece como "Antecedentes"; os sub-itens de cada Antecedente aparecem num grupo "Antecedente · <Antecedente>" logo depois do grupo "Antecedentes");
+- cada opção MUST mostrar o nome, a faixa de pontos em pontinhos ("•" para custo fixo de 1, "••" para custo fixo de 2, "•–•••••" para faixa de 1 a 5, "••/••••" para valores não contíguos, "—" para custo 0), a marca "Na ficha" em Moss quando já está na lista de escolhidos, o selo do tipo à direita ("Vantagem" ou "Qualidade SR" em Moss, "Defeito" ou "Defeito SR" em Blood) a descrição do catálogo numa linha e, para itens com `requires.merit`, a nota "Exige <Antecedente> <pontinhos do mínimo>";
+- a busca MUST ignorar maiúsculas e acentos e comparar com nome, aliases (inclusive o nome em inglês), categoria e descrição; a aba "Vantagens" mostra só `vantagem` e `qualidade-sr`, a aba "Defeitos" só `defeito` e `defeito-sr`;
 - o campo MUST seguir o padrão ARIA combobox: seta para baixo/cima move a opção ativa (destacada com filete tinta à esquerda e fundo `field`), Enter escolhe a opção ativa, Esc fecha a lista, clicar fora fecha a lista;
 - escolher uma opção que não está na ficha MUST acrescentar uma linha com o nome e o tipo do catálogo e os pontos mínimos permitidos (o custo fixo, ou o primeiro valor da faixa), limpar a busca e fechar a lista; escolher uma opção marcada "Na ficha" MUST NOT acrescentar outra linha;
-- quando a busca tem texto e nenhum nome do catálogo é igual a ele (sem diferença de maiúsculas e acentos), a lista MUST terminar com "Adicionar “<texto>” como vantagem" e "Adicionar “<texto>” como defeito", que acrescentam uma linha fora do catálogo com esse nome, o tipo escolhido e 1 ponto;
+- quando a busca tem texto e nenhum nome ou alias do catálogo é igual a ele (sem diferença de maiúsculas e acentos), a lista MUST terminar com "Adicionar “<texto>” como vantagem" e "Adicionar “<texto>” como defeito", que acrescentam uma linha fora do catálogo com esse nome, o tipo escolhido e 1 ponto;
 - sem resultados nem texto de busca, a lista mostra "Nenhuma opção nesta aba.".
 
-Lista de escolhidos: cada linha MUST mostrar o selo do tipo, o nome como gatilho do painel lateral do mérito (ver `trait-info`), a legenda "<Categoria> · <faixa>" (ou "Fora do catálogo" para nomes que `findMerit` não encontra), um `DotRating` pequeno que só aceita os valores permitidos do item (1 a 5 para itens fora do catálogo) e o botão "Remover". O selo de um item do catálogo MUST ser fixo; o selo de um item fora do catálogo MUST ser alternável como antes. Sem linhas, o passo MUST mostrar "Nenhum mérito ou defeito" com a explicação "Busque acima e escolha no catálogo. Vantagens custam pontos; defeitos devolvem pontos.".
+Lista de escolhidos: cada linha MUST mostrar o selo do tipo, o nome como gatilho do painel lateral do mérito (ver `trait-info`), a legenda "<Categoria> · <faixa>" (ou "Fora do catálogo" para nomes que `findMerit` não encontra), um `DotRating` pequeno que só aceita os valores permitidos do item (1 a 5 para itens fora do catálogo; até 6 para Aliados; itens de custo 0 mostram "—" sem `DotRating`) e o botão "Remover". O selo de um item do catálogo MUST ser fixo; o selo de um item fora do catálogo MUST ser alternável como antes. Sem linhas, o passo MUST mostrar "Nenhum mérito ou defeito" com a explicação "Busque acima e escolha no catálogo. Vantagens custam pontos; defeitos devolvem pontos.".
 
 Para Sangue Fraco:
 - as Qualidades SR MUST aparecer na aba "Vantagens" e os Defeitos SR na aba "Defeitos", no grupo "Sangue-ralo"; para outros clãs essas opções MUST NOT aparecer;
@@ -280,6 +280,10 @@ Para Sangue Fraco:
 - o topo MUST mostrar também "N qualidades · N defeitos de sangue-ralo" (conta linhas, não pontos);
 - a regra MUST acrescentar "Sangues-ralos devem adquirir entre uma e três Qualidades de Sangue-Ralo e a mesma quantidade de Defeitos de Sangue-Ralo.";
 - o status MUST cobrar de 1 a 3 Qualidades SR e o mesmo número de Defeitos SR.
+
+Opções por clã e Disciplinas (ver `v5-merits-catalog`, `meritOptions`): o grupo "Caitiff" MUST aparecer só para Caitiff; itens com `excludeClans` MUST NOT aparecer para esses clãs ("Fazendeiro" some para Ventrue); as Falhas de Disciplina Enraizada MUST aparecer só para as Disciplinas escolhidas no Passo 5, lidas como contexto; o grupo "Carniçais" MUST NOT aparecer.
+
+Pré-requisitos no status: o status MUST acrescentar às pendências, na ordem das linhas, "<Item> exige <Antecedente> <pontinhos>" quando o Antecedente de `requires.merit` não está na lista ou tem menos pontos que o mínimo; "<Clã> não pode ter <Item>" quando a linha é de um item que o clã atual não pode ter (`clans`/`excludeClans`); e "<Item> exige a Disciplina <Disciplina>" quando a Disciplina de `requires.discipline` não está no Passo 5. Itens de custo 0 MUST NOT entrar nas somas.
 
 Qualidades e Defeitos SR MUST NOT entrar nas somas de 7 e 2. Para outros clãs, uma linha gravada como Qualidade SR MUST ser exibida e contada como Vantagem, e Defeito SR como Defeito, e o selo de itens fora do catálogo cicla só Vantagem ↔ Defeito.
 
@@ -343,6 +347,34 @@ Qualidades e Defeitos SR MUST NOT entrar nas somas de 7 e 2. Para outros clãs, 
 - **WHEN** a ficha tem uma "Qualidade SR" de 2 pontos e o clã é "Brujah"
 - **THEN** a linha aparece como "Vantagem" e conta 2 pts em vantagens
 
+#### Scenario: Sub-vantagem agrupada sob o Antecedente
+- **WHEN** o usuário digita "biblioteca"
+- **THEN** "Biblioteca" aparece no grupo "Antecedente · Refúgio" com a nota "Exige Refúgio •"
+
+#### Scenario: Pré-requisito pendente
+- **WHEN** a lista tem "Zerado" e "Máscara" com 1 ponto
+- **THEN** o status traz "Zerado exige Máscara ••" e o passo não fica completo
+
+#### Scenario: Pré-requisito cumprido
+- **WHEN** a lista tem "Zerado" e "Máscara" com 2 pontos, com vantagens somando 7 e defeitos 2
+- **THEN** o status mostra "Distribuição completa."
+
+#### Scenario: Clã trocado depois da escolha
+- **WHEN** a lista tem "Fazendeiro" e o usuário troca o clã para "Ventrue" no passo 1 e volta ao passo 7
+- **THEN** a opção "Fazendeiro" não aparece no combobox e o status traz "Ventrue não pode ter Fazendeiro"
+
+#### Scenario: Falha Enraizada
+- **WHEN** o clã é "Brujah" com Potência e Presença no Passo 5 e o usuário escolhe "Instinto Assassino"
+- **THEN** a linha mostra a faixa "—", sem `DotRating`, e os totais de defeitos não mudam
+
+#### Scenario: Busca pelo nome em inglês
+- **WHEN** o usuário digita "unbondable"
+- **THEN** "Inquebrantável" aparece na lista
+
+#### Scenario: Aliados até 6
+- **WHEN** o usuário escolhe "Aliados"
+- **THEN** a linha é criada com 2 pontos e o `DotRating` aceita de 2 a 6
+
 ### Requirement: Passo 8 — Detalhes finais
 O passo SHALL exibir os campos restantes de identificação (nome, conceito, crônica, ambição, desejo) antes de concluir. Os campos de clã, senhor, Geração e Predador MUST NOT aparecer no passo, porque são definidos nos passos 1 e 6.
 
@@ -377,7 +409,7 @@ O assistente SHALL ser um único formulário `react-hook-form` que cobre os 8 pa
 - Passo 4: especialidade preenchida para cada habilidade obrigatória com pontos; sem nenhuma, uma habilidade com pontos e uma especialidade livre.
 - Passo 5: para Sangue Fraco, sempre válido. Para os demais: duas disciplinas diferentes, ambas do clã (qualquer uma para Caitiff), com níveis 2 e 1, e nenhum poder marcado acima do nível da disciplina.
 - Passo 6: para Sangue Fraco, sempre válido. Para os demais: tipo de predador, especialidade do predador e disciplina do predador escolhidos, com a especialidade e a Disciplina entre as opções do Predador (uma Disciplina gravada fora das opções conta como não escolhida: "Escolha uma disciplina"); o Predador disponível para o clã e a Geração, lidos como contexto do passo 1 (mensagem igual ao motivo do cartão, ex.: "Ventrue não pode ser Fazendeiro"); a Disciplina do Predador permitida para o clã ("Feitiçaria de Sangue: só Tremere e Banu Haqim"); `predEspecNome` preenchido, sem contar espaços ("Informe o nome da especialidade do Predador"); `predPoder` MUST ser um dos poderes elegíveis da Disciplina (ver "Poder do Predador") ("Escolha um poder de <Disciplina>"); e todas as escolhas de ajuste do Predador completas: no modo `uma`, uma opção escolhida ("Escolha uma opção: <rótulo>"); no modo `dividir`, os pontos das opções somando exatamente o total ("Distribua N pontos entre <opções separadas por " e ">").
-- Passo 7: cada linha com nome preenchido e pontos de 1 a 5; vantagens somando exatamente 7 e defeitos exatamente 2 (sem contar tipos SR); para Sangue Fraco, também de 1 a 3 Qualidades SR e o mesmo número de Defeitos SR. A mensagem MUST ser a mesma da linha de status.
+- Passo 7: cada linha com nome preenchido e pontos entre os valores permitidos do item do catálogo (de 0 a 6), ou de 1 a 5 para itens fora do catálogo; pré-requisitos, restrições de clã e Disciplinas exigidas cumpridos (ver "Passo 7 — Vantagens e defeitos"); vantagens somando exatamente 7 e defeitos exatamente 2 (sem contar tipos SR); para Sangue Fraco, também de 1 a 3 Qualidades SR e o mesmo número de Defeitos SR. A mensagem MUST ser a mesma da linha de status.
 - Passo 8: nome do personagem obrigatório.
 
 #### Scenario: Clã não escolhido

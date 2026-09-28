@@ -19,7 +19,7 @@ export function DmShell() {
   const navigate = useNavigate();
 
   return (
-    <div className="mx-auto max-w-[1000px] pb-10">
+    <div className="mx-auto max-w-[1440px] pb-10">
       <header className="flex items-center justify-between gap-3 border-line border-b px-4 py-2">
         <div className="flex min-w-0 items-baseline gap-2">
           <span className="truncate font-semibold text-xl leading-tight">

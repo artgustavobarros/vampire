@@ -11,11 +11,14 @@ import { Input } from "#/components/ui/input";
 import {
   filterMeritOptions,
   groupMeritOptions,
+  type MeritContext,
   type MeritTab,
   type MeritTemplate,
+  meritKeys,
   meritOptions,
   meritPointOptions,
   meritRangeLabel,
+  meritRequirementLabel,
   sameMeritName,
 } from "#/data/merits";
 import type { MeritKind } from "#/lib/types";
@@ -76,14 +79,19 @@ type Entry =
   | { kind: "custom"; tipo: "vantagem" | "defeito" };
 
 interface MeritComboboxProps {
+  /** clã e Disciplinas que filtram as opções */
+  context: MeritContext;
   /** a opção já está entre os escolhidos */
   isTaken: (m: MeritTemplate) => boolean;
   onPick: (pick: MeritPick) => void;
-  thin: boolean;
 }
 
 /** Busca no catálogo de vantagens e defeitos (padrão ARIA combobox + listbox). */
-export function MeritCombobox({ isTaken, onPick, thin }: MeritComboboxProps) {
+export function MeritCombobox({
+  context,
+  isTaken,
+  onPick,
+}: MeritComboboxProps) {
   const id = useId();
   const boxRef = useRef<HTMLDivElement>(null);
   const inputRef = useRef<HTMLInputElement>(null);
@@ -92,14 +100,16 @@ export function MeritCombobox({ isTaken, onPick, thin }: MeritComboboxProps) {
   const [open, setOpen] = useState(false);
   const [active, setActive] = useState(-1);
 
-  const all = meritOptions(thin);
+  const all = meritOptions(context);
   const hits = filterMeritOptions(all, { query, tab });
   const groups = groupMeritOptions(hits);
   const starts = groups.map((_, gi) =>
     groups.slice(0, gi).reduce((n, g) => n + g.items.length, 0)
   );
   const text = query.trim();
-  const custom = text !== "" && !all.some((m) => sameMeritName(m.name, text));
+  const custom =
+    text !== "" &&
+    !all.some((m) => meritKeys(m).some((k) => sameMeritName(k, text)));
   const customKinds = custom ? (["vantagem", "defeito"] as const) : [];
   const entries: Entry[] = [
     ...groups.flatMap((g) =>
@@ -285,6 +295,11 @@ export function MeritCombobox({ isTaken, onPick, thin }: MeritComboboxProps) {
                     <div className="mt-1 line-clamp-1 text-base text-ink-soft">
                       {m.description}
                     </div>
+                    {m.requires && "merit" in m.requires ? (
+                      <div className={cn(MERIT_ACTION, "mt-2 text-ink-soft")}>
+                        {meritRequirementLabel(m)}
+                      </div>
+                    ) : null}
                   </>,
                   taken
                 );

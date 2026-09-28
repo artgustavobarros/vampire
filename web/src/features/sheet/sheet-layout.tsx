@@ -62,7 +62,7 @@ export function SheetLayout({ tabs }: { tabs: SheetTabsBase }) {
   return (
     <RuleDialogProvider>
       <div className="min-h-screen pb-84 sm:pb-52">
-        <div className="mx-auto max-w-[1000px] pb-5">
+        <div className="mx-auto max-w-[1440px] pb-5">
           {tabs.to === "/personagens/$id/$aba" && (
             <div className="flex flex-wrap items-center justify-between gap-x-4 gap-y-2 bg-blood px-4 py-3">
               <div className="min-w-0 basis-full truncate font-label font-semibold text-white text-xs uppercase leading-none tracking-[.12em] sm:flex-1 sm:basis-auto">
@@ -89,7 +89,7 @@ export function SheetLayout({ tabs }: { tabs: SheetTabsBase }) {
             <TabLink
               aba={DEFAULT_TAB}
               base={tabs}
-              className="min-w-0 truncate font-semibold text-xl leading-tight focus-visible:outline-2 focus-visible:outline-ink"
+              className="min-w-0 truncate font-semibold text-2xl leading-tight sm:text-3xl focus-visible:outline-2 focus-visible:outline-ink"
             >
               {name}
             </TabLink>

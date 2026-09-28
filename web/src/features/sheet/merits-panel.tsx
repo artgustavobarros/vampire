@@ -2,6 +2,7 @@ import { DotRating } from "#/components/vtm/dot-rating";
 import { InfoTrigger } from "#/components/vtm/info-trigger";
 import { Panel } from "#/components/vtm/text";
 import { autoFit } from "#/components/vtm/trait-grid";
+import { findMerit, meritPointOptions } from "#/data/merits";
 import type { Merit } from "#/lib/types";
 import { patchSheet, useSheet } from "#/stores/character-store";
 
@@ -73,6 +74,8 @@ function MeritRow({
   onChange: (value: number) => void;
 }) {
   const nome = merit.nome.trim();
+  const canon = findMerit(nome);
+  const allowed = canon ? meritPointOptions(canon) : undefined;
   return (
     <div className="flex justify-between gap-1 border-line-soft border-b py-2">
       <span className="text-lg">
@@ -87,7 +90,17 @@ function MeritRow({
           {nome}
         </InfoTrigger>
       </span>
-      <DotRating label={nome} onChange={onChange} value={merit.pontos || 0} />
+      {allowed?.every((v) => v === 0) ? (
+        <span className="text-ink-soft text-lg">—</span>
+      ) : (
+        <DotRating
+          allowed={allowed}
+          count={Math.max(5, ...(allowed ?? []))}
+          label={nome}
+          onChange={onChange}
+          value={merit.pontos || 0}
+        />
+      )}
     </div>
   );
 }

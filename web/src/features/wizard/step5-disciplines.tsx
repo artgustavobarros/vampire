@@ -12,8 +12,10 @@ import { notify } from "#/lib/toast";
 import { cn } from "#/lib/utils";
 import {
   addPower,
+  amalgamMet,
   clanDisciplineOptions,
   disciplineDistribution,
+  dropUnmetAmalgams,
   powerLimitHint,
   powerToggleBlock,
   toPower,
@@ -57,9 +59,14 @@ function DisciplineRow({
 }) {
   const { control, getValues, setValue } = useWizardForm();
   const other = index === 0 ? 1 : 0;
-  const [nome, nivel, otherName] = useWatch({
+  const [nome, nivel, otherName, disc] = useWatch({
     control,
-    name: [`disc.${index}.nome`, `disc.${index}.nivel`, `disc.${other}.nome`],
+    name: [
+      `disc.${index}.nome`,
+      `disc.${index}.nivel`,
+      `disc.${other}.nome`,
+      "disc",
+    ],
   });
   const level = nivel || 0;
   const choices = options.filter((o) => !sameDiscipline(o, otherName));
@@ -68,6 +75,15 @@ function DisciplineRow({
   const catalog = POWERS[shown] ?? [];
   const cap = Math.max(level, 1);
   const label = index === 0 ? "Primeira Disciplina" : "Segunda Disciplina";
+  // amálgama depende da outra Disciplina: o poder que perdeu o requisito sai
+  const dropAmalgams = () => {
+    const current = getValues("disc");
+    dropUnmetAmalgams(current).forEach((d, i) => {
+      if (d !== current[i]) {
+        setValue(`disc.${i}.powers`, d.powers);
+      }
+    });
+  };
 
   return (
     <FieldSet className="mt-4 border-line border-b py-4">
@@ -89,6 +105,7 @@ function DisciplineRow({
                   field.onChange(e.target.value);
                   // poderes são do catálogo da disciplina anterior
                   setValue(`disc.${index}.powers`, []);
+                  dropAmalgams();
                 }}
                 value={shown}
               >
@@ -122,6 +139,7 @@ function DisciplineRow({
                     `disc.${other}.powers`,
                     trimPowers(getValues(`disc.${other}.powers`), 3 - mine)
                   );
+                  dropAmalgams();
                 }}
                 value={field.value || 0}
               />
@@ -154,7 +172,11 @@ function DisciplineRow({
                 </FieldDescription>
                 <div className="flex flex-wrap gap-2">
                   {catalog
-                    .filter((p) => p.level <= cap || chosen.has(p.name))
+                    .filter(
+                      (p) =>
+                        (p.level <= cap && amalgamMet(p.amalgam, disc)) ||
+                        chosen.has(p.name)
+                    )
                     .map((p) => (
                       <PowerCard
                         disc={shown}

@@ -39,7 +39,7 @@ const STEPS: { title: string; hint: string; body: () => ReactNode }[] = [
   {
     body: Step1Clan,
     hint: "O clã define as Disciplinas iniciais e a Perdição.",
-    title: "Clã e senhor",
+    title: "Senhor e clã",
   },
   {
     body: Step2Attributes,

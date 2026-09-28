@@ -53,10 +53,27 @@ export function potencyNote(sheet: PotencySource): string {
   return "Escolha a Geração para definir a Potência de Sangue.";
 }
 
-/** Geração do senhor, uma acima da do personagem. */
+/** Gerações possíveis do senhor: uma abaixo de cada geração do personagem. */
+export const SIRE_GENERATIONS: readonly string[] = GENERATIONS.map(
+  (g) => `${generationNumber(g.label) - 1}ª`
+);
+
+/** Geração do senhor a partir da do personagem ("12ª" → "11ª"). */
+export function sireGeneration(generation: string | undefined): string {
+  const n = generationNumber(generation);
+  return n ? `${n - 1}ª` : "";
+}
+
+/** Geração do personagem, sempre uma acima da do senhor ("11ª" → "12ª"). */
+export function generationFromSire(sire: string | undefined): string {
+  const n = generationNumber(sire);
+  return n ? `${n + 1}ª` : "";
+}
+
+/** Geração do personagem, uma acima da do senhor. */
 export function sireNote(generation: string | undefined): string {
   const n = generationNumber(generation);
   return n
-    ? `Seu senhor é da ${n - 1}ª Geração (você é sempre uma Geração acima do senhor).`
-    : "Você é sempre uma Geração acima do seu senhor.";
+    ? `Você é da ${n}ª Geração (sempre uma acima do seu senhor).`
+    : "Você fica sempre uma Geração acima do seu senhor.";
 }

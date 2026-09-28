@@ -9,7 +9,7 @@ import {
 } from "#/data/predators";
 import type { Discipline, Merit, Sheet } from "#/lib/types";
 import { potencyFromGeneration } from "./generation";
-import { addPower, isThinBlood, toPower } from "./wizard";
+import { addPower, amalgamMet, isThinBlood, toPower } from "./wizard";
 
 type Choice = Extract<PredatorAdjustment, { kind: "escolha" }>;
 export type PredatorChoices = Record<string, Record<string, number>>;
@@ -150,7 +150,10 @@ export function predatorDiscipline(
   const novo = Math.min(5, atual + 1);
   const taken = new Set(own?.powers.map((p) => p.nome));
   const elegiveis = (POWERS[predDisc] ?? [])
-    .filter((p) => p.level <= novo && !taken.has(p.name))
+    .filter(
+      (p) =>
+        p.level <= novo && !taken.has(p.name) && amalgamMet(p.amalgam, disc)
+    )
     .sort((x, y) => x.level - y.level);
   return { atual, doCla, elegiveis, novo };
 }

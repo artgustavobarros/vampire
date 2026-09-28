@@ -1037,18 +1037,6 @@ const PRESENCE_POWERS: readonly PowerTemplate[] = [
   {
     cost: "Gratuito",
     description:
-      "Qualquer um na presença do vampiro sente sua atenção inexplicavelmente atraída para ele. Aqueles que o ouvem inclinam-se a concordar com suas opiniões e pontos de vista.",
-    dicePool: "Manipulação + Presença vs. Autocontrole + Inteligência",
-    duration: "Uma cena ou até ser cancelado",
-    level: 1,
-    name: "Fascinação",
-    rouse: false,
-    system:
-      "Adiciona a pontuação de Presença a qualquer teste social envolvendo Persuasão ou Performance. Contra alvos em disputa, role Manipulação + Presença vs. Autocontrole + Inteligência.",
-  },
-  {
-    cost: "Gratuito",
-    description:
       "O vampiro exala uma aura palpável de perigo predatório, fazendo mortais evitarem seu olhar e outros vampiros pensarem duas vezes antes de confrontá-lo.",
     duration: "Uma cena",
     level: 1,
@@ -1152,6 +1140,18 @@ const PROTEAN_POWERS: readonly PowerTemplate[] = [
     rouse: false,
     system:
       "Não exige teste. O vampiro ignora todas as penalidades de visão decorrentes da escuridão, incluindo sombras sobrenaturais ordinárias.",
+  },
+  {
+    amalgam: "Presença 1",
+    cost: "Gratuito",
+    description:
+      "Os olhos do vampiro assumem a forma dos de uma serpente, hipnotizando quem cruza seu olhar e deixando a vítima paralisada enquanto o contato visual durar.",
+    duration: "Enquanto o contato visual for mantido",
+    level: 1,
+    name: "Olhos da Serpente",
+    rouse: false,
+    system:
+      "Não exige teste. Mortais que encontram o olhar do vampiro ficam imobilizados até ele desviar os olhos ou a vítima ser ferida. Vampiros e outros seres sobrenaturais podem se libertar gastando 1 ponto de Força de Vontade.",
   },
   {
     cost: "Gratuito",
@@ -1671,6 +1671,7 @@ const OBLIVION_POWERS: readonly PowerTemplate[] = [
       "O usuário enxerga através de escuridão sobrenatural e percebe fantasmas e aparições na mortalha do Além sem restrições.",
   },
   {
+    amalgam: "Potência 2",
     cost: "Uma checagem de sangue",
     description:
       "O vampiro invoca tentáculos sinistros de sombras sólidas que brotam do solo ou de paredes, agarrando e estrangulando seus oponentes com frieza cadavérica.",

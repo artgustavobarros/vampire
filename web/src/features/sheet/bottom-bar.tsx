@@ -21,7 +21,7 @@ export function BottomBar() {
       >
         Checagem de sangue
       </button>
-      <div className="mx-auto grid max-w-[1000px] grid-cols-1 items-center gap-2 sm:grid-cols-[1fr_auto_1fr] sm:gap-4">
+      <div className="mx-auto grid max-w-[1440px] grid-cols-1 items-center gap-2 sm:grid-cols-[1fr_auto_1fr] sm:gap-4">
         <BarTrack track="vit" />
         <div aria-live="polite" className="px-1 text-center">
           <div className={LABEL}>Fome</div>

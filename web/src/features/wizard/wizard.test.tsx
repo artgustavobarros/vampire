@@ -92,6 +92,11 @@ const option = (name: string | RegExp) =>
 const RECURSOS = /^Recursos/;
 const BONITO = /^Bonito/;
 const MASCARA = /^Máscara/;
+const BIBLIOTECA = /^Biblioteca/;
+const INQUEBRANTAVEL = /^Inquebrantável/;
+const INSTINTO = /^Instinto Assassino/;
+const ALIADOS = /^Aliados/;
+const SANGUE_FAVORECIDO = /^Sangue Favorecido/;
 const click = (target: string | RegExp | HTMLElement) =>
   fireEvent.click(
     target instanceof HTMLElement
@@ -126,9 +131,14 @@ describe("assistente com react-hook-form", () => {
     const alert = await stepToast();
     expect(alert).toHaveTextContent("Escolha um clã. Escolha a geração.");
     expectNoInlineText("Escolha um clã");
-    expect(screen.getByRole("group", { name: "Clã" })).toHaveFocus();
-    expect(screen.getByLabelText("Geração")).toHaveAttribute(
+    // a geração vem antes do clã na tela, então recebe o foco
+    expect(screen.getByLabelText("Geração do senhor")).toHaveFocus();
+    expect(screen.getByLabelText("Geração do senhor")).toHaveAttribute(
       "aria-invalid",
+      "true"
+    );
+    expect(screen.getByRole("group", { name: "Clã" })).toHaveAttribute(
+      "data-invalid",
       "true"
     );
     expect(screen.getByText("Passo 1 de 8")).toBeInTheDocument();
@@ -145,7 +155,7 @@ describe("assistente com react-hook-form", () => {
     await waitFor(() =>
       expect(cla).not.toHaveAttribute("data-invalid", "true")
     );
-    expect(screen.getByLabelText("Geração")).toHaveAttribute(
+    expect(screen.getByLabelText("Geração do senhor")).toHaveAttribute(
       "aria-invalid",
       "true"
     );
@@ -154,8 +164,8 @@ describe("assistente com react-hook-form", () => {
   it("passo válido grava na ficha e avança", async () => {
     renderWizard(blankSheet(), "/criar?passo=1");
     click(await screen.findByRole("button", { name: BRUJAH }));
-    fireEvent.change(screen.getByLabelText("Geração"), {
-      target: { value: "12ª" },
+    fireEvent.change(screen.getByLabelText("Geração do senhor"), {
+      target: { value: "11ª" },
     });
     fireEvent.change(screen.getByLabelText("Senhor"), {
       target: { value: "Aurélio" },
@@ -653,6 +663,87 @@ describe("regras do clã nos passos 5 a 7", () => {
         within(list).getByRole("group", { name: "Sangue-ralo" })
       ).toHaveTextContent("Qualidade SR");
     });
+
+    it("sub-vantagem agrupada sob o Antecedente", async () => {
+      renderWizard(empty(), "/criar?passo=7");
+      type(await search(), "biblioteca");
+      const group = within(screen.getByRole("listbox")).getByRole("group", {
+        name: "Antecedente · Refúgio",
+      });
+      expect(
+        within(group).getByRole("option", { name: BIBLIOTECA })
+      ).toHaveTextContent("Exige Refúgio •");
+    });
+
+    it("pré-requisito pendente e cumprido", async () => {
+      const meritos = [
+        { nome: "Zerado", pontos: 1, tipo: "vantagem" as const },
+        { nome: "Máscara", pontos: 1, tipo: "vantagem" as const },
+        { nome: "Recursos", pontos: 4, tipo: "vantagem" as const },
+        { nome: "Inimigo", pontos: 2, tipo: "defeito" as const },
+      ];
+      renderWizard(completeSheet({ meritos }), "/criar?passo=7");
+      expect(
+        await screen.findByText(
+          "Falta: distribuir 1 pts em vantagens · Zerado exige Máscara ••."
+        )
+      ).toBeInTheDocument();
+      click(screen.getByRole("button", { name: "Pontos de Máscara 2" }));
+      expect(screen.getByText("Distribuição completa.")).toBeInTheDocument();
+    });
+
+    it("clã que não pode ter o item", async () => {
+      renderWizard(
+        completeSheet({
+          meritos: [
+            { nome: "Sangue Favorecido", pontos: 4, tipo: "vantagem" },
+            { nome: "Contatos", pontos: 3, tipo: "vantagem" },
+            { nome: "Inimigo", pontos: 2, tipo: "defeito" },
+          ],
+        }),
+        "/criar?passo=7"
+      );
+      expect(
+        await screen.findByText("Falta: Brujah não pode ter Sangue Favorecido.")
+      ).toBeInTheDocument();
+      type(await search(), "sangue favorecido");
+      expect(
+        within(screen.getByRole("listbox")).queryByRole("option", {
+          name: SANGUE_FAVORECIDO,
+        })
+      ).toBeNull();
+    });
+
+    it("Falha Enraizada sem pontos", async () => {
+      renderWizard(completeSheet(), "/criar?passo=7");
+      type(await search(), "instinto");
+      click(option(INSTINTO));
+      expect(
+        screen.getByText("Falhas de Disciplina Enraizada · —")
+      ).toBeInTheDocument();
+      expect(
+        screen.queryByRole("group", { name: "Pontos de Instinto Assassino" })
+      ).toBeNull();
+      expect(screen.getByText("2/2 pts em defeitos")).toBeInTheDocument();
+    });
+
+    it("busca pelo nome em inglês", async () => {
+      renderWizard(empty(), "/criar?passo=7");
+      type(await search(), "unbondable");
+      expect(option(INQUEBRANTAVEL)).toBeInTheDocument();
+    });
+
+    it("Aliados até 6", async () => {
+      renderWizard(empty(), "/criar?passo=7");
+      type(await search(), "aliados");
+      click(option(ALIADOS));
+      expect(
+        screen.getByRole("button", { name: "Pontos de Aliados 2" })
+      ).toHaveAttribute("aria-pressed", "true");
+      expect(
+        screen.getByRole("button", { name: "Pontos de Aliados 6" })
+      ).toBeEnabled();
+    });
   });
 
   it("cota 7/2 bloqueia o passo 7", async () => {
@@ -781,30 +872,28 @@ describe("regras do clã nos passos 5 a 7", () => {
 
   it("passo 1 mostra a Potência e a Geração do senhor", async () => {
     renderWizard(completeSheet(), "/criar?passo=1");
-    fireEvent.change(await screen.findByLabelText("Geração"), {
-      target: { value: "9ª" },
+    fireEvent.change(await screen.findByLabelText("Geração do senhor"), {
+      target: { value: "8ª" },
     });
     expect(
       screen.getByText("Geração 9ª — Potência de Sangue 2.")
     ).toBeInTheDocument();
     expect(
-      screen.getByText(
-        "Seu senhor é da 8ª Geração (você é sempre uma Geração acima do senhor)."
-      )
+      screen.getByText("Você é da 9ª Geração (sempre uma acima do seu senhor).")
     ).toBeInTheDocument();
   });
 
-  it("rótulo Geração do passo 1 abre o painel", async () => {
+  it("rótulo Geração do senhor do passo 1 abre o painel", async () => {
     renderWizard(completeSheet(), "/criar?passo=1");
-    click(await screen.findByRole("button", { name: "Geração" }));
+    click(await screen.findByRole("button", { name: "Geração do senhor" }));
     const dialog = await screen.findByRole("dialog", { name: "Geração" });
     expect(dialog).toHaveTextContent("12ª Geração · Potência 1");
     expect(dialog.querySelector("tr[aria-current]")).toHaveTextContent(
       "Adicione 2 dados"
     );
     expect(
-      screen.getByRole("combobox", { hidden: true, name: "Geração" })
-    ).toHaveValue("12ª");
+      screen.getByRole("combobox", { hidden: true, name: "Geração do senhor" })
+    ).toHaveValue("11ª");
   });
 
   it("rótulo Vitalidade do passo 2 abre o painel", async () => {

@@ -56,7 +56,7 @@ export function FeedForm({ onApply, onCancel, sheet }: FeedFormProps) {
         <div className="grid grid-cols-2 gap-2">
           {PREY_RESONANCES.map((r) => (
             <SelectableCard
-              className="text-center font-serif text-xl enabled:hover:border-blood enabled:hover:shadow-none motion-safe:enabled:hover:translate-y-0"
+              className="text-center font-serif text-xl"
               filled
               key={r}
               onClick={() => setResonance(resonance === r ? "" : r)}
