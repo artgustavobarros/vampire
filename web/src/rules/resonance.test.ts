@@ -154,7 +154,11 @@ describe("rolagem de Ressonância", () => {
     const nomes = (disc: string, nivel: number) =>
       thinBloodPowers(disc, nivel).map((p) => p.name);
     expect(nomes("Potência", 1)).toEqual(["Corpo Letal", "Salto Elevado"]);
-    expect(nomes("Dominação", 2)).toEqual(["Mesmerismo", "Favor do Domitor"]);
+    expect(nomes("Dominação", 2)).toEqual([
+      "Mesmerismo",
+      "Favor do Domitor",
+      "A Voz Roubada",
+    ]);
     expect(nomes("Oblívio", 1)).not.toContain("O Dom da Falsa Vida");
     expect(nomes("Feitiçaria de Sangue", 1)).not.toContain(
       "Criar Pedra de Sangue"

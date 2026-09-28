@@ -1,5 +1,6 @@
 // Portado de design/reference/logic.js e atualizado com base no livro oficial V5 (disciplines and powers.pdf).
-// Poderes, Cerimônias, Rituais e Fórmulas marcados como "Guia do Jogador" vêm do Players Guide (disciplinas.pdf).
+// Poderes, Cerimônias, Rituais e Fórmulas marcados como "Guia do Jogador" vêm do Players Guide (disciplinas.pdf);
+// os marcados como "Tattered Facade" vêm do cap. 4 desse livro.
 export const DISCIPLINES: readonly string[] = [
   "Animalismo",
   "Auspícios",
@@ -311,6 +312,47 @@ const ALCHEMY_POWERS: readonly PowerTemplate[] = [
     system:
       "O alquimista soma +4 dados às paradas de Habilidades Mentais ou de Disciplina e +4 dados para resistir a Dominação, Animalismo, Presença, Auspícios e seus amálgamas. Fica imune a críticos confusos e ao frenesi.",
   },
+  // Fórmulas do Tattered Facade
+  {
+    cost: "Uma checagem de sangue",
+    description:
+      "Uma massa senciente de lodo que serve de familiar ao alquimista e aos vampiros que cederam a vitae. Precisa ser feita por Fixatio: saraimu criados de outro jeito se imprimem demais no athanor para servir.",
+    dicePool: "Determinação + Alquimia",
+    duration: "Uma a três semanas (o Narrador rola)",
+    ingredients:
+      "Uma xícara de vitae de cada um de três vampiros, incluindo o alquimista, fermento em pó, giz triturado (opcional, para uma voz suave), pregos de ferro (para força) e ácido de bateria",
+    level: 3,
+    name: "Saraimu",
+    rouse: true,
+    system:
+      'O alquimista aquece as três xícaras de vitae no athanor com fermento e giz; quando borbulha, junta os pregos, e o ácido de bateria faz a mistura chiar e ganhar vida. O saraimu tem o tamanho de uma bola de futebol americano e uma personalidade tirada de cada vampiro doador, fala em frases simples (provavelmente chama o alquimista de "mãe" ou "mestre"), faz tarefas simples como espionar e buscar coisas, nunca dorme e tenta se esconder dentro dos mestres enquanto eles dormem. É afetuoso, viscoso e instável, sabe que está incompleto e anseia voltar aos corpos de onde veio; se os mestres morrerem antes, sabe alquimia o bastante para durar até achar outro alquimista. Saraimu: Físico 4, Social 1, Mental 1; Vitalidade 6, Força de Vontade 3; Percepção 4, Furtividade 6; Alquimia de Sangue-ralo 1; dentes de ferro causam +1 de dano Agravado; sofre dano como sangue-ralo e se cura por completo dentro de um mestre; Dificuldades Gerais 3/1.',
+  },
+  {
+    cost: "Gratuito (destilação: uma checagem de sangue)",
+    description:
+      "Nascida da frustração de caçar em bando sem sangue para todos: a presa que bebe a mistura sangra profusamente até os órgãos se liquefazerem, alimentando a horda faminta ao redor.",
+    duration: "Uma hora",
+    ingredients:
+      "Sangue do alquimista, sangue humano melancólico, diuréticos, bebidas energéticas e centáurea",
+    level: 3,
+    name: "Sangrar até a Morte",
+    rouse: false,
+    system:
+      "O alquimista vomita a fórmula na boca da vítima (Athanor Corporis), faz a vítima beber da boca do recipiente (Calcinatio) ou do frasco (Fixatio) e faz o teste de ativação. Numa falha, a vítima simplesmente morre e seu sangue alimenta normalmente; numa falha total, o sangue fica séptico. Numa vitória, a vítima se afoga no próprio sangue ao longo de uma hora, alimentando um grupo inteiro de sangue-ralo (só eles digerem esse sangue) e zerando a Fome de todos. Cada participante ganha pelo menos uma Mácula, e o saco de pele e ossos que sobra precisa ser descartado.",
+  },
+  {
+    cost: "Uma checagem de sangue",
+    description:
+      "Transforma um recipiente mortal numa bomba-relógio ambulante: morte certa para quem bebe e para quem estiver no raio da explosão.",
+    duration: "Uma semana",
+    ingredients:
+      "Sangue do alquimista, sangue humano sanguíneo, aceleradores, cabeças de fósforo e grãos de areia de uma ampulheta",
+    level: 5,
+    name: "Da Bomb",
+    rouse: true,
+    system:
+      "Só funciona ingerida por mortais (ou preparada direto num mortal via Calcinatio). A poção fica no organismo por uma semana, com náusea e mal-estar. O alquimista pode ativá-la a qualquer momento com uma checagem de sangue; se não ativar, ela passa sem efeito. Ativada, a vítima tem um instante de pânico e consciência e explode numa torrente de sangue: quem estiver perto sofre dano Agravado igual ao dobro do Vigor da vítima, e quem estiver mais longe, metade. Vampiros atingidos testam frenesi de fome (Dificuldade 3).",
+  },
 ];
 
 const ANIMALISM_POWERS: readonly PowerTemplate[] = [
@@ -384,18 +426,6 @@ const ANIMALISM_POWERS: readonly PowerTemplate[] = [
     rouse: false,
     system:
       "Este poder estende todos os poderes de Animalismo para enxames de insetos, tratando um enxame como uma criatura única. O vampiro pode vincular o enxame como um famulus e aninhá-lo dentro das cavidades de seu corpo, tornando-o indetectável exceto por raios X. Enxames têm Vitalidade 5 e parada de 8 dados para resistir a ataques. Sofrem dano Superficial de Briga; fogo e inseticidas causam dano Agravado.",
-  },
-  {
-    amalgam: "Ofuscação 2",
-    cost: "Sem custo adicional",
-    description:
-      "Mais frequentemente visto entre os Nosferatu, este poder perturbador permite ao usuário estender sua influência animal a enxames de insetos, como moscas ou baratas. Certos vampiros chegam ao ponto de adotar enxames como famuli, dando-lhes um lar permanente nas dobras e cavidades de sua carne deformada.",
-    duration: "Passiva",
-    level: 3,
-    name: "Colmeia Inanimada",
-    rouse: false,
-    system:
-      "Este poder estende todos os poderes de Animalismo para enxames de insetos, tratando um enxame como uma criatura única. O vampiro pode vincular o enxame como um famulus e aninhá-lo dentro das cavidades de seu corpo, tornando-o indetectável exceto por raios X.",
   },
   {
     cost: "Uma checagem de sangue (gratuito no famulus)",
@@ -494,6 +524,33 @@ const ANIMALISM_POWERS: readonly PowerTemplate[] = [
     rouse: true,
     system:
       "O vampiro decide se quer agitar ou acalmar e testa Manipulação + Animalismo (Dificuldade 3). Cada sucesso na margem aumenta ou diminui em 1 a Dificuldade para resistir ao frenesi de todos os outros vampiros ao alcance da voz. Se a Dificuldade diminuir, vampiros já em frenesi podem testar de novo para sair dele.",
+  },
+  // Tattered Facade
+  {
+    amalgam: "Auspícios 1",
+    cost: "Uma checagem de sangue",
+    description:
+      "Alimentando um enxame de insetos, bando de pássaros ou cardume de peixes com comida misturada ao próprio Sangue, o vampiro domina a massa rodopiante e acessa o conhecimento que ela reúne em suas andanças, recebendo a resposta a uma única pergunta sobre qualquer pessoa ou coisa na cidade (ou ao alcance dos animais).",
+    dicePool: "Manipulação + Animalismo",
+    duration: "Alguns minutos para reunir o conhecimento do enxame",
+    level: 3,
+    name: "Augúrio",
+    rouse: true,
+    system:
+      'Teste Manipulação + Animalismo contra Dificuldade conforme o detalhe da pergunta: lugares são fáceis, coisas moderadas, pessoas difíceis ("Onde fica o bar da Clarice?" seria Dificuldade 2; "Quem é o Laço de Sangue secreto de Lyle?", 5 ou mais se o sujeito escondeu a resposta). O Narrador responde descrevendo a imagem que o enxame forma, geralmente a resposta mais direta possível; uma vitória crítica revela também algo importante, mesmo que não perguntado. O terror dos animais marca o Animalismo do vampiro: pelo resto da sessão, testes de Animalismo com este poder ou com criaturas vivas têm +1 de Dificuldade por uso.',
+  },
+  {
+    cost: "Uma checagem de sangue",
+    description:
+      "Vampiros estão mortos, mas não desprovidos de vida: insetos se aninham neles enquanto descansam, e restos apodrecem em suas entranhas. O vampiro faz esses ovos parasitas amadurecerem de repente dentro de uma vítima, que se contorce enquanto larvas escapam pela pele, pelas órbitas e pelos orifícios.",
+    dicePool:
+      "Determinação + Animalismo vs. Humanidade (mortais: Vigor + Raciocínio)",
+    duration: "Uma cena",
+    level: 3,
+    name: "Despertar o Parasita",
+    rouse: true,
+    system:
+      "O vampiro gasta a ação se concentrando e testa contra a Humanidade de um alvo próximo (mortais resistem com Vigor + Raciocínio). Conforme a margem: 0, a vítima perde 1 dado nas paradas Sociais e Mentais, com larvas se remexendo sob a pele, confusão, dor de cabeça e náusea em quem vê; 1, -2 dados em todas as paradas, e testes Sociais em geral falham sem rolagem (a Máscara fica muito ameaçada); 2 ou mais, as larvas viram moscas que explodem numa chuva de sangue, matando mortais, enquanto alvos sobrenaturais sofrem -2 dados, 2 de dano Superficial (dividido) e não conseguem falar. Uma vitória crítica também aumenta em 1 a Fome de um alvo vampiro. Usado em si mesmo, para intimidar ou enojar, o vampiro sofre -2 dados nos outros testes da cena.",
   },
 ];
 
@@ -660,6 +717,32 @@ const AUSPEX_POWERS: readonly PowerTemplate[] = [
     system:
       'O vampiro passa uma cena em reclusão com o sujeito e testa Autocontrole + Auspícios contra a Humanidade dele. Cada sucesso na margem remove uma Mácula do alvo ou ergue um "escudo" que anula uma Mácula futura na sessão. Numa vitória crítica, o usuário pode abrir mão disso para restaurar 1 ponto de Humanidade do alvo, benefício que nenhum vampiro recebe mais de uma vez. Só funciona em vampiros e falha automaticamente se o alvo tiver Humanidade maior que a do usuário. Pelo resto da sessão o sujeito fica entorpecido, e os poderes de Dominação do usuário funcionam nele automaticamente, sem contato visual. Escudos não usados se perdem quando o poder termina; Máculas removidas e Humanidade ganha permanecem.',
   },
+  // Tattered Facade
+  {
+    amalgam: "Oblívio 1",
+    cost: "Uma checagem de sangue",
+    description:
+      "Oráculos e necromantes dizem que, nos instantes finais antes da morte, a consciência se abre para os segredos do cosmos. O vampiro puxa as bordas dessa percepção antes que ela desapareça e a torce em pistas sobre o próprio futuro.",
+    dicePool: "Determinação + Auspícios",
+    duration: "Uma noite",
+    level: 3,
+    name: "Harúspice",
+    rouse: true,
+    system:
+      "O vampiro passa um turno examinando o corpo de alguém que morreu na cena ou está morrendo, espalhando órgãos e profanando o cadáver, e testa Determinação + Auspícios (Dificuldade 3): +1 dado se ele mesmo matou a vítima, +2 se ela morreu durante a leitura (o que provavelmente rende Máculas). No sucesso, pode rolar de novo todos os dados de uma parada qualquer antes do fim da noite, ficando com o resultado que preferir; numa vitória crítica, até três paradas. Só funciona com vítimas mortais.",
+  },
+  {
+    cost: "Uma checagem de sangue",
+    description:
+      "Sem chegar a ler mentes, o vampiro perscruta o subconsciente da vítima e percebe o que ela mais deseja ou teme. Saber disso dá uma vantagem poderosa, mas revelar a um ancião que conhece seus medos mais profundos pode encurtar as noites do vampiro.",
+    dicePool: "Inteligência + Auspícios vs. Autocontrole + Subterfúgio",
+    duration: "Instantânea",
+    level: 4,
+    name: "Coração Desnudo",
+    rouse: true,
+    system:
+      'O usuário escolhe medos ou desejos e conversa alguns minutos com o alvo antes do teste. Contra mortais desprevenidos, Dificuldade 0; mortais com habilidades vampíricas e sobrenaturais resistem com Autocontrole + Subterfúgio. Sucessos: 1–2, uma noção geral ("riqueza", "sexo", "insetos", "solidão"); 3–5, algo mais específico ("entrar na bolsa de valores", "perder meu parceiro"); 6 ou mais, uma imagem nítida com contexto ou história. +1 sucesso se o objeto do desejo ou medo estiver presente, e outro se a conversa tocar no assunto (a vítima pode perceber a intenção, a menos que o usuário vença Autocontrole + Subterfúgio vs. Raciocínio + Percepção).',
+  },
 ];
 
 const CELERITY_POWERS: readonly PowerTemplate[] = [
@@ -813,6 +896,18 @@ const CELERITY_POWERS: readonly PowerTemplate[] = [
     rouse: true,
     system:
       "Combina Piscadela com Desaparecer (Ofuscação). O alvo é pego de surpresa: a menos que supere a Destreza + Celeridade do usuário com Raciocínio + Percepção, não pode se defender e o ataque é feito contra Dificuldade 1 (Ataques Surpresa, Vampiro: A Máscara, p. 300). Se o usuário perder a disputa, ainda faz um ataque normal, como em Piscadela, com as mesmas restrições de movimento.",
+  },
+  // Tattered Facade
+  {
+    cost: "Uma checagem de sangue",
+    description:
+      "Sem aplicar força, a velocidade avassaladora do vampiro desfere uma quantidade estonteante de cortes: a vítima parece ter centenas de feridas surgindo sozinhas, cada uma insignificante, mas excruciantes em conjunto.",
+    duration: "Uma ação",
+    level: 3,
+    name: "Mil Cortes",
+    rouse: true,
+    system:
+      "O vampiro soma seu nível de Celeridade a um ataque de Briga ou Armas Brancas (não aprimorado por outra Disciplina) feito com garras ou arma afiada. Contra mortais, causa só dano Superficial, mas inflige automaticamente o dano extra necessário para deixá-los Debilitados (a critério do Narrador, ficam incapacitados pela dor). O sangue espalhado obriga vampiros com Fome 3 ou mais a testar frenesi de fome. Contra Membros é quase inofensivo, mas os inúmeros ferimentos sem sangue violam a Máscara e podem provocar frenesi de fúria, a critério do Narrador.",
   },
 ];
 
@@ -974,6 +1069,19 @@ const DOMINATE_POWERS: readonly PowerTemplate[] = [
     system:
       "Não exige teste contra um mortal desprevenido; um mortal preparado ou um vampiro resiste com Autocontrole + Determinação. Mudanças radicais em crenças fundamentais (um vegano desejar um bife, um pacifista ficar violento) permitem resistência mesmo a mortais desprevenidos.",
   },
+  // Tattered Facade
+  {
+    cost: "Uma checagem de sangue",
+    description:
+      "Em vez de forçar a vítima a agir, o vampiro a força a não dizer nada e testemunhar o mal em silêncio: ela não consegue falar, gritar ou berrar.",
+    dicePool: "Autocontrole + Dominação vs. Determinação + Performance",
+    duration: "Uma cena",
+    level: 2,
+    name: "A Voz Roubada",
+    rouse: true,
+    system:
+      "Exige contato visual. Não há teste contra mortais; Membros e outros sobrenaturais resistem com Determinação + Performance. O afetado não consegue se comunicar: a voz não sai, a escrita fica ilegível, gestos e sinais tremem em espasmos e até bater nas paredes só produz um baque surdo.",
+  },
 ];
 
 const FORTITUDE_POWERS: readonly PowerTemplate[] = [
@@ -1125,6 +1233,31 @@ const FORTITUDE_POWERS: readonly PowerTemplate[] = [
     rouse: true,
     system:
       "Ao ativar, o vampiro ganha uma defesa conforme a Ressonância do sangue do qual se alimentou recentemente. Colérica: uma estaca cravada no coração apodrece ou vira cinzas no fim da cena, libertando-o da paralisia; a Ressonância se perde. Melancólica: dano Agravado de fogo vira Superficial; a Ressonância se perde após reduzir quatro níveis. Fleumática: +4 dados para resistir a poderes de Auspícios que revelariam algo sobre ele ou o que sabe; dura uma cena e a Ressonância se perde. Sanguínea: dano Agravado da luz do sol vira Superficial; a Ressonância se perde após reduzir quatro níveis.",
+  },
+  // Tattered Facade
+  {
+    cost: "Duas Máculas",
+    description:
+      "Em vez de arriscar sua individualidade à degeneração aleatória, o vampiro inflige a si mesmo, de antemão, uma ferida na Humanidade, anestesiando-se contra atrocidades futuras para fazer o que precisa ser feito, por mais desprezível que seja.",
+    dicePool: "Varia conforme a atrocidade",
+    duration: "Uma noite",
+    level: 3,
+    name: "Alma Calejada",
+    rouse: false,
+    system:
+      "O vampiro comete uma atrocidade planejada e premeditada, conforme os Princípios da Crônica, envolvendo ao menos três mortes mortais, e ganha três Máculas (uma pode ser mitigada por uma Convicção). Pelo resto da noite, não ganha Máculas de nenhum outro gatilho, e a diablerie custa no máximo 1 ponto de Humanidade (se a vítima assumir o controle, isso ainda acontece).",
+  },
+  {
+    cost: "Uma checagem de sangue",
+    description:
+      "Na companhia de mortais fracos (doentes, moribundos, crianças, feridos), o Sangue do vampiro pulsa com energia e sua carne se fortalece em contraste. Alguns Membros mantêm bonecos de sangue doentes ou feridos por perto só por isso.",
+    duration:
+      "Uma cena, ou até o vampiro deixar a presença dos mortais afetados, o que vier primeiro",
+    level: 5,
+    name: "Escudos de Carne",
+    rouse: true,
+    system:
+      "Com o poder ativo, a Fortitude do vampiro aumenta em metade do número de mortais fracos presentes (arredondado para baixo), até +5. O aumento não dá novos poderes, mas vale para paradas e outros efeitos. O Narrador conta como fracos os Mortais Fracos (Vampiro: A Máscara, p. 185) e os Mortais Médios feridos ou doentes. Um mortal que provou vitae não serve mais como escudo.",
   },
 ];
 
@@ -1287,6 +1420,34 @@ const OBFUSCATE_POWERS: readonly PowerTemplate[] = [
     system:
       "Teste Inteligência + Ofuscação contra Dificuldade 1 (mascarar o estado emocional) a 3 ou mais (personas completas com falsos pensamentos e memórias). A margem soma à Dificuldade de qualquer tentativa de lê-lo; quem não alcançar essa Dificuldade vê só a falsa personalidade, sem indício de engano. Quem nem alcança a Dificuldade normal não obtém nada, como de costume.",
   },
+  // Tattered Facade
+  {
+    amalgam: "Oblívio 1",
+    cost: "Uma checagem de sangue",
+    description:
+      "O usuário absorve o resíduo espiritual de um mortal recém-falecido, roubando aparência, porte e maneirismos; só os mais próximos do morto podem suspeitar.",
+    dicePool: "Raciocínio + Ofuscação",
+    duration: "Até o amanhecer",
+    level: 3,
+    name: "Disfarce dos que Partiram",
+    rouse: true,
+    system:
+      "O usuário toca um cadáver mortal com menos de uma semana. O Narrador rola em segredo Raciocínio + Ofuscação (Dificuldade 3): numa falha, a semelhança não convence, e quem conhecia bem o morto percebe algo errado. Numa vitória, o disfarce convence, mas o usuário precisa vencer Manipulação + Performance vs. Raciocínio + Sagacidade contra quem era próximo do morto. Sentir o Invisível (Auspícios 1) atravessa o disfarce normalmente.",
+  },
+  {
+    amalgam: "Dominação 1",
+    cost: "Uma checagem de sangue",
+    description:
+      "O usuário inverte a Ofuscação num alvo, tornando-o cego a todos por perto: para a vítima, ela está sozinha no mundo, sem ver, ouvir ou sentir ninguém. O isolamento é torturante e serve tanto para quebrar uma mente quanto para cegar um observador; a vítima costuma não notar no começo, mas fica cada vez mais errática, até delirar.",
+    dicePool: "Manipulação + Ofuscação vs. Determinação + Percepção",
+    duration:
+      "Uma cena (ou noite), mais uma por sucesso na margem, ou até ser quebrado",
+    level: 4,
+    name: "Isolamento",
+    rouse: true,
+    system:
+      "O usuário atrai o olhar da vítima e vence a disputa. O usuário e todos ao redor desaparecem para ela: não percebe ninguém, vivo ou morto, desvia deles sem perceber e não ouve seus sons. Só quem tentar feri-la fisicamente é percebido por um momento; a cada vez, faça outro teste de Disciplina, e se a vítima resistir, o efeito acaba.",
+  },
 ];
 
 const POTENCE_POWERS: readonly PowerTemplate[] = [
@@ -1438,6 +1599,18 @@ const POTENCE_POWERS: readonly PowerTemplate[] = [
     rouse: false,
     system:
       "Ataques desarmados corpo a corpo ou feitos de força passam a contar como ações menores de dois dados (Vampiro: A Máscara, p. 298). Só uma ação menor de Martelo Sutil por turno, e sem outros ataques no mesmo turno. Feitos de força com movimento limitado (como romper amarras) ganham +4 dados ou mais, a critério do Narrador.",
+  },
+  // Tattered Facade
+  {
+    cost: "Gratuito",
+    description:
+      "O vampiro leva o corpo além dos próprios limites, já anormalmente altos, disposto a sacrificar a saúde pela vantagem na luta: músculos tensos rasgam a carne e ossos estilhaçam com a força do impacto.",
+    duration: "Passiva",
+    level: 3,
+    name: "Exuberância",
+    rouse: false,
+    system:
+      "Sempre que usar Potência (inclusive testes com metade do nível, como em Poderio), trata seu nível como dois maior, podendo passar de 5. Em qualquer desses testes, um crítico (confuso ou não) ou uma falha (bestial ou não) causa 1 de dano Agravado, pois o corpo se despedaça com a tensão.",
   },
 ];
 
@@ -1595,6 +1768,33 @@ const PRESENCE_POWERS: readonly PowerTemplate[] = [
     system:
       "Quem vê o prédio de fora ou está dentro dele precisa resistir ao poder como se o vampiro estivesse ali, a menos que o vampiro esteja no campo de visão, quando ele mesmo vira o foco. Aplique os bônus às reações das vítimas ao local: uma boate sob Fascínio tem fila dando a volta no quarteirão, e um refúgio sob Amedrontar afasta todos, menos os investigadores mais teimosos. Majestade deve ser usada com extrema cautela, pois os resultados podem ser espetaculares e voláteis.",
   },
+  // Tattered Facade
+  {
+    amalgam: "Auspícios 2",
+    cost: "Uma checagem de sangue",
+    description:
+      "O vampiro se deleita nas paixões dos vivos, vivendo emoções humanas verdadeiras (as boas, as más e as feias), enquanto as vítimas ficam esgotadas, destruídas e propensas a atos de desespero.",
+    dicePool: "Autocontrole + Auspícios",
+    duration: "Até o amanhecer para o vampiro; três noites para as vítimas",
+    level: 3,
+    name: "Sanguessuga da Paixão",
+    rouse: true,
+    system:
+      "O vampiro passa uma cena perto de um alvo mortal, sem precisar interagir (não funciona em Membros, nem com Humanidade 10). Testa Autocontrole + Auspícios (Dificuldade 3, menor se as emoções estiverem à flor da pele). No sucesso, ganha todos os benefícios de Humanidade 10 até o amanhecer, embora ainda ganhe Máculas e role Remorso com a Humanidade atual. Numa vitória crítica, também cura 1 de dano de Força de Vontade de qualquer tipo. Numa falha bestial ou crítico confuso, a onda de emoção é insuportável e ele sofre uma Compulsão. Só se beneficia uma vez por noite, mas pode tentar de novo se falhar. Alvos humanos perdem a Ressonância por três noites, ficando com sangue Vazio e cedendo aos desejos mais básicos.",
+  },
+  {
+    amalgam: "Ofuscação 1",
+    cost: "Uma checagem de sangue",
+    description:
+      "O vampiro aumenta, sem ser notado, o desejo presente de um alvo até ele buscar satisfazê-lo obstinadamente, sem pensar no próprio bem-estar. Sem saber de antemão o que o alvo deseja, os resultados podem ser voláteis; usado com sabedoria, dá vantagem até ao pior negociador.",
+    dicePool: "Manipulação + Presença vs. Autocontrole + Determinação",
+    duration: "Uma cena",
+    level: 4,
+    name: "Inflamar o Desejo",
+    rouse: true,
+    system:
+      "O usuário toca o alvo e vence a disputa (a critério do Narrador, mortais são afetados sem teste). A vítima sofre a Compulsão Necessidade, voltada ao que mais desejava na cena (sem contar desejos criados por meios sobrenaturais ou inalcançáveis na cena); um vampiro com Fome 3 ou mais pode ganhar a Compulsão de Fome, a critério do Narrador. Se o objeto do desejo estiver disponível para negociação, o usuário ganha +4 dados em testes de negociação. Necessidade: a vítima fica obcecada em satisfazer o desejo; ações com outro propósito sofrem -2 dados, e uma vítima mortal gasta 1 ponto de Força de Vontade para se conter se arriscar se ferir. Dura até o desejo ser satisfeito ou ficar inalcançável.",
+  },
 ];
 
 const PROTEAN_POWERS: readonly PowerTemplate[] = [
@@ -1608,18 +1808,6 @@ const PROTEAN_POWERS: readonly PowerTemplate[] = [
     rouse: false,
     system:
       "Não exige teste. O vampiro ignora todas as penalidades de visão decorrentes da escuridão, incluindo sombras sobrenaturais ordinárias.",
-  },
-  {
-    amalgam: "Presença 1",
-    cost: "Gratuito",
-    description:
-      "Os olhos do vampiro assumem a forma dos de uma serpente, hipnotizando quem cruza seu olhar e deixando a vítima paralisada enquanto o contato visual durar.",
-    duration: "Enquanto o contato visual for mantido",
-    level: 1,
-    name: "Olhos da Serpente",
-    rouse: false,
-    system:
-      "Não exige teste. Mortais que encontram o olhar do vampiro ficam imobilizados até ele desviar os olhos ou a vítima ser ferida. Vampiros e outros seres sobrenaturais podem se libertar gastando 1 ponto de Força de Vontade.",
   },
   {
     cost: "Gratuito",
@@ -1754,6 +1942,30 @@ const PROTEAN_POWERS: readonly PowerTemplate[] = [
     system:
       'Como Fusão com a Terra (Vampiro: A Máscara, p. 270), mas sem restrição de superfície: paredes de uma mansão, tábuas de uma ocupação, uma piscina rasa de "água morta". Num raio de cerca de 1 km, o vampiro pode experimentar qualquer estímulo sensorial através dos animais presentes, por menores que sejam; eventos discretos ou ocultos exigem Raciocínio + Animalismo contra a parada relevante do oponente. Sair antes do anoitecer seguinte exige Determinação + Proteanismo (Dificuldade 4) e pode levar até uma hora; uma vitória crítica permite sair na hora.',
   },
+  // Tattered Facade
+  {
+    cost: "Gratuito ou uma checagem de sangue",
+    description:
+      "O vampiro deixa carne e ossos elásticos para se espremer em lugares impossivelmente apertados. Alguns usam o poder para se esconder dentro de paredes ou dar a seus refúgios entradas que poucos conseguem atravessar.",
+    duration: "Passiva",
+    level: 1,
+    name: "Contorcer-se",
+    rouse: false,
+    system:
+      "Soma o nível de Proteanismo a qualquer parada para passar por espaços apertados ou escapar de agarrões e amarras, e passa por qualquer espaço onde caiba a cabeça, já que os outros ossos se deslocam e se reencaixam. Com cerca de cinco minutos e uma checagem de sangue, fica ainda mais flexível e passa por aberturas de uns cinco centímetros; se for interrompido ou arrancado à força de um espaço assim, sofre 1 de dano Agravado de Vitalidade.",
+  },
+  {
+    cost: "Duas checagens de sangue",
+    description:
+      "O vampiro dissolve o corpo numa massa de insetos, répteis ou outros vermes: um enxame quase invencível que morde, arranha e devora cada centímetro de tecido mole.",
+    duration: "Uma cena, ou até encerrar voluntariamente",
+    level: 5,
+    name: "Enxame",
+    prerequisite: "Mudança de Forma",
+    rouse: true,
+    system:
+      "Leva um turno inteiro. A espécie é escolhida uma vez e fica fixa: criaturas pequenas, pouco maiores que uma mão (morcegos, corvos, ratos, baratas, aranhas, moscas, gafanhotos, cobras, sanguessugas). O vampiro ganha as características do enxame, inclusive velocidade e movimento, e percebe tudo o que ele percebe, mas não pode usar Disciplinas. A cada turno ataca alvos iguais à Potência de Sangue: eles sofrem -2 dados em todos os testes e 1 de dano por turno (Agravado para mortais, Superficial para sobrenaturais). Muitos mortais cercados testam Força de Vontade (Dificuldade 3, mais ou menos conforme fobias) ou fogem. Ataques convencionais quase não ferem o enxame, mas fogo, sol e efeitos de área funcionam. Se sobrar um único membro, o vampiro se regenera por completo; se não sobrar nenhum, sofre a morte final.",
+  },
 ];
 
 const BLOOD_SORCERY_POWERS: readonly PowerTemplate[] = [
@@ -1875,6 +2087,44 @@ const BLOOD_SORCERY_POWERS: readonly PowerTemplate[] = [
     rouse: true,
     system:
       "Para cada checagem de sangue gasta, a barreira reduz em 5 o dano de ataques à distância. É automático: a vitae intercepta cada projétil e se refaz enquanto o poder durar. Esgotada a proteção, o Sangue fica inerte, espalhado pela área.",
+  },
+  // Poderes do Tattered Facade
+  {
+    cost: "Gratuito (uma checagem de sangue se usar o próprio Sangue)",
+    description:
+      "O vampiro manipula sangue ou vitae em formas, sinais ou imagens: entretenimento no Elísio, uma alteração engenhosa em respingos para confundir a polícia ou o único jeito de passar um recado por baixo de uma porta trancada.",
+    dicePool: "Manipulação + Feitiçaria de Sangue",
+    duration: "Pelo resto da cena, ou até o usuário dissipar",
+    level: 1,
+    name: "Moldar o Sacramento Sanguíneo",
+    rouse: false,
+    system:
+      'Concentrando-se na imagem, o vampiro faz o sangue fluir no padrão desejado. A Dificuldade depende da complexidade: de um simples "SOS" (2) a um retrato (4) ou um sigilo mágico complexo (6). Uma falha espalha o sangue ao acaso; uma vitória crítica permite mudar a forma livremente durante a cena.',
+  },
+  {
+    cost: "Duas checagens de sangue",
+    description:
+      "O vampiro enche um frasco pequeno com o próprio Sangue e o energiza: selada, a vitae ferve tentando se libertar. Se o recipiente quebrar, o Sangue explode como estilhaços; deixado intacto tempo demais, evapora num resíduo cor de ferrugem que corta como vidro moído.",
+    dicePool: "Vigor + Feitiçaria de Sangue vs. Raciocínio + Atletismo",
+    duration: "O frasco fica armado até o amanhecer",
+    level: 4,
+    name: "Vitae Fulminante",
+    rouse: true,
+    system:
+      "Quando o frasco quebra (explosivo cronometrado, arremesso certeiro ou acidente), a vitae explode num raio de cerca de 6 metros, causando a qualquer Membro atingido dano Agravado igual à margem da disputa. Mortais sofrem só dano Superficial. Quem sofre dano também é afetado pela vitae como se a tivesse provado, para fins de aprender Disciplinas e de Laço de Sangue.",
+  },
+  {
+    cost: "Uma checagem de sangue",
+    description:
+      "O domínio do feiticeiro chega ao sangue que ainda corre nas veias do dono. Com gestos, ele também ergue poças de sangue em formas humanoides para atacar. Alvos vivos sentem os membros puxados para todos os lados e as veias tentando romper a pele; resistir é possível, mas sangrento.",
+    dicePool: "Manipulação + Feitiçaria de Sangue",
+    duration: "Um turno por ponto de margem",
+    level: 4,
+    name: "Marionete",
+    prerequisite: "Moldar o Sacramento Sanguíneo",
+    rouse: true,
+    system:
+      "O vampiro se concentra um turno e faz o teste. Contra sangue derramado (ou cadáveres), Dificuldade 2; criaturas vivas resistem com Vigor + Ocultismo (ou Fortitude). Vampiros e vitae não podem ser manipulados, só o sangue dos vivos. Para cada ponto de margem, controla o sangue por um turno, usando Manipulação + Feitiçaria de Sangue em todas as ações físicas da marionete; sangue sem corpo se solidifica, fica afiado e causa +2 de dano em combate. Alvos vivos continuam conscientes e podem falar; podem retomar o controle por um turno ao custo de 1 de dano Agravado. Objetos inanimados não são afetados. O feiticeiro precisa manter a concentração: movimentos simples e conversa são permitidos, mas ações ofensivas com parada de dados encerram o poder, a menos que tirem vitória crítica.",
   },
   // Rituais
   {
@@ -2427,6 +2677,38 @@ const BLOOD_SORCERY_POWERS: readonly PowerTemplate[] = [
     system:
       "Após um teste de Ritual bem-sucedido, ninguém além do feiticeiro consegue usar Animalismo, Auspícios, Dominação ou Presença no prédio, embora as checagens de sangue desses usos ainda aconteçam. O custo vai de uma checagem de sangue para um apartamento a cinco para uma mansão. Dura indefinidamente, até pelo menos um selo ser destruído.",
   },
+  // Rituais do Tattered Facade
+  {
+    cost: "Uma checagem de sangue",
+    description:
+      "O vampiro baba uma saliva espessa de queratina que endurece num casulo protetor. Lá dentro, cura e transformação aceleram, e a casca o protege de dano. Vampiros com muita Vicissitude emergem rasgando a forma anterior, como um inseto na muda.",
+    duration:
+      "Pelo menos um dia, a menos que o casulo seja quebrado antes; ficar demais arrisca torpor por inanição",
+    ingredients:
+      "200 g de cabelo humano e uma mariposa ou borboleta (os tradicionalistas exigem mariposa-caveira e cabelo de cadáver; os mais jovens dizem que suplemento de queratina e qualquer lagarta servem)",
+    level: 3,
+    name: "Crisálida Sombria",
+    process:
+      "O vampiro faz uma checagem de sangue e engole o cabelo e a mariposa ao longo de quinze minutos. Pode formar a crisálida a qualquer momento da noite, e ela começa a se formar sozinha três minutos antes do nascer do sol, a menos que ele vomite a massa com Determinação + Atletismo (Dificuldade 3).",
+    rouse: true,
+    system:
+      "O casulo se forma em três turnos; o teste de Ritual define se ele fica completo. Dentro dele, o vampiro repara todo o dano Superficial numa noite, ou 2 de dano Agravado de Vitalidade, sem checagens de sangue. Com Vicissitude, usa o poder lá dentro sem teste, com sucessos iguais à parada da Disciplina. A casca protege do sol, veda ar e líquidos e protege de quedas de menos de cem metros. Quebrá-la exige 30 níveis de dano com ferramenta adequada, como um machado; fogo e ácido a destroem em três turnos, com fumaça preta e cheiro de cabelo queimado, e o vampiro pode sair antes de ser atingido.",
+  },
+  {
+    cost: "Uma checagem de sangue",
+    description:
+      "Loção, óleo de banho ou pomada feita com o sangue de um jovem mortal que revitaliza a carne do feiticeiro, fazendo-o parecer décadas mais jovem e suavizando imperfeições.",
+    duration: "Uma semana por infusão, se aplicado com regularidade",
+    ingredients:
+      "Uma xícara de vitae do feiticeiro, meio litro de sangue de uma vítima jovem de pele clara (a quantidade dobra a cada infusão), flores de camomila e manteiga de karité ou gordura de ovelha; óleos essenciais opcionais",
+    level: 4,
+    name: "Bálsamo de Bathory",
+    process:
+      "O feiticeiro recolhe o próprio Sangue e o da vítima num recipiente resistente ao calor, acrescenta os outros ingredientes e mexe enquanto aquece, concentrando-se em como a mistura vai apagar suas imperfeições. Há quem diga que o bálsamo fica mais forte se a vítima sofrer ao máximo durante a coleta.",
+    rouse: true,
+    system:
+      "Faça o teste de Ritual antes de tirar a mistura do fogo. Numa vitória, o bálsamo dá o efeito temporário da Vantagem Deslumbrante (Vampiro: A Máscara, p. 179), que substitui e não soma com Beleza ou Deslumbrante inatas. É viciante: o sangue mortal necessário dobra a cada infusão (a oitava pede 128 pints, e depois não aumenta mais). A partir do segundo lote, o bálsamo fica tóxico após a primeira semana: 1 de dano Superficial por noite, em feridas necróticas onde foi aplicado, até preparar outro lote ou passar um mês sem ele por lote preparado.",
+  },
 ];
 
 const OBLIVION_POWERS: readonly PowerTemplate[] = [
@@ -2642,6 +2924,32 @@ const OBLIVION_POWERS: readonly PowerTemplate[] = [
     system:
       "A transformação leva um turno, sem outras ações. Depois, move-se em passo de caminhada pelo chão ou pelas paredes, detido só por barreiras herméticas. Pode envolver vítimas: elas perdem três dados em todas as paradas, e mortais sufocam como na Mortalha Estígia; envolvendo um mortal, pode se alimentar sem usar as presas. Não sofre dano de fontes físicas, mas fogo e sol o ferem normalmente. Disciplinas mentais ainda podem ser usadas, a critério do Narrador.",
   },
+  // Tattered Facade
+  {
+    cost: "Uma checagem de sangue",
+    description:
+      "O vampiro invoca as sombras necromânticas do Abismo para resistir à Fé Verdadeira e destruir o que é mais sagrado: a carne exposta do crente necrosa, o símbolo sagrado apodrece ou esfarela e a água benta fica negra como piche.",
+    dicePool: "Determinação + Oblívio vs. Força de Vontade",
+    duration: "Até perder a disputa",
+    level: 4,
+    name: "Profanar o Santificado",
+    prerequisite: "Aura de Decadência ou Toque do Oblívio",
+    rouse: true,
+    system:
+      "Disputa de Determinação + Oblívio contra a Força de Vontade do portador da Fé Verdadeira. Numa vitória, o usuário mira o oponente ou um de seus símbolos sagrados: o símbolo é corroído e fica inerte; o crente perde a Fé Verdadeira por um turno e cambaleia, perdendo uma ação (a podridão aparente não causa dano). O vampiro pode repetir a disputa a cada turno sem novas checagens de sangue, mas o oponente não perde mais ações; perder a disputa encerra o poder. Se o usuário tiver uma convicção religiosa contrária a este ataque, ganha uma Mácula.",
+  },
+  {
+    cost: "Duas checagens de sangue",
+    description:
+      "O vampiro expulsa e manifesta à força as partes negativas e violentas da psique de alguém: um gêmeo maligno tão consumido pela autoaversão que ataca o hospedeiro imediatamente, querendo arrastá-lo para o mesmo poço de desespero de onde veio.",
+    dicePool: "Manipulação + Oblívio vs. Autocontrole + Determinação",
+    duration: "Uma cena, ou até ele ou o hospedeiro serem destruídos",
+    level: 5,
+    name: "A Escuridão Interior",
+    rouse: true,
+    system:
+      "Com a vítima bem visível, o vampiro faz gestos convidativos e vence a disputa: a entidade sombria se separa, causando 1 de dano Agravado ao hospedeiro. O doppelganger tem os mesmos Atributos Físicos e Habilidades do hospedeiro, nenhuma Força de Vontade e 6 de Vitalidade, e sofre dano como vampiro. Tem os poderes sobrenaturais físicos do hospedeiro, como Disciplinas, com metade dos níveis (arredondado para baixo), pagando os custos com Vitalidade. Seu único objetivo é destruir o hospedeiro, e ele ignora todo o resto.",
+  },
   // Cerimônias do Guia do Jogador
   {
     cost: "Uma checagem de sangue",
@@ -2796,6 +3104,75 @@ const OBLIVION_POWERS: readonly PowerTemplate[] = [
     system:
       "Matar para a Cerimônia pode render Máculas (e o coração substituto também, se veio de um assassinato). Dificuldade 6. Numa vitória, a aparição, que precisa estar presente no sacrifício, ocupa o corpo como se fosse seu. Ele acorda com os ferimentos que o mataram, cura 1 de Vitalidade na hora e o resto com o tempo, como um vampiro. Mantém os Atributos Físicos, as Disciplinas (se era carniçal) e as Vantagens do corpo; Atributos Sociais e Mentais, Habilidades e moralidade são da aparição. A possessão dura até o corpo morrer de novo ou a aparição ser exorcizada.",
   },
+  // Cerimônias do Tattered Facade
+  {
+    cost: "Uma checagem de sangue",
+    description:
+      "Cerimônia que constrói um golem de carne a partir de partes de cadáveres.",
+    dicePool: "Determinação + Oblívio",
+    duration: "Até a palavra na boca do golem ser destruída",
+    ingredients:
+      "Pelo menos três cadáveres adultos desmembrados, embalsamados ou pouco decompostos; argila do fundo do mar e cobre dissolvidos em ácido nítrico; um buril de latão ou platina, ou outra ferramenta de gravação",
+    level: 3,
+    name: "Criar Golem de Carne",
+    prerequisite: "Aura de Decadência ou Praga Necrótica",
+    process:
+      'Num local com um rasgo ou afinamento extraordinário no Véu, o vampiro costura as partes num único golem e derrama o ácido no corpo seguindo os padrões da espinha, das vísceras e das veias. Por fim, grava a palavra "Tzel" do Poder na boca do golem com o buril e pinga sua vitae sobre ela para controlá-lo e energizá-lo, atraindo sombras do Abismo que o animam.',
+    rouse: true,
+    system:
+      "O cadáver pode ser montado à mão (Determinação + Medicina, Dificuldade 3, ou Determinação + Ofícios, Dificuldade 4) ou com Moldar a Carne (Dificuldade 2) enquanto os corpos ainda estão vivos. Com o cadáver pronto, faça o teste de Cerimônia (Dificuldade 4). Uma falha na preparação ou na Cerimônia arruína as partes e o ácido; numa falha total, as sombras se libertam e atacam o vampiro por três turnos (Inteligência + Oblívio contra 4 dados), causando dano Agravado de Força de Vontade. A Força do golem é igual à margem total dos testes de preparação e Cerimônia. Ele obedece ao criador até a palavra na boca ser destruída; se o criador entrar em torpor ou não puder se comunicar, segue a última ordem.",
+  },
+  {
+    cost: "Uma checagem de sangue",
+    description:
+      'Inspirada no nábuxur do folclore islandês, as "calças de cadáver" de pele humana que produziam dinheiro sem fim. A verdadeira vantagem das roupas de pele imbuídas de Oblívio é avisar quem as veste de perigos iminentes.',
+    dicePool: "Determinação + Oblívio",
+    duration:
+      "Permanente; o traje se reconstrói ao longo de uma noite e só é destruído por fogo, Feitiçaria de Sangue ou Oblívio",
+    ingredients:
+      "Pele suficiente de um mortal de Ressonância Melancólica, gordura de um mortal de Ressonância Fleumática, fio encerado e os enfeites desejados",
+    level: 3,
+    name: "Criar Traje de Cadáver",
+    prerequisite: "Perspectiva da Sombra ou Toque do Oblívio",
+    process:
+      "Com as mãos cheias de sombras do Abismo, o vampiro corta, trata e costura a vestimenta, de preferência à luz de velas. Depois, esfrega a gordura nela enquanto fala com ela como com um amigo.",
+    rouse: true,
+    system:
+      "Quanto mais sucessos (Dificuldade 4), mais bonito o traje. No fim, o vampiro precisa convencer o traje, agora vagamente consciente, de que será seu companheiro mais precioso: Manipulação + Persuasão ou Subterfúgio (conforme a sinceridade), Dificuldade 2, sem que o Narrador precise revelar o resultado. Se falhar, o traje espera uma chance de traí-lo. Vestir o traje dá um Defeito de Perdição Folclórica e um de Bloqueio Folclórico, escolhidos pelo Narrador. Um traje satisfeito detecta sinais sutis de perigo, maldições, proteções e monstros mal-intencionados, fazendo a pele do usuário formigar como se furada por agulhas; um descontente às vezes repete os avisos para pôr o usuário em risco. Nunca contém dinheiro além do que outros põem nele.",
+  },
+  {
+    cost: "Uma checagem de sangue",
+    description:
+      "Cerimônia que estende a vida de um humano além do prazo natural sem torná-lo carniçal, prendendo o espírito à carne. Não o mantém jovem, só vivo: ele continua envelhecendo e, com o tempo, fica retraído, confuso e com medo da luz.",
+    dicePool: "Determinação + Oblívio",
+    duration: "Permanente",
+    ingredients:
+      "O mortal escolhido, uma corrente de ferro tocada pelo Oblívio, uma vela de sebo humano, terra de uma sepultura recente e um dedal de sangue ou outros fluidos do mortal",
+    level: 4,
+    name: "Vincular à Forma Mortal",
+    prerequisite: "Praga Necrótica ou Skuld Cumprido",
+    process:
+      "O vampiro precisa de uma corrente de ferro marcada pelas sombras do Oblívio (feita com Toque do Oblívio, preparada por outro ou vinda do Abismo). Acende a vela, o mortal engole a terra da sepultura, e o vampiro aquece a corrente com um maçarico e marca o mortal com ela, o que apaga toda a luz do cômodo. Depois tem três noites para levar o sangue ou os fluidos do mortal ao túmulo de onde tirou a terra.",
+    rouse: true,
+    system:
+      "Teste Determinação + Oblívio (Dificuldade 5). Cada sucesso acrescenta uma década à vida natural do mortal, mas se o teste não for uma vitória completa, ou se o sangue não chegar à sepultura no prazo, o mortal passa a envelhecer duas vezes mais rápido, enquanto as sombras corroem sua força vital. Pode ser repetida no mesmo mortal, mas a corrente perde força: a Dificuldade sobe 1 a cada nova realização.",
+  },
+  {
+    cost: "Uma checagem de sangue",
+    description:
+      'Também chamada de "dom do desvio" por quem não está em negação, a Cerimônia transfere vitalidade de um mortal para outro, estendendo uma vida ao encurtar a outra. Mais que a maioria, costuma atrair atenção do outro lado do Véu.',
+    dicePool: "Determinação + Oblívio",
+    duration: "Permanente",
+    ingredients: "Dois mortais, dispostos ou não, e um pedaço de corda de seda",
+    level: 5,
+    name: "Presente da Vida Verdadeira",
+    prerequisite: "Praga Necrótica ou Banquete de Paixões",
+    process:
+      "O vampiro abre uma veia no pulso de cada mortal, junta as feridas e as amarra com a corda; segurando os dois, canaliza sombras do Abismo para passar a vitalidade de um para o outro.",
+    rouse: true,
+    system:
+      "O vampiro faz a checagem de sangue ao abrir as veias e uma disputa de Cerimônia contra Vigor + Determinação do mortal drenado; se perder, as sombras recuam. Numa vitória, a cada cinco minutos o alvo perde 10 anos de vida para o outro (na proporção de 1:1 entre parentes ou pessoas muito ligadas; se não, uma década para cada três anos recebidos). Quando o alvo esgota a expectativa de vida (tradicionalmente 70 anos), deteriora rapidamente. O receptor fica com aparência saudável e, depois da Cerimônia, envelhece e adoece na metade da velocidade até gastar os anos extras, sem outra proteção contra a morte. Para cortar o vínculo antes de o alvo virar pó, é preciso um teste de Cerimônia com Dificuldade 6, ou simplesmente matar o mortal. Seja como for, quem a realiza provavelmente ganha uma ou mais Máculas.",
+  },
 ];
 
 export const POWERS: Readonly<Record<string, readonly PowerTemplate[]>> = {
@@ -2819,6 +3196,7 @@ export const POWERS: Readonly<Record<string, readonly PowerTemplate[]>> = {
 
 // Inclui os nomes do catálogo de Oblívio anterior ao Guia do Jogador (Necrose, Túnel de Sombras…).
 export const POWER_ALIASES: Readonly<Record<string, string>> = {
+  "Colmeia Inanimada": "Enxame Não-vivo",
   "Desfazer a Fera": "Expulsar a Besta",
   "Expelir a Fera": "Expulsar a Besta",
   Fascinação: "Fascínio",

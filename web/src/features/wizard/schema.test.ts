@@ -239,7 +239,7 @@ describe("schemas do assistente", () => {
 
   it("passo 6: Feitiçaria de Sangue só para Tremere e Banu Haqim", () => {
     const saqueador = {
-      predador: "Saqueador",
+      predador: "Sacoleiro",
       predDisc: "Feitiçaria de Sangue",
       predEspec: "Manha (Mercado Negro)",
       predEspecNome: "Mercado Negro",

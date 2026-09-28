@@ -71,7 +71,7 @@ export const PREDATORS: readonly Predator[] = [
     ],
     description: "Persegue, domina e bebe de quem puder, à força.",
     disciplines: [{ nome: "Celeridade" }, { nome: "Potência" }],
-    name: "Gato de Rua",
+    name: "Vira-lata",
     specialties: ["Intimidação (Assalto à Mão Armada)", "Briga (Agarramento)"],
   },
   {
@@ -142,7 +142,7 @@ export const PREDATORS: readonly Predator[] = [
     clasProibidos: ["Ventrue"],
     description: "Compra, rouba ou obtém sangue frio em vez de caçar.",
     disciplines: [BLOOD_SORCERY, { nome: "Ofuscação" }],
-    name: "Saqueador",
+    name: "Sacoleiro",
     specialties: ["Ladroagem (Abrir Fechaduras)", "Manha (Mercado Negro)"],
   },
   {
@@ -195,7 +195,7 @@ export const PREDATORS: readonly Predator[] = [
     ],
     description: "Bebe em segredo da própria família e amigos mortais.",
     disciplines: [{ nome: "Dominação" }, { nome: "Animalismo" }],
-    name: "Doméstico",
+    name: "Trinchador",
     specialties: ["Persuasão (Gaslighting)", "Subterfúgio (Encobrimento)"],
   },
   {
@@ -454,11 +454,20 @@ export const PREDATORS: readonly Predator[] = [
     ],
     description: "Atrai a presa para o próprio covil.",
     disciplines: [{ nome: "Proteanismo" }, { nome: "Ofuscação" }],
-    name: "Alçapão",
+    name: "Tocaia",
     specialties: ["Persuasão (Marketing)", "Furtividade (Emboscadas)"],
   },
 ];
 
+/** Nomes antigos ainda gravados em fichas. */
+const PREDATOR_ALIASES: Readonly<Record<string, string>> = {
+  Alçapão: "Tocaia",
+  Doméstico: "Trinchador",
+  "Gato de Rua": "Vira-lata",
+  Saqueador: "Sacoleiro",
+};
+
 export function findPredator(name: string | undefined): Predator | undefined {
-  return PREDATORS.find((p) => p.name === (name ?? ""));
+  const wanted = PREDATOR_ALIASES[name ?? ""] ?? name ?? "";
+  return PREDATORS.find((p) => p.name === wanted);
 }

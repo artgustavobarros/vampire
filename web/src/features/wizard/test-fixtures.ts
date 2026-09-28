@@ -33,7 +33,7 @@ export function completeSheet(over: Partial<Sheet> = {}): Sheet {
       { nome: "Inimigo", pontos: 2, tipo: "defeito" },
     ],
     nome: "Ana Brava",
-    predador: "Gato de Rua",
+    predador: "Vira-lata",
     predDisc: "Potência",
     predEscolhas: {},
     predEspec: "Briga (Agarramento)",

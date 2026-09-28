@@ -73,7 +73,7 @@ const PODERIO = /Poderio/;
 const SANGUESSUGA = /^Sanguessuga/;
 const OSIRIS = /^Osíris/;
 const FAZENDEIRO = /^Fazendeiro/;
-const SAQUEADOR = /^Saqueador/;
+const SACOLEIRO = /^Sacoleiro/;
 const FEITICARIA = /^Feitiçaria de Sangue/;
 const PRESENCA = /^Presença/;
 const EXTORSIONARIO = /^Extorsionário/;
@@ -1115,7 +1115,7 @@ describe("Predador aplicado na ficha", () => {
         }),
         "/criar?passo=6"
       );
-      click(await screen.findByRole("button", { name: SAQUEADOR }));
+      click(await screen.findByRole("button", { name: SACOLEIRO }));
       expect(screen.getByRole("button", { name: FEITICARIA })).toBeEnabled();
     });
   });
@@ -1136,10 +1136,10 @@ describe("Predador aplicado na ficha", () => {
     expect(fazendeiro).toBeDisabled();
     expect(fazendeiro).toHaveAttribute("aria-pressed", "true");
     expect(fazendeiro).toHaveTextContent("Ventrue não pode ser Fazendeiro");
-    const saqueador = screen.getByRole("button", { name: SAQUEADOR });
-    expect(saqueador).toBeDisabled();
-    click(saqueador);
-    expect(saqueador).toHaveAttribute("aria-pressed", "false");
+    const sacoleiro = screen.getByRole("button", { name: SACOLEIRO });
+    expect(sacoleiro).toBeDisabled();
+    click(sacoleiro);
+    expect(sacoleiro).toHaveAttribute("aria-pressed", "false");
     click("Continuar");
     expect(await stepToast()).toHaveTextContent(
       "Ventrue não pode ser Fazendeiro"
