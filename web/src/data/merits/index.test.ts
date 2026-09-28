@@ -105,7 +105,7 @@ describe("catálogo de méritos no Passo 7", () => {
     const groups = groupMeritOptions(meritOptions({ cla: "Brujah" }));
     expect(groups[0]?.label).toBe("Antecedentes");
     expect(groups[1]?.label).toBe("Antecedente · Aliados");
-    expect(groups.find((g) => g.label === "Aparência")?.items).toHaveLength(13);
+    expect(groups.find((g) => g.label === "Aparência")?.items).toHaveLength(9);
   });
 });
 
@@ -189,23 +189,18 @@ describe("conteúdo do catálogo", () => {
     const count = (category: string) =>
       ALL_MERIT_TEMPLATES.filter((m) => m.category === category).length;
     expect(count("Antecedente")).toBe(11);
-    expect(count("Linguística")).toBe(2);
-    expect(count("Aparência")).toBe(13);
+    expect(count("Linguística")).toBe(1);
+    expect(count("Aparência")).toBe(9);
     expect(count("Uso de Substâncias")).toBe(3);
-    expect(count("Arcaicos")).toBe(5);
-    expect(count("Laço de Sangue")).toBe(8);
-    expect(count("Sobrenatural")).toBe(1);
-    expect(count("Alimentação")).toBe(13);
-    expect(count("Míticos")).toBe(18);
+    expect(count("Arcaicos")).toBe(2);
+    expect(count("Laço de Sangue")).toBe(6);
+    expect(count("Alimentação")).toBe(8);
+    expect(count("Míticos")).toBe(9);
     expect(count("Falhas de Disciplina Enraizada")).toBe(11);
-    expect(count("Psicológicos")).toBe(9);
-    expect(count("Contágio")).toBe(2);
-    expect(count("Laços de Linhagem")).toBe(3);
-    expect(count("Diablerie")).toBe(2);
     expect(count("Outros")).toBe(9);
     expect(count("Caitiff")).toBe(12);
     expect(count("Carniçais")).toBe(5);
-    expect(count("Antecedente · Refúgio")).toBe(27);
+    expect(count("Antecedente · Refúgio")).toBe(21);
     expect(
       ALL_MERIT_TEMPLATES.filter((m) => m.category.startsWith("Cult")).length
     ).toBe(24);

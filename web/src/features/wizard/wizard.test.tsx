@@ -563,7 +563,8 @@ describe("regras do clã nos passos 5 a 7", () => {
       expect(
         screen.getByRole("button", { name: "Recursos" })
       ).toBeInTheDocument();
-      expect(screen.getByText("Antecedentes · •–•••••")).toBeInTheDocument();
+      expect(screen.getByText("Antecedentes ·")).toBeInTheDocument();
+      expect(screen.getByText("•–•••••")).toBeInTheDocument();
       expect(
         screen.getByRole("button", { name: "Pontos de Recursos 1" })
       ).toHaveAttribute("aria-pressed", "true");
@@ -719,8 +720,9 @@ describe("regras do clã nos passos 5 a 7", () => {
       type(await search(), "instinto");
       click(option(INSTINTO));
       expect(
-        screen.getByText("Falhas de Disciplina Enraizada · —")
+        screen.getByText("Falhas de Disciplina Enraizada ·")
       ).toBeInTheDocument();
+      expect(screen.getByText("—")).toBeInTheDocument();
       expect(
         screen.queryByRole("group", { name: "Pontos de Instinto Assassino" })
       ).toBeNull();

@@ -19,13 +19,13 @@ O catálogo em `web/src/data/merits/` SHALL fornecer as 14 Qualidades de Sangue-
 - **THEN** o texto não contém "Méritos de", "Sangue Abominável" nem frases da regra de outro item
 
 ### Requirement: Catálogo de Vantagens, Defeitos e Antecedentes Gerais
-O catálogo SHALL conter todos os itens de [Advantages and Flaws](https://vtm.paradoxwikis.com/Advantages_and_Flaws), agrupados por categoria: Linguística, Aparência, Uso de Substâncias, Arcaicos, Laço de Sangue, Sobrenatural, Alimentação, Míticos, Falhas de Disciplina Enraizada, Psicológicos, Contágio, Laços de Linhagem, Diablerie, Outros, Caitiff, Sangue-ralo, Carniçais, Cultos (gerais e por culto) e os 11 Antecedentes (`BACKGROUNDS`: Aliados, Contatos, Fama, Influência, Mawla, Rebanho, Recursos, Refúgio, Lacaios, Máscara, Status) com suas sub-vantagens e sub-defeitos. Os custos MUST seguir o V5:
+O catálogo SHALL conter os itens de [Advantages and Flaws](https://vtm.paradoxwikis.com/Advantages_and_Flaws), exceto os de Forbidden Religions, Gehenna War, Blood Stained Love, Live from the Succubus Club e In Memoriam ("Segredo Obscuro" é do Corebook), agrupados por categoria: Linguística, Aparência, Uso de Substâncias, Arcaicos, Laço de Sangue, Alimentação, Míticos, Falhas de Disciplina Enraizada, Outros, Caitiff, Sangue-ralo, Carniçais, Cultos (gerais e por culto) e os 11 Antecedentes (`BACKGROUNDS`: Aliados, Contatos, Fama, Influência, Mawla, Rebanho, Recursos, Refúgio, Lacaios, Máscara, Status) com suas sub-vantagens e sub-defeitos. Os custos MUST seguir o V5:
 - Aparência: Bonito ••, Deslumbrante ••••, Feio •, Repulsivo ••;
 - Antecedentes: Aliados de 2 a 6, Contatos de 1 a 3, Refúgio de 1 a 3, Máscara de 1 a 2, Lacaios de 1 a 3, os demais de 1 a 5, cada um com um texto de nível por valor permitido;
 - custo "• +" sem teto no livro vira de 1 a 5; "•• ou ••••" aceita só 2 e 4;
 - Falhas de Disciplina Enraizada têm custo 0.
 
-"Monstruoso" e "Perseguido" MUST NOT existir no catálogo. "Evitado" (Shunned) MUST custar ••. O Defeito de alimentação Farmer MUST se chamar "Fazendeiro", com alias "Vegano".
+"Monstruoso", "Perseguido" e a Vantagem "Linguística" MUST NOT existir no catálogo; a categoria Linguística tem só o Defeito "Analfabeto" ••. "Vivendo no Passado" (Living in the Past) é do Corebook. "Evitado" (Shunned) MUST custar ••. O Defeito de alimentação Farmer MUST se chamar "Fazendeiro", com alias "Vegano".
 
 #### Scenario: Consulta de mérito com custo fixo
 - **WHEN** a aplicação busca pelo mérito "Estômago de Ferro" em `findMerit("Estômago de Ferro")`
