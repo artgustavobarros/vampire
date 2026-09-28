@@ -1,4 +1,5 @@
 import {
+  type ComponentType,
   createContext,
   type ReactNode,
   useContext,
@@ -12,9 +13,27 @@ import {
   DialogDescription,
   DialogTitle,
 } from "#/components/ui/dialog";
+import type { Sheet } from "#/lib/types";
+import { cn } from "#/lib/utils";
+import type { ActionResult } from "#/rules/actions";
 import { patchSheet, useSheet } from "#/stores/character-store";
+import { DamageForm } from "./damage-form";
 import { FeedForm } from "./feed-form";
 import { type Flow, type FlowKind, flowView } from "./flows";
+import { HealForm } from "./heal-form";
+
+interface FormProps {
+  onApply: (result: ActionResult) => void;
+  onCancel: () => void;
+  sheet: Sheet;
+}
+
+/** Fluxos cujo estágio "ask" é um formulário no lugar da lista de botões. */
+const FORMS: Partial<Record<FlowKind, ComponentType<FormProps>>> = {
+  damage: DamageForm,
+  feed: FeedForm,
+  heal: HealForm,
+};
 
 interface RuleDialogApi {
   open: (kind: FlowKind, note?: string) => void;
@@ -30,7 +49,7 @@ export function useRuleDialog(): RuleDialogApi {
   return ctx;
 }
 
-/** Diálogo único das ações de regra (Checagem de sangue, Dormir, Alimentação, Frenesi, cura agravada). */
+/** Diálogo único das ações de regra (Checagem de sangue, Dormir, Alimentação, Dano, Cura, Frenesi, cura agravada). */
 export function RuleDialogProvider({ children }: { children: ReactNode }) {
   const [flow, setFlow] = useState<Flow | null>(null);
   const sheet = useSheet();
@@ -41,6 +60,15 @@ export function RuleDialogProvider({ children }: { children: ReactNode }) {
     []
   );
   const view = flow ? flowView(flow, sheet, setFlow) : null;
+  const formKind = flow?.stage === "ask" && FORMS[flow.kind] ? flow.kind : null;
+  const Form = formKind ? FORMS[formKind] : undefined;
+  const applyForm = (r: ActionResult) => {
+    if (!formKind) {
+      return;
+    }
+    patchSheet(r.patch);
+    setFlow({ kind: formKind, note: r.note, stage: "done" });
+  };
 
   return (
     <RuleDialogContext.Provider value={api}>
@@ -58,7 +86,12 @@ export function RuleDialogProvider({ children }: { children: ReactNode }) {
             <DialogTitle className="mt-3 mb-2 font-semibold font-serif text-2xl leading-tight">
               {view.title}
             </DialogTitle>
-            <DialogDescription className="m-0 mb-2 font-serif text-ink-soft text-lg">
+            <DialogDescription
+              className={cn(
+                "m-0 mb-2 font-serif text-ink-soft text-lg",
+                (formKind === "damage" || formKind === "heal") && "sr-only"
+              )}
+            >
               {view.body}
             </DialogDescription>
             {flow?.note ? (
@@ -69,16 +102,14 @@ export function RuleDialogProvider({ children }: { children: ReactNode }) {
                 {flow.note}
               </p>
             ) : null}
-            {flow?.kind === "feed" && flow.stage === "ask" ? (
-              <FeedForm
-                onApply={(r) => {
-                  patchSheet(r.patch);
-                  setFlow({ kind: "feed", note: r.note, stage: "done" });
-                }}
+            {Form ? (
+              <Form
+                onApply={applyForm}
                 onCancel={() => setFlow(null)}
                 sheet={sheet}
               />
-            ) : (
+            ) : null}
+            {formKind ? null : (
               <div className="mt-6 flex flex-col gap-2">
                 {view.actions.map((a) => (
                   <Button

@@ -1,13 +1,8 @@
 import { bloodPotencyRow } from "#/data/blood-potency";
-import type { Sheet } from "#/lib/types";
+import type { Sheet, TrackKey } from "#/lib/types";
 import { bloodPotency } from "./generation";
 import { clampHunger } from "./hunger";
-import {
-  healSuperficial,
-  trackBoxes,
-  vitalityMax,
-  willpowerMax,
-} from "./tracks";
+import { healMarks, trackBoxes, vitalityMax, willpowerMax } from "./tracks";
 
 export interface ActionResult {
   note: string;
@@ -36,20 +31,37 @@ export function bloodSurgeNote(sheet: Sheet): string {
   return `Surto de Sangue: ${surge.toLowerCase()} ao teste.`;
 }
 
+/** Força de Vontade Superficial recuperada por noite: maior entre Autocontrole e Determinação. */
+export function willpowerRecovery(sheet: Pick<Sheet, "attrs">): number {
+  return Math.max(sheet.attrs.Autocontrole || 0, sheet.attrs.Determinação || 0);
+}
+
+/** Dica do custo da cura no formulário "Curar-se"; o app não cobra esse custo. */
+export function healHint(sheet: Sheet, track: TrackKey, level: 1 | 2): string {
+  if (track === "fdv") {
+    return level === 1
+      ? `Ao dormir, a Força de Vontade recupera ${willpowerRecovery(sheet)} de dano Superficial.`
+      : "Dano Agravado de Força de Vontade se recupera com o tempo, a critério do Narrador.";
+  }
+  if (level === 2) {
+    return "Cada 1 de dano Agravado curado exige três checagens de sangue.";
+  }
+  const potency = bloodPotency(sheet);
+  const mend = bloodPotencyRow(potency).mend || 1;
+  return `Com Potência de Sangue ${potency}, cada checagem de sangue cura ${mend} de dano Superficial.`;
+}
+
 export function sleep(sheet: Sheet, healOnSleep: boolean): ActionResult {
   const noites = (sheet.noites || 0) + 1;
   if (!healOnSleep) {
     return { note: "Nada a curar.", patch: { noites } };
   }
   const mend = bloodPotencyRow(bloodPotency(sheet)).mend || 1;
-  const vit = healSuperficial(trackBoxes(sheet.vit, vitalityMax(sheet)), mend);
-  const willpowerHeal = Math.max(
-    sheet.attrs.Autocontrole || 0,
-    sheet.attrs.Determinação || 0
-  );
-  const fdv = healSuperficial(
+  const vit = healMarks(trackBoxes(sheet.vit, vitalityMax(sheet)), 1, mend);
+  const fdv = healMarks(
     trackBoxes(sheet.fdv, willpowerMax(sheet)),
-    willpowerHeal
+    1,
+    willpowerRecovery(sheet)
   );
   const note =
     vit.healed || fdv.healed

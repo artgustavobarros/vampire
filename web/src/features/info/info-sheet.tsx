@@ -12,6 +12,7 @@ import {
   SheetDescription,
   SheetTitle,
 } from "#/components/ui/sheet";
+import { DamageIcon } from "#/components/vtm/tracks";
 import { useMediaQuery } from "#/hooks/use-media-query";
 import { cn } from "#/lib/utils";
 import { buildInfo, type InfoTable, type InfoTarget } from "./build-info";
@@ -129,7 +130,14 @@ export function InfoProvider({ children }: { children: ReactNode }) {
                         key={l.n}
                       >
                         <span className="min-w-16 flex-none font-bold font-label text-base text-ink">
-                          {l.n}
+                          {l.n === "superficial" || l.n === "agravado" ? (
+                            <DamageIcon
+                              className="inline-block size-5 align-[-0.2em]"
+                              mark={l.n === "agravado" ? 2 : 1}
+                            />
+                          ) : (
+                            l.n
+                          )}
                         </span>
                         <span className="min-w-0 flex-1 whitespace-pre-line font-serif text-base">
                           {l.txt}

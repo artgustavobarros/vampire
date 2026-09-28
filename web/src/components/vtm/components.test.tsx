@@ -1,4 +1,4 @@
-import { fireEvent, render, screen } from "@testing-library/react";
+import { fireEvent, render, screen, within } from "@testing-library/react";
 import userEvent from "@testing-library/user-event";
 import { useState } from "react";
 import { beforeEach, describe, expect, it, vi } from "vitest";
@@ -15,7 +15,7 @@ import {
   SegmentedTabsTrigger,
 } from "./segmented-tabs";
 import { SelectableCard } from "./selectable";
-import { DamageTrack, HumanityTrack } from "./tracks";
+import { DamagePreview, DamageTrack, HumanityTrack } from "./tracks";
 import { TraitGrid } from "./trait-grid";
 
 function Dots({ start }: { start: number }) {
@@ -90,15 +90,70 @@ describe("DotRating", () => {
 });
 
 describe("DamageTrack", () => {
-  it("cicla vazio → / → ✕ → vazio", () => {
+  it("cicla vazio → superficial → agravado → vazio", () => {
     render(<Track />);
     const box = () => screen.getAllByRole("button")[0];
+    const mark = () => box().querySelector("svg")?.dataset.mark;
     fireEvent.click(box());
-    expect(box()).toHaveTextContent("/");
+    expect(mark()).toBe("superficial");
     fireEvent.click(box());
-    expect(box()).toHaveTextContent("✕");
+    expect(mark()).toBe("agravado");
     fireEvent.click(box());
-    expect(box()).toHaveTextContent("");
+    expect(mark()).toBeUndefined();
+  });
+});
+
+describe("DamagePreview", () => {
+  it("mostra o resultado e destaca as caixas alteradas", () => {
+    render(
+      <DamagePreview
+        changed={[false, true, false]}
+        label="Vitalidade depois"
+        marks={[1, 2, 0]}
+      />
+    );
+    const preview = screen.getByRole("img", {
+      name: "Vitalidade depois: 1 superficial, 1 agravado, 1 vazia",
+    });
+    const boxes = [...preview.children] as HTMLElement[];
+    expect(boxes.map((b) => b.querySelector("svg")?.dataset.mark)).toEqual([
+      "superficial",
+      "agravado",
+      undefined,
+    ]);
+    expect(boxes[1]).toHaveClass("border-dashed", "border-blood");
+    expect(boxes[0]).not.toHaveClass("border-dashed");
+  });
+
+  it("com onCycle, cada caixa é um botão que avisa o índice", () => {
+    const onCycle = vi.fn();
+    render(
+      <DamagePreview
+        changed={[false, true, false]}
+        label="Vitalidade depois"
+        marks={[1, 2, 0]}
+        onCycle={onCycle}
+      />
+    );
+    const preview = screen.getByRole("group", {
+      name: "Vitalidade depois: 1 superficial, 1 agravado, 1 vazia",
+    });
+    expect(
+      within(preview)
+        .getAllByRole("button")
+        .map((b) => b.getAttribute("aria-label"))
+    ).toEqual([
+      "Vitalidade depois 1: superficial",
+      "Vitalidade depois 2: agravado",
+      "Vitalidade depois 3: vazio",
+    ]);
+    expect(
+      screen.getByRole("button", { name: "Vitalidade depois 2: agravado" })
+    ).toHaveClass("border-dashed", "border-blood");
+    fireEvent.click(
+      screen.getByRole("button", { name: "Vitalidade depois 3: vazio" })
+    );
+    expect(onCycle).toHaveBeenCalledWith(2);
   });
 });
 
@@ -111,7 +166,7 @@ describe("HumanityTrack", () => {
     const boxes = screen.getAllByRole("button");
     expect(boxes[6]).toHaveClass("bg-ink");
     expect(boxes[7]).toHaveClass("bg-field");
-    expect(boxes[9]).toHaveTextContent("✕");
+    expect(boxes[9].querySelector("svg")?.dataset.mark).toBe("agravado");
   });
 });
 

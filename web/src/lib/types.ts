@@ -1,6 +1,6 @@
 import type { TextFieldKey } from "#/data/fields";
 
-/** 0 = vazio, 1 = superficial (/), 2 = agravado (✕) */
+/** 0 = vazio, 1 = superficial, 2 = agravado */
 export type DamageMark = 0 | 1 | 2;
 
 export type TrackKey = "vit" | "fdv";

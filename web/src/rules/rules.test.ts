@@ -5,7 +5,13 @@ import { findPredator, PREDATORS, type Predator } from "#/data/predators";
 import { SKILLS } from "#/data/traits";
 import { blankSheet } from "#/lib/sheet";
 import type { DamageMark, Merit, Power, Sheet } from "#/lib/types";
-import { bloodSurgeNote, healAggravated, rouseCheck, sleep } from "./actions";
+import {
+  bloodSurgeNote,
+  healAggravated,
+  healHint,
+  rouseCheck,
+  sleep,
+} from "./actions";
 import { nextDotValue } from "./dots";
 import { feed } from "./feeding";
 import {
@@ -31,7 +37,16 @@ import {
   specialtiesBySkill,
   splitPredatorSpecialty,
 } from "./specialties";
-import { addDamage, cycleBox, trackBoxes, vitalityMax } from "./tracks";
+import {
+  addDamage,
+  cycleBox,
+  healable,
+  healDamage,
+  healMarks,
+  takeDamage,
+  trackBoxes,
+  vitalityMax,
+} from "./tracks";
 import {
   attributeQuotas,
   clanDisciplineOptions,
@@ -85,6 +100,152 @@ describe("trilhas", () => {
     const r = addDamage([1, 1, 1, 1], 1);
     expect(r.marks).toEqual([2, 1, 1, 1]);
     expect(r.overflow).toBe(1);
+  });
+});
+
+describe("Sofrer dano", () => {
+  const vigor = (n: number, over: Partial<Sheet> = {}) =>
+    sheet({ attrs: { ...blankSheet().attrs, Vigor: n }, ...over });
+
+  it("marca o dano recebido sem dividir", () => {
+    const r = takeDamage(vigor(2), "vit", 1, 3);
+    expect(r.marks).toEqual([1, 1, 1, 0, 0]);
+  });
+
+  it("0 de dano não muda a trilha", () => {
+    const r = takeDamage(vigor(2, { vit: [1, 1] }), "vit", 1, 0);
+    expect(r.marks).toEqual([1, 1, 0, 0, 0]);
+    expect(r.changed).toEqual([false, false, false, false, false]);
+  });
+
+  it("trilha cheia de superficiais agrava a primeira", () => {
+    const r = takeDamage(vigor(2, { vit: [1, 1, 1, 1, 1] }), "vit", 1, 1);
+    expect(r.marks).toEqual([2, 1, 1, 1, 1]);
+    expect(r.changed).toEqual([true, false, false, false, false]);
+  });
+
+  it("marca as caixas novas e descreve o dano", () => {
+    const r = takeDamage(vigor(2, { vit: [1] }), "vit", 1, 3);
+    expect(r.marks).toEqual([1, 1, 1, 1, 0]);
+    expect(r.changed).toEqual([false, true, true, true, false]);
+    expect(r.patch).toEqual({ vit: [1, 1, 1, 1, 0] });
+    expect(r.note).toBe("3 de dano superficial marcado na Vitalidade.");
+  });
+
+  it("transbordo destaca só a caixa que virou agravada", () => {
+    const r = takeDamage(vigor(1, { vit: [1, 1, 1, 1] }), "vit", 2, 1);
+    expect(r.marks).toEqual([2, 1, 1, 1]);
+    expect(r.changed).toEqual([true, false, false, false]);
+    expect(r.note).toBe(
+      "1 de dano agravado marcado na Vitalidade. Trilha cheia: Debilitado."
+    );
+  });
+
+  it("Vitalidade toda agravada avisa torpor", () => {
+    const r = takeDamage(vigor(1, { vit: [2, 2, 2, 0] }), "vit", 2, 1);
+    expect(r.note).toBe(
+      "1 de dano agravado marcado na Vitalidade. Vitalidade toda agravada: torpor."
+    );
+  });
+
+  it("com caixas clicadas, soma o dano por cima delas", () => {
+    const r = takeDamage(vigor(2), "vit", 2, 1, [1, 0, 0, 0, 0]);
+    expect(r.marks).toEqual([1, 2, 0, 0, 0]);
+    expect(r.changed).toEqual([true, true, false, false, false]);
+    expect(r.patch).toEqual({ vit: [1, 2, 0, 0, 0] });
+  });
+
+  it("caixa desmarcada à mão conta como alterada", () => {
+    const r = takeDamage(vigor(2, { vit: [2] }), "vit", 1, 0, [0, 0, 0, 0, 0]);
+    expect(r.changed).toEqual([true, false, false, false, false]);
+    expect(r.note).toBe("Vitalidade atualizada: 0 superficiais, 0 agravados.");
+  });
+
+  it("com caixas clicadas, a nota conta as marcas gravadas no plural", () => {
+    const r = takeDamage(vigor(2), "vit", 1, 0, [1, 1, 2, 2, 0]);
+    expect(r.note).toBe("Vitalidade atualizada: 2 superficiais, 2 agravados.");
+  });
+
+  it("com caixas clicadas, a nota conta as marcas gravadas", () => {
+    const r = takeDamage(vigor(2, { vit: [1] }), "vit", 1, 0, [1, 2, 0, 0, 0]);
+    expect(r.note).toBe("Vitalidade atualizada: 1 superficial, 1 agravado.");
+    const full = takeDamage(vigor(2), "fdv", 1, 0, [1, 2]);
+    expect(full.note).toBe(
+      "Força de Vontade atualizada: 1 superficial, 1 agravado. Trilha cheia: Debilitado."
+    );
+  });
+
+  it("com caixas clicadas, avisa torpor", () => {
+    const r = takeDamage(vigor(1), "vit", 1, 0, [2, 2, 2, 2]);
+    expect(r.note).toBe(
+      "Vitalidade atualizada: 0 superficiais, 4 agravados. Vitalidade toda agravada: torpor."
+    );
+  });
+});
+
+describe("Curar-se", () => {
+  const vigor = (n: number, over: Partial<Sheet> = {}) =>
+    sheet({ attrs: { ...blankSheet().attrs, Vigor: n }, ...over });
+
+  it("cura da última caixa para a primeira", () => {
+    const r = healMarks([1, 2, 1, 0, 0], 1, 1);
+    expect(r.marks).toEqual([1, 2, 0, 0, 0]);
+    expect(r.healed).toBe(1);
+  });
+
+  it("agravado curado esvazia a caixa", () => {
+    expect(healMarks([2, 1, 0], 2, 1).marks).toEqual([0, 1, 0]);
+  });
+
+  it("sem marcas do tipo não muda nada", () => {
+    const r = healMarks([1, 1, 0], 2, 3);
+    expect(r.marks).toEqual([1, 1, 0]);
+    expect(r.healed).toBe(0);
+  });
+
+  it("conta as caixas curáveis por tipo", () => {
+    expect(healable([1, 2, 1, 0], 1)).toBe(2);
+    expect(healable([1, 2, 1, 0], 2)).toBe(1);
+  });
+
+  it("cura na ficha e descreve", () => {
+    const r = healDamage(vigor(2, { vit: [1, 1, 1] }), "vit", 1, 2);
+    expect(r.marks).toEqual([1, 0, 0, 0, 0]);
+    expect(r.changed).toEqual([false, true, true, false, false]);
+    expect(r.patch).toEqual({ vit: [1, 0, 0, 0, 0] });
+    expect(r.note).toBe("2 de dano superficial curado na Vitalidade.");
+  });
+
+  it("com caixas clicadas, parte delas e descreve a trilha", () => {
+    const r = healDamage(
+      vigor(2, { vit: [1, 1] }),
+      "vit",
+      2,
+      1,
+      [1, 1, 2, 0, 0]
+    );
+    expect(r.marks).toEqual([1, 1, 0, 0, 0]);
+    expect(r.changed).toEqual([false, false, false, false, false]);
+    expect(r.note).toBe("Vitalidade atualizada: 2 superficiais, 0 agravados.");
+  });
+
+  it("dicas de custo", () => {
+    const s = sheet({
+      attrs: { ...blankSheet().attrs, Autocontrole: 2, Determinação: 3 },
+      geracao: "9ª",
+    });
+    expect(healHint(s, "vit", 1)).toBe(
+      "Com Potência de Sangue 2, cada checagem de sangue cura 2 de dano Superficial."
+    );
+    expect(healHint(s, "vit", 2)).toBe(
+      "Cada 1 de dano Agravado curado exige três checagens de sangue."
+    );
+    expect(healHint(s, "fdv", 1)).toBe(
+      "Ao dormir, a Força de Vontade recupera 3 de dano Superficial."
+    );
+    expect(healHint(s, "fdv", 2)).toBe(
+      "Dano Agravado de Força de Vontade se recupera com o tempo, a critério do Narrador."
+    );
   });
 });
 

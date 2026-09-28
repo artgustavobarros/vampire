@@ -11,6 +11,22 @@ export function AcoesTab() {
   const dialog = useRuleDialog();
   const cards = [
     {
+      cta: "Marcar dano",
+      description:
+        "Marca dano em Vitalidade ou Força de Vontade, já dividindo o Superficial quando for o caso.",
+      red: false,
+      run: () => dialog.open("damage"),
+      title: "Sofrer dano",
+    },
+    {
+      cta: "Curar dano",
+      description:
+        "Remove dano de Vitalidade ou Força de Vontade, com a dica do custo da cura.",
+      red: false,
+      run: () => dialog.open("heal"),
+      title: "Curar-se",
+    },
+    {
       cta: "Registrar",
       description: "Reduz a Fome conforme o quanto o recipiente rendeu.",
       red: false,

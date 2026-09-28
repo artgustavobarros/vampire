@@ -4,7 +4,14 @@ import { healAggravated, rouseCheck, sleep } from "#/rules/actions";
 import { willpowerMax } from "#/rules/tracks";
 import { patchSheet } from "#/stores/character-store";
 
-export type FlowKind = "rouse" | "sleep" | "agg" | "feed" | "frenzy";
+export type FlowKind =
+  | "rouse"
+  | "sleep"
+  | "agg"
+  | "feed"
+  | "damage"
+  | "heal"
+  | "frenzy";
 
 export interface Flow {
   difficulty?: number;
@@ -135,6 +142,12 @@ export function flowView(flow: Flow, sheet: Sheet, setFlow: SetFlow): FlowView {
     case "feed":
       return feedView(flow, sheet, close);
 
+    case "damage":
+      return damageView(flow, close);
+
+    case "heal":
+      return healView(flow, close);
+
     case "frenzy": {
       const pool = willpowerMax(sheet);
       if (flow.stage === "ask") {
@@ -229,5 +242,41 @@ function feedView(flow: Flow, sheet: Sheet, close: () => void): FlowView {
       : "Você está saciado. Nada a reduzir.",
     kicker: "Alimentação",
     title: "Registrar alimentação",
+  };
+}
+
+/** O estágio "ask" é o `DamageForm`, desenhado pelo `RuleDialogProvider` no lugar dos botões. */
+function damageView(flow: Flow, close: () => void): FlowView {
+  if (flow.stage === "done") {
+    return {
+      actions: [{ label: "Fechar", primary: true, run: close }],
+      body: "Anotado na ficha.",
+      kicker: "Dano",
+      title: "Dano marcado",
+    };
+  }
+  return {
+    actions: [],
+    body: "Escolha a trilha, o dano e o tipo.",
+    kicker: "Dano",
+    title: "Sofrer dano",
+  };
+}
+
+/** O estágio "ask" é o `HealForm`, desenhado pelo `RuleDialogProvider` no lugar dos botões. */
+function healView(flow: Flow, close: () => void): FlowView {
+  if (flow.stage === "done") {
+    return {
+      actions: [{ label: "Fechar", primary: true, run: close }],
+      body: "Anotado na ficha.",
+      kicker: "Cura",
+      title: "Dano curado",
+    };
+  }
+  return {
+    actions: [],
+    body: "Escolha a trilha, a cura e o tipo.",
+    kicker: "Cura",
+    title: "Curar-se",
   };
 }

@@ -9,14 +9,10 @@ import { RESONANCE_INTENSITIES, RESONANCES } from "#/data/fields";
 import type { Sheet } from "#/lib/types";
 import type { ActionResult } from "#/rules/actions";
 import { feed } from "#/rules/feeding";
+import { FORM_LABEL, Stepper } from "./stepper";
 
 /** a presa sem Ressonância é simplesmente nenhuma marcada */
 const PREY_RESONANCES = RESONANCES.filter((r) => r !== "Sem ressonância");
-
-const STEP_BTN =
-  "flex size-12 cursor-pointer items-center justify-center border border-line bg-field font-label font-semibold text-ink text-xl leading-none focus-visible:outline-2 focus-visible:outline-ink disabled:cursor-not-allowed disabled:opacity-40";
-const LABEL =
-  "font-label font-semibold text-ink-soft text-xs uppercase leading-none tracking-[.12em]";
 
 interface FeedFormProps {
   onApply: (result: ActionResult) => void;
@@ -43,39 +39,24 @@ export function FeedForm({ onApply, onCancel, sheet }: FeedFormProps) {
 
   return (
     <div className="mt-4 flex flex-col">
-      <div className="flex items-center justify-between gap-3 bg-wash p-2">
-        <button
-          aria-label="Saciar menos"
-          className={STEP_BTN}
-          disabled={amount <= min}
-          onClick={() => setAmount(amount - 1)}
-          type="button"
-        >
-          −
-        </button>
-        <output aria-live="polite" className="flex flex-col items-center gap-1">
-          <span className="font-semibold font-serif text-2xl text-ink leading-none">
-            {amount}
-          </span>
-          <span className={LABEL}>Saciar</span>
-        </output>
-        <button
-          aria-label="Saciar mais"
-          className={STEP_BTN}
-          disabled={amount >= hunger}
-          onClick={() => setAmount(amount + 1)}
-          type="button"
-        >
-          +
-        </button>
-      </div>
+      <Stepper
+        decrementLabel="Saciar menos"
+        incrementLabel="Saciar mais"
+        label="Saciar"
+        max={hunger}
+        min={min}
+        onChange={setAmount}
+        value={amount}
+      />
 
       <fieldset className="m-0 mt-5 border-0 p-0">
-        <legend className={`${LABEL} mb-3 p-0`}>Ressonância da presa</legend>
+        <legend className={`${FORM_LABEL} mb-3 p-0`}>
+          Ressonância da presa
+        </legend>
         <div className="grid grid-cols-2 gap-2">
           {PREY_RESONANCES.map((r) => (
             <SelectableCard
-              className="text-center font-serif text-xl"
+              className="text-center font-serif text-xl enabled:hover:border-blood enabled:hover:shadow-none motion-safe:enabled:hover:translate-y-0"
               filled
               key={r}
               onClick={() => setResonance(resonance === r ? "" : r)}
@@ -88,7 +69,7 @@ export function FeedForm({ onApply, onCancel, sheet }: FeedFormProps) {
       </fieldset>
       <SegmentedControl
         aria-label="Intensidade"
-        className="mt-3"
+        className="mt-3 grid-flow-row grid-cols-2"
         disabled={!resonance}
         onValueChange={setIntensity}
         value={intensity}

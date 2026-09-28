@@ -497,11 +497,11 @@ export const TRAIT_INFO: Readonly<Record<StateKind, TraitInfo>> = {
     "Quanto dano o corpo aguenta antes de cair. Máximo: Vigor + 3.",
     [
       [
-        "/",
+        "superficial",
         "Superficial. Mortais podem remover uma quantidade máxima de níveis de dano Superficial da sua trilha de Vitalidade igual ao seu Vigor. \n Os vampiros podem, a cada turno, remover uma quantidade de níveis de dano Superficial da sua trilha de Vitalidade ao Inflamarem o Sangue.",
       ],
       [
-        "✕",
+        "agravado",
         "Agravado. Para mortais, um personagem com Medicina pode converter dano Agravado na sua Trilha de Vitalidade para dano Superficial. Ele deve obter sucesso em um teste simples de Inteligência + Medicina; a Dificuldade é igual ao dano Agravado total do paciente. Tentativas de um personagem curar-se a si mesmo somam + 1 à Dificuldade. \n A quantidade máxima de pontos de dano Agravado que um personagem pode remover é igual à metade do seu valor na Habilidade Medicina, arredondado para cima.\n Vampiros normalmente podem curar 1 nível de dano Agravado à Vitalidade por noite Inflamando o Sangue.",
       ],
     ],
@@ -513,11 +513,11 @@ export const TRAIT_INFO: Readonly<Record<StateKind, TraitInfo>> = {
     "Reserva de determinação. Máximo: Autocontrole + Determinação.",
     [
       [
-        "/",
+        "superficial",
         "Superficial. No início de uma sessão, tanto vampiros quanto mortais podem remover uma quantidade máxima de níveis de dano Superficial da sua trilha de Força de Vontade igual ao seu valor de Autocontrole ou Determinação (o que for maior).",
       ],
       [
-        "✕",
+        "agravado",
         "Agravado. No início da sessão, um personagem que tenha agido de acordo com sua Ambição pode curar 1 nível de dano Agravado à Força de Vontade.\nNo entanto, as consequências podem continuar.",
       ],
     ],
