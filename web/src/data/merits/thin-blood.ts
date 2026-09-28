@@ -15,7 +15,7 @@ export const THIN_BLOOD_MERITS: readonly MeritTemplate[] = [
     ...qualidade,
     aliases: ["Anarch Comrades", "Companheiros Anarquistas"],
     description:
-      "Uma coterie Anarquista tolera você, ou até o trata como mascote. Juntos, contam como um Mawla Anarquista de 1 ponto enquanto você seguir a linha do grupo. Não combina com Rejeitado pelos Anarquistas.",
+      "Uma coterie Anarquista tolera você, ou até o trata como mascote. Juntos, contam como um Mawla Anarquista de 1 ponto enquanto você seguir a linha do grupo. Não combina com Segregado pelos Anarquistas.",
     name: "Camaradas Anarquistas",
     source: "Corebook",
   },
@@ -32,7 +32,7 @@ export const THIN_BLOOD_MERITS: readonly MeritTemplate[] = [
     aliases: ["Catenating Blood"],
     description:
       "Seu sangue é forte o bastante para criar Laços de Sangue e Abraçar outros sangues-ralos.",
-    name: "Catenação de Sangue",
+    name: "Sangue Agregador",
     source: "Corebook",
   },
   {
@@ -56,7 +56,7 @@ export const THIN_BLOOD_MERITS: readonly MeritTemplate[] = [
     aliases: ["Lifelike"],
     description:
       "Você tem batimento cardíaco, come comida e tem vida sexual como um mortal. À noite, só os exames médicos mais avançados notam algo estranho. Não combina com Carne Morta.",
-    name: "Realista",
+    name: "Semblante de Vida",
     source: "Corebook",
   },
   {
@@ -111,7 +111,7 @@ export const THIN_BLOOD_MERITS: readonly MeritTemplate[] = [
     aliases: ["Mortality's Mien", "Mortalitys Mien"],
     description:
       "Sua aura parece mortal para quem detecta o sobrenatural, e você soma 2 dados para passar por mortal de outras formas, como maquiagem.",
-    name: "A Aparência da Mortalidade",
+    name: "Aparência de Morte",
     source: "Players Guide",
   },
   {
@@ -130,7 +130,7 @@ export const THIN_BLOOD_FLAWS: readonly MeritTemplate[] = [
     aliases: ["Shunned by the Anarchs"],
     description:
       "Você quebrou uma regra não escrita dos Anarquistas. Eles o evitam e preferem entregá-lo à Camarilla a ouvi-lo. Não combina com Camaradas Anarquistas.",
-    name: "Rejeitado pelos Anarquistas",
+    name: "Segregado pelos Anarquistas",
     source: "Corebook",
   },
   {
@@ -153,7 +153,7 @@ export const THIN_BLOOD_FLAWS: readonly MeritTemplate[] = [
     ...defeito,
     aliases: ["Clan Curse"],
     description:
-      "Você sofre a Perdição de um clã com Gravidade 1. Só Banu Haqim, Brujah, Gangrel (exige Temperamento Bestial) ou Tremere (exige Catenação de Sangue).",
+      "Você sofre a Perdição de um clã com Gravidade 1. Só Banu Haqim, Brujah, Gangrel (exige Temperamento Bestial) ou Tremere (exige Sangue Agregador).",
     name: "Maldição do Clã",
     source: "Corebook",
   },
@@ -169,7 +169,7 @@ export const THIN_BLOOD_FLAWS: readonly MeritTemplate[] = [
     ...defeito,
     aliases: ["Dead Flesh"],
     description:
-      "Sua carne apodrece devagar, esverdeada e com cheiro leve de podridão. Exames médicos o dão como morto, e você perde 1 dado nos testes Sociais cara a cara com mortais. Não combina com Realista.",
+      "Sua carne apodrece devagar, esverdeada e com cheiro leve de podridão. Exames médicos o dão como morto, e você perde 1 dado nos testes Sociais cara a cara com mortais. Não combina com Semblante de Vida.",
     name: "Carne Morta",
     source: "Corebook",
   },
@@ -210,7 +210,7 @@ export const THIN_BLOOD_FLAWS: readonly MeritTemplate[] = [
     aliases: ["Plague Bearers", "Plague Bearer"],
     description:
       "Você ainda pega doenças mortais. Ao se alimentar, role um dado: num 1, você contrai a doença da vítima. Remédios não curam; só saciar a Fome até 0 cura.",
-    name: "Portadores da Peste",
+    name: "Portadores de Pragas",
     source: "Players Guide",
   },
   {
