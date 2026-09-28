@@ -7,9 +7,10 @@ Ficha jogável com abas, edição de traços, disciplinas e poderes, registros, 
 A ficha SHALL ter um cabeçalho com o nome do personagem ("Sem nome" se vazio) e um botão de menu. O cabeçalho MUST NOT mostrar o rótulo da aba atual nem o rótulo "MESTRE": é igual para jogador e Mestre (o contexto do Mestre fica na faixa do Mestre, acima do cabeçalho).
 
 O menu MUST abrir uma gaveta lateral com:
-- o e-mail do dono da ficha;
+- o nome de usuário do dono da ficha, no formato `@nome_de_usuario`;
 - o nome do personagem;
 - as abas, com a atual destacada;
+- "Conta", que abre a página "Conta" do dono da ficha (`/ficha/conta` para o jogador, `/personagens/<userId>/conta` para o Mestre), destacado quando essa página está aberta;
 - "Lista de personagens" (só para o Mestre, em sangue);
 - "Sair" (em sangue).
 
@@ -23,6 +24,8 @@ A aba atual MUST ser refletida na URL: `/ficha/<aba>` para o jogador e `/persona
 | Rolagens | `rolagens` |
 | Coterie | `coterie` |
 | Rodada | `rodada` |
+
+O endereço `conta` MUST abrir a página "Conta" dentro do layout da ficha (cabeçalho, menu e barra inferior), e não ser tratado como aba.
 
 Redirecionamentos, sempre substituindo a entrada do histórico:
 - os endereços antigos `registros`, `ficha`, `disciplinas` e `notas` MUST ir para `resumo`, `caracteristicas`, `disciplinas-e-sangue` e `rolagens`;
@@ -41,12 +44,20 @@ Redirecionamentos, sempre substituindo a entrada do histórico:
 - **THEN** o cabeçalho mostra só o nome do personagem e o botão de menu, sem o rótulo "MESTRE"
 
 #### Scenario: Menu do jogador
-- **WHEN** o jogador abre o menu
-- **THEN** a gaveta mostra as abas (com "Coterie", "Rodada" e "Rolagens", sem "Notas") e "Sair", sem "Lista de personagens" e sem "Refazer personagem"
+- **WHEN** o jogador `vitoria_salles` abre o menu
+- **THEN** a gaveta mostra `@vitoria_salles`, as abas (com "Coterie", "Rodada" e "Rolagens", sem "Notas"), "Conta" e "Sair", sem "Lista de personagens" e sem "Refazer personagem"
 
 #### Scenario: Menu do Mestre
-- **WHEN** o Mestre abre o menu na ficha de um jogador
-- **THEN** a gaveta mostra o e-mail desse jogador, as abas sem "Coterie" e sem "Rodada", "Lista de personagens" e "Sair", nessa ordem
+- **WHEN** o Mestre abre o menu na ficha do jogador `ana_s`
+- **THEN** a gaveta mostra `@ana_s`, as abas sem "Coterie" e sem "Rodada", "Conta", "Lista de personagens" e "Sair", nessa ordem
+
+#### Scenario: Abrir a conta pelo menu
+- **WHEN** o jogador escolhe "Conta" no menu
+- **THEN** a gaveta fecha, a URL passa a ser `/ficha/conta` e a página "Conta" é exibida no layout da ficha
+
+#### Scenario: Mestre abre a conta do jogador pelo menu
+- **WHEN** o Mestre, na ficha do jogador `userId`, escolhe "Conta" no menu
+- **THEN** a URL passa a ser `/personagens/<userId>/conta` e a página mostra a conta desse jogador
 
 #### Scenario: Mestre tenta abrir a aba Rodada de uma ficha
 - **WHEN** o Mestre acessa `/personagens/<userId>/rodada`
@@ -67,6 +78,10 @@ Redirecionamentos, sempre substituindo a entrada do histórico:
 #### Scenario: Link direto para aba
 - **WHEN** o jogador recarrega a página estando na aba Rodada
 - **THEN** a ficha reabre na aba Rodada
+
+#### Scenario: Link direto para a conta
+- **WHEN** o jogador recarrega a página em `/ficha/conta`
+- **THEN** a página "Conta" reabre, sem redirecionar para `caracteristicas`
 
 ### Requirement: Barra inferior fixa
 Enquanto a ficha estiver aberta, o app SHALL exibir uma barra fixa no rodapé, em qualquer aba, com fundo tinta e filete superior sangue. O botão "Checagem de sangue" MUST ficar centralizado como uma aba sangue que se sobrepõe ao filete superior da barra e MUST abrir o diálogo de Checagem de sangue. Abaixo dele, a barra SHALL mostrar três blocos lado a lado: à esquerda "Vitalidade", no centro "Fome" com o valor atual e à direita "Vontade". Os blocos de Vitalidade e Vontade MUST ter borda clara e mostrar as caixas de dano da trilha (máx. Vigor + 3 e máx. Autocontrole + Determinação), clicáveis no ciclo vazio → superficial → agravado → vazio, gravando na ficha. Os rótulos "Vitalidade" e "Vontade" MUST abrir o painel de informação da trilha. Abaixo de 640px (breakpoint `sm` do Tailwind), os três blocos MUST ficar empilhados em coluna, na ordem Vitalidade, Fome, Vontade, e o botão "Checagem de sangue" MUST continuar na mesma posição sobre o filete. As caixas MUST quebrar linha e ficar centralizadas quando não couberem. A barra MUST NOT ter o botão "Dormir". O conteúdo da página MUST ter espaço inferior suficiente para não ficar escondido atrás da barra. Estilos MUST ser classes Tailwind no JSX.

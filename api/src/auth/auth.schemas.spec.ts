@@ -46,8 +46,6 @@ describe("signupSchema", () => {
       { email: "a@b.co", password: "segredo", username: "ana" },
       "Informe o nome.",
     ],
-    [valid, "Informe o nome de usuário."],
-    [{ ...valid, username: "   " }, "Informe o nome de usuário."],
     [{ ...valid, username: "ab" }, USERNAME_FORMAT],
     [{ ...valid, username: "1ana" }, USERNAME_FORMAT],
     [{ ...valid, username: "ana souza" }, USERNAME_FORMAT],
@@ -56,6 +54,15 @@ describe("signupSchema", () => {
   ])("recusa %j com %s", (input, message) => {
     expect(firstMessage(signupSchema, input)).toBe(message);
   });
+
+  it.each([[{}], [{ username: "" }], [{ username: "   " }]])(
+    "nome de usuário ausente ou em branco (%j) fica de fora",
+    (extra) => {
+      expect(
+        signupSchema.parse({ ...valid, ...extra }).username
+      ).toBeUndefined();
+    }
+  );
 
   it.each(["ana", "ana.souza", "a_1", "a".repeat(20)])(
     "aceita o nome de usuário %s",

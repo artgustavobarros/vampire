@@ -83,6 +83,123 @@ const publicUser = ({ email, id, name, role, username }: Account): ApiUser => ({
 const byUsername = (username: string) =>
   [...accounts.values()].find((a) => a.username === username);
 
+const MARKS = /\p{M}/gu;
+const NOT_ALNUM = /[^a-z0-9]+/g;
+const EDGE_UNDERSCORES = /^_+|_+$/g;
+const TRAILING_UNDERSCORES = /_+$/;
+const STARTS_WITH_LETTER = /^[a-z]/;
+
+/** Como `slugUsername` da API. */
+function slugUsername(name: string): string {
+  const slug = name
+    .normalize("NFD")
+    .replace(MARKS, "")
+    .toLowerCase()
+    .replace(NOT_ALNUM, "_")
+    .replace(EDGE_UNDERSCORES, "");
+  const base =
+    slug && !STARTS_WITH_LETTER.test(slug) ? `u${slug}` : slug || "jogador";
+  return base.slice(0, 17).replace(TRAILING_UNDERSCORES, "").padEnd(3, "_");
+}
+
+function freeUsername(base: string): string {
+  let candidate = base;
+  for (let n = 2; candidate === "mestre" || byUsername(candidate); n += 1) {
+    candidate = `${base}${n}`;
+  }
+  return candidate;
+}
+
+const DM_ACCOUNT =
+  "E-mail, usuário e senha do Mestre são definidos no servidor.";
+
+interface AccountInput {
+  currentPassword?: string;
+  email?: string;
+  name?: string;
+  password?: string;
+  username?: string;
+}
+
+function accountInput(body: Record<string, unknown>): AccountInput {
+  const text = (key: string) =>
+    typeof body[key] === "string" ? (body[key] as string) : undefined;
+  return {
+    currentPassword: text("currentPassword"),
+    email: text("email")?.trim().toLowerCase(),
+    name: text("name")?.trim(),
+    password: text("password"),
+    username: text("username")?.trim().toLowerCase(),
+  };
+}
+
+/** O erro que a API daria, ou `null`. */
+function accountRefusal(
+  target: Account,
+  input: AccountInput,
+  requireCurrentPassword: boolean
+): Response | null {
+  const { currentPassword, email, password, username } = input;
+  if (
+    target.role === "dm" &&
+    [username, email, password].some((v) => v !== undefined)
+  ) {
+    return error(403, DM_ACCOUNT);
+  }
+  const newEmail = email !== undefined && email !== target.email;
+  if (requireCurrentPassword && (newEmail || password !== undefined)) {
+    if (!currentPassword) {
+      return error(400, "Informe a senha atual.");
+    }
+    if (currentPassword !== target.password) {
+      return error(403, "Senha atual incorreta.");
+    }
+  }
+  if (
+    username !== undefined &&
+    username !== target.username &&
+    (username === "mestre" || byUsername(username))
+  ) {
+    return error(409, "Nome de usuário já em uso.");
+  }
+  if (newEmail && accounts.has(email)) {
+    return error(409, "E-mail já em uso por outra conta.");
+  }
+  return null;
+}
+
+/** Contas e tokens são guardados pelo e-mail. */
+function changeEmail(target: Account, email: string) {
+  accounts.delete(target.email);
+  for (const [token, owner] of tokens) {
+    if (owner === target.email) {
+      tokens.set(token, email);
+    }
+  }
+  target.email = email;
+  accounts.set(email, target);
+}
+
+/** `PATCH /me/account` e `PATCH /accounts/:userId`, com as regras da API. */
+function updateAccount(
+  target: Account,
+  body: Record<string, unknown>,
+  requireCurrentPassword: boolean
+): Response {
+  const input = accountInput(body);
+  const refusal = accountRefusal(target, input, requireCurrentPassword);
+  if (refusal) {
+    return refusal;
+  }
+  target.name = input.name ?? target.name;
+  target.username = input.username ?? target.username;
+  target.password = input.password ?? target.password;
+  if (input.email !== undefined && input.email !== target.email) {
+    changeEmail(target, input.email);
+  }
+  return json(200, publicUser(target));
+}
+
 const LOCKED = "Atributos e Habilidades só podem ser alterados pelo Mestre.";
 
 /** A trava da API: ficha criada não muda `attrs`/`skills` pelo `/me/sheet`. */
@@ -115,7 +232,10 @@ function authRoute(
 ): Response | null {
   if (call.method === "POST" && call.path === "/auth/signup") {
     const email = String(body.email).trim().toLowerCase();
-    const username = String(body.username).trim().toLowerCase();
+    const name = String(body.name).trim();
+    const username = String(body.username ?? "")
+      .trim()
+      .toLowerCase();
     if (accounts.has(email)) {
       return error(409, 'E-mail já cadastrado. Use "Entrar".');
     }
@@ -124,9 +244,9 @@ function authRoute(
     }
     const account = fakeApi.seed({
       email,
-      name: String(body.name).trim(),
+      name,
       password: String(body.password),
-      username,
+      username: username || freeUsername(slugUsername(name)),
     });
     return json(201, {
       accessToken: issueToken(email),
@@ -169,6 +289,20 @@ function route(call: FakeCall): Response {
   }
   if (call.path === "/me/sheet") {
     return meRoute(call, account, body);
+  }
+  if (call.path === "/me/account" && call.method === "PATCH") {
+    return updateAccount(account, body, true);
+  }
+  if (call.path.startsWith("/accounts/") && call.method === "PATCH") {
+    if (account.role !== "dm") {
+      return error(403, "Apenas o Mestre pode fazer isso.");
+    }
+    const target = byId(
+      decodeURIComponent(call.path.slice("/accounts/".length))
+    );
+    return target
+      ? updateAccount(target, body, false)
+      : error(404, "Jogador não encontrado.");
   }
   if (call.path.startsWith("/sheets")) {
     return dmRoute(call, account, body);

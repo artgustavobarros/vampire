@@ -87,11 +87,31 @@ describe("contas na API", () => {
       await authenticate({ ...base, password: "123", password2: "123" })
     ).toBe(false);
     await expectToast("A senha precisa ter pelo menos 6 caracteres.");
-    expect(
-      await authenticate({ ...base, password2: "123456", username: " " })
-    ).toBe(false);
-    await expectToast("Informe o nome de usuário.");
     expect(fakeApi.calls).toHaveLength(0);
+  });
+
+  it("cadastra sem nome de usuário e a API gera um do nome", async () => {
+    expect(
+      await authenticate(
+        {
+          email: "vitoria@exemplo.com",
+          mode: "signup",
+          name: "Vitória Salles",
+          password: "123456",
+          password2: "123456",
+          username: "  ",
+        },
+        { exampleData: false }
+      )
+    ).toBe(true);
+    const signupCall = fakeApi.calls.find((c) => c.path === "/auth/signup");
+    expect(signupCall?.body).not.toHaveProperty("username");
+    expect(usePlayerStore.getState().username).toBe("vitoria_salles");
+    expect(character().owner).toEqual({
+      email: "vitoria@exemplo.com",
+      name: "Vitória Salles",
+      username: "vitoria_salles",
+    });
   });
 
   it.each(["ab", "1ana", "ana souza", "ana@x", "a".repeat(21)])(
@@ -496,7 +516,12 @@ describe("ficha aberta pelo Mestre", () => {
     vi.useFakeTimers();
     const { a } = seedPlayers();
     await character().openPlayerSheet(a.id);
-    expect(character().owner).toEqual({ email: "a@exemplo.com", userId: a.id });
+    expect(character().owner).toEqual({
+      email: "a@exemplo.com",
+      name: a.name,
+      userId: a.id,
+      username: a.username,
+    });
     expect(character().sheet.nome).toBe("A");
 
     patchSheet({ attrs: { ...character().sheet.attrs, Força: 4 } });
@@ -533,6 +558,51 @@ describe("ficha aberta pelo Mestre", () => {
     await expect(character().openPlayerSheet("user-x")).rejects.toMatchObject({
       message: "Jogador não encontrado.",
       status: 404,
+    });
+  });
+});
+
+describe("conta salva", () => {
+  const user = {
+    email: "nova@exemplo.com",
+    id: "x",
+    name: "Nova",
+    role: "player" as const,
+    username: "nova",
+  };
+
+  it("setAccount troca e-mail, nome e usuário, sem mudar o papel", () => {
+    fakeApi.login(blankSheet());
+    player().setAccount({ ...user, role: "dm" });
+    expect(player()).toMatchObject({
+      name: "Nova",
+      role: "player",
+      user: "nova@exemplo.com",
+      username: "nova",
+    });
+  });
+
+  it("setOwnerAccount troca o dono sem perder as pendências", async () => {
+    vi.useFakeTimers();
+    const a = fakeApi.seed({
+      email: "a@exemplo.com",
+      sheet: { ...blankSheet(), criada: true, nome: "A" },
+    });
+    fakeApi.login(null, "admin@admin.com", "dm");
+    await character().openPlayerSheet(a.id);
+    patchSheet({ fome: 3 });
+    character().setOwnerAccount(user);
+    expect(character().owner).toEqual({
+      email: "nova@exemplo.com",
+      name: "Nova",
+      userId: a.id,
+      username: "nova",
+    });
+    await vi.advanceTimersByTimeAsync(SAVE_DELAY);
+    expect(fakeApi.calls.at(-1)).toMatchObject({
+      body: { patch: { fome: 3 } },
+      method: "PATCH",
+      path: `/sheets/${a.id}`,
     });
   });
 });

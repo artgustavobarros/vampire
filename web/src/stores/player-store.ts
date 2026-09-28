@@ -9,7 +9,7 @@ import {
   setToken,
 } from "#/lib/api";
 import { apiError } from "#/lib/toast";
-import { useCharacterStore } from "./character-store";
+import { ownerOf, useCharacterStore } from "./character-store";
 
 export interface PlayerState {
   name: string | null;
@@ -19,6 +19,7 @@ export interface PlayerState {
   role: Role | null;
   /** e-mail do jogador */
   user: string | null;
+  username: string | null;
 }
 
 export interface PlayerActions {
@@ -27,6 +28,8 @@ export interface PlayerActions {
   logout: () => void;
   /** Restaura a sessão pelo token salvo. Chamado no cliente, depois da hidratação. */
   restore: () => Promise<void>;
+  /** A própria conta salva na página "Conta"; o papel não muda. */
+  setAccount: (user: ApiUser) => void;
 }
 
 let restoring: Promise<void> | null = null;
@@ -57,15 +60,20 @@ export const usePlayerStore = create<PlayerState & PlayerActions>()(
 
     return {
       login(user, sheet) {
-        set({ name: user.name, role: user.role, user: user.email });
+        set({
+          name: user.name,
+          role: user.role,
+          user: user.email,
+          username: user.username,
+        });
         if (user.role === "dm") {
           useCharacterStore.getState().clear();
         } else {
-          useCharacterStore.getState().load({ email: user.email }, sheet);
+          useCharacterStore.getState().load(ownerOf(user), sheet);
         }
       },
       logout() {
-        set({ name: null, role: null, user: null });
+        set({ name: null, role: null, user: null, username: null });
         useCharacterStore.getState().clear();
       },
       name: null,
@@ -80,7 +88,11 @@ export const usePlayerStore = create<PlayerState & PlayerActions>()(
         return restoring;
       },
       role: null,
+      setAccount(user) {
+        set({ name: user.name, user: user.email, username: user.username });
+      },
       user: null,
+      username: null,
     };
   }
 );

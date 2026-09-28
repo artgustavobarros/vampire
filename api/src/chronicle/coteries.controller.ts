@@ -24,6 +24,7 @@ import {
 } from "@nestjs/swagger";
 import { errorResponseSchema } from "../common/error-response.schema.js";
 import { Roles } from "../common/roles.decorator.js";
+import { coterieId, playerId } from "../common/uuid-pipes.js";
 import {
   type Coterie,
   type CoterieNameDto,
@@ -34,7 +35,6 @@ import {
   createCoterieSchema,
 } from "./chronicle.schemas.js";
 import { CoteriesService } from "./coteries.service.js";
-import { coterieId, playerId } from "./uuid-pipes.js";
 
 /** Coteries da crônica, só para o Mestre. */
 @ApiTags("coteries (Mestre)")

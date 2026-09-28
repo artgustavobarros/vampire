@@ -1,5 +1,6 @@
 import { create } from "zustand";
 import {
+  type ApiUser,
   getPlayerSheet,
   patchSheet as patchMe,
   patchPlayerSheet,
@@ -12,8 +13,18 @@ import { createSheetSync } from "./sheet-sync";
 /** De quem é a ficha aberta, e portanto para onde ela é gravada. */
 export interface SheetOwner {
   email: string;
+  name: string;
   /** jogador aberto pelo Mestre (`/sheets/:userId`); ausente = a própria ficha */
   userId?: string;
+  username: string;
+}
+
+/** O dono a partir do usuário da API; com `userId`, aberto pelo Mestre. */
+export function ownerOf(
+  { email, name, username }: ApiUser,
+  userId?: string
+): SheetOwner {
+  return userId ? { email, name, userId, username } : { email, name, username };
 }
 
 export interface CharacterState {
@@ -36,6 +47,8 @@ export interface CharacterActions {
   openPlayerSheet: (userId: string) => Promise<void>;
   /** Mescla, agenda a gravação e sinaliza o alerta de Fome como o `patch` do standalone. */
   patch: (partial: Partial<Sheet>) => void;
+  /** Conta do dono salva na página "Conta": troca só os dados da conta. */
+  setOwnerAccount: (user: ApiUser) => void;
 }
 
 const sync = createSheetSync(
@@ -74,7 +87,7 @@ export const useCharacterStore = create<CharacterState & CharacterActions>()(
       await sync.flush();
       const { sheet, user } = await getPlayerSheet(userId);
       if (current === opening) {
-        get().load({ email: user.email, userId }, sheet);
+        get().load(ownerOf(user, userId), sheet);
       }
     },
     owner: null,
@@ -89,6 +102,13 @@ export const useCharacterStore = create<CharacterState & CharacterActions>()(
       set({ hungerAlert, sheet });
       if (owner) {
         sync.schedule(Object.keys(partial));
+      }
+    },
+    setOwnerAccount(user) {
+      const { owner } = get();
+      if (owner) {
+        // sem `load`: as mudanças pendentes da ficha continuam na fila
+        set({ owner: ownerOf(user, owner.userId) });
       }
     },
     sheet: blankSheet(),

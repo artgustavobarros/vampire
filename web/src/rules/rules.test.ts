@@ -703,7 +703,7 @@ describe("poderes por ponto", () => {
 
   it("tira amálgamas que perderam a Disciplina exigida", () => {
     const tenacidade = pw("Tenacidade", 2);
-    const bestas = pw("Bestas Resistentes", 2);
+    const bestas = pw("Feras Tenazes", 2);
     const gangrel = (animalismo: number) => [
       { nivel: 2, nome: "Fortitude", powers: [tenacidade, bestas] },
       { nivel: animalismo, nome: "Animalismo", powers: [] },
@@ -884,7 +884,7 @@ describe("Predador", () => {
 
   it("méritos de mesmo nome e tipo somam", () => {
     expect(
-      predatorMerits(pred("Alçapão"), {
+      predatorMerits(pred("Tocaia"), {
         "lacaios-rebanho-refugio": { Refúgio: 1 },
         "refugio-defeito": { "Refúgio Assustador": 1 },
       })
@@ -901,12 +901,12 @@ describe("Predador", () => {
 
   it("catálogo tem os 16 tipos do Livro Básico e do Players Guide", () => {
     expect(PREDATORS.map((p) => p.name)).toEqual([
-      "Gato de Rua",
+      "Vira-lata",
       "Extorsionário",
       "Sereia",
-      "Saqueador",
+      "Sacoleiro",
       "Sanguessuga",
-      "Doméstico",
+      "Trinchador",
       "Consensualista",
       "Fazendeiro",
       "Osíris",
@@ -916,8 +916,15 @@ describe("Predador", () => {
       "Ceifador",
       "Montero",
       "Perseguidor",
-      "Alçapão",
+      "Tocaia",
     ]);
+  });
+
+  it("fichas com nomes antigos acham o Predador pelo nome do livro", () => {
+    expect(findPredator("Gato de Rua")?.name).toBe("Vira-lata");
+    expect(findPredator("Saqueador")?.name).toBe("Sacoleiro");
+    expect(findPredator("Doméstico")?.name).toBe("Trinchador");
+    expect(findPredator("Alçapão")?.name).toBe("Tocaia");
   });
 
   it("especialidades, Disciplinas e méritos batem com os catálogos", () => {
@@ -958,8 +965,8 @@ describe("Predador", () => {
     expect(predatorBlock(pred("Fazendeiro"), ventrue)).toBe(
       "Ventrue não pode ser Fazendeiro"
     );
-    expect(predatorBlock(pred("Saqueador"), ventrue)).toBe(
-      "Ventrue não pode ser Saqueador"
+    expect(predatorBlock(pred("Sacoleiro"), ventrue)).toBe(
+      "Ventrue não pode ser Sacoleiro"
     );
     expect(predatorBlock(pred("Sereia"), ventrue)).toBeNull();
     expect(
@@ -974,7 +981,7 @@ describe("Predador", () => {
   });
 
   it("Feitiçaria de Sangue só para Tremere e Banu Haqim", () => {
-    for (const name of ["Saqueador", "Osíris"]) {
+    for (const name of ["Sacoleiro", "Osíris"]) {
       const [feiticaria, outra] = pred(name).disciplines;
       expect(feiticaria.nome).toBe("Feitiçaria de Sangue");
       expect(disciplineBlock(feiticaria, "Brujah")).toBe(
@@ -988,7 +995,7 @@ describe("Predador", () => {
 
   it("ponto em Disciplina existente e Humanidade", () => {
     const s = applyPredator(
-      brujah({ predador: "Gato de Rua", predDisc: "Potência" })
+      brujah({ predador: "Vira-lata", predDisc: "Potência" })
     );
     expect(s.disc.map((d) => [d.nome, d.nivel])).toEqual([
       ["Potência", 3],
@@ -1037,7 +1044,7 @@ describe("Predador", () => {
 
   it("não aplica duas vezes", () => {
     const once = applyPredator(
-      brujah({ predador: "Gato de Rua", predDisc: "Potência" })
+      brujah({ predador: "Vira-lata", predDisc: "Potência" })
     );
     expect(applyPredator(once)).toBe(once);
   });
@@ -1076,7 +1083,7 @@ describe("Predador", () => {
       const ctx = predatorDiscipline("Ventrue", ventrue, "Potência");
       expect(ctx).toMatchObject({ atual: 0, doCla: false, novo: 1 });
       expect(names(ctx)).toEqual(
-        expect.arrayContaining(["1:Toque Letal", "1:Força Prodigiosa"])
+        expect.arrayContaining(["1:Corpo Letal", "1:Salto Elevado"])
       );
       expect(ctx.elegiveis.every((p) => p.level === 1)).toBe(true);
     });
@@ -1099,10 +1106,10 @@ describe("Predador", () => {
       ];
       expect(
         names(predatorDiscipline("Nosferatu", nosferatu(1), "Animalismo"))
-      ).not.toContain("3:Colmeia Desalmada");
+      ).not.toContain("3:Enxame Não-vivo");
       expect(
         names(predatorDiscipline("Nosferatu", nosferatu(2), "Animalismo"))
-      ).toContain("3:Colmeia Desalmada");
+      ).toContain("3:Enxame Não-vivo");
     });
 
     it("sem catálogo não tem elegíveis", () => {
@@ -1113,7 +1120,7 @@ describe("Predador", () => {
 
     it("poder escolhido só vale se for elegível", () => {
       const ctx = predatorDiscipline("Ventrue", ventrue, "Potência");
-      expect(predatorPower(ctx, "Toque Letal")?.name).toBe("Toque Letal");
+      expect(predatorPower(ctx, "Corpo Letal")?.name).toBe("Corpo Letal");
       expect(predatorPower(ctx, "Compelir")).toBeUndefined();
       expect(predatorPower(ctx, "")).toBeUndefined();
     });
@@ -1121,13 +1128,13 @@ describe("Predador", () => {
 
   it("poder do Predador entra com o ponto", () => {
     const base = brujah({
-      predador: "Gato de Rua",
+      predador: "Vira-lata",
       predDisc: "Potência",
-      predPoder: "Força Prodigiosa",
+      predPoder: "Salto Elevado",
     });
     const s = applyPredator(base);
     expect(s.disc[0].nivel).toBe(3);
-    expect(s.disc[0].powers.map((p) => p.nome)).toEqual(["Força Prodigiosa"]);
+    expect(s.disc[0].powers.map((p) => p.nome)).toEqual(["Salto Elevado"]);
   });
 
   it("poder numa Disciplina nova", () => {

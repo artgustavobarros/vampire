@@ -57,7 +57,7 @@ A página `/personagens/<userId>/<aba>` SHALL mostrar a ficha do jogador `userId
 - **THEN** aparece o toast "Jogador não encontrado." e a URL passa a ser `/personagens`
 
 ### Requirement: Painel do Mestre
-As páginas `/personagens`, `/personagens/coteries`, `/personagens/acoes`, `/personagens/rodada` e `/personagens/bestiario` SHALL ficar dentro do painel do Mestre, com largura máxima de 1000px centralizada.
+As páginas `/personagens`, `/personagens/coteries`, `/personagens/acoes`, `/personagens/rodada`, `/personagens/bestiario` e `/personagens/conta` SHALL ficar dentro do painel do Mestre, com largura máxima de 1000px centralizada.
 
 O cabeçalho do painel MUST mostrar:
 - à esquerda, o nome do usuário (Cormorant, semibold) seguido do selo "MESTRE" (Karla caixa-alta, cor `blood`);
@@ -69,11 +69,12 @@ Abaixo do cabeçalho, o painel MUST ter uma barra de abas, nesta ordem:
 - "Coteries" (`/personagens/coteries`);
 - "Ações" (`/personagens/acoes`);
 - "Rodada" (`/personagens/rodada`);
-- "Bestiário" (`/personagens/bestiario`).
+- "Bestiário" (`/personagens/bestiario`);
+- "Conta" (`/personagens/conta`), com a conta do próprio Mestre.
 
 As abas MUST ser em Karla caixa-alta pequena, e a barra MUST terminar com filete `line`. No celular, a barra MUST rolar na horizontal em vez de quebrar linha, sem rolagem horizontal da página. A aba da página atual MUST ter texto `ink`, sublinhado de 2px em `blood` e `aria-current="page"`. As outras MUST ter texto suave e escurecer no hover. "Lista de personagens" MUST ser a aba aberta quando o Mestre entra.
 
-A ficha de um jogador (`/personagens/<userId>/<aba>`) MUST NOT ficar dentro do painel: mantém o layout da ficha. Estilos MUST ser classes Tailwind no JSX, sem regras novas em `styles.css`.
+A ficha de um jogador (`/personagens/<userId>/<aba>`) e a conta de um jogador (`/personagens/<userId>/conta`) MUST NOT ficar dentro do painel: mantêm o layout da ficha. Estilos MUST ser classes Tailwind no JSX, sem regras novas em `styles.css`.
 
 #### Scenario: Mestre entra e vê a lista
 - **WHEN** o Mestre "Mestre de exemplo" entra
@@ -81,7 +82,7 @@ A ficha de um jogador (`/personagens/<userId>/<aba>`) MUST NOT ficar dentro do p
 
 #### Scenario: Abas do painel
 - **WHEN** qualquer página do painel é exibida
-- **THEN** a barra mostra, nessa ordem, "Lista de personagens", "Coteries", "Ações", "Rodada" e "Bestiário"
+- **THEN** a barra mostra, nessa ordem, "Lista de personagens", "Coteries", "Ações", "Rodada", "Bestiário" e "Conta"
 
 #### Scenario: Trocar para Ações
 - **WHEN** o Mestre toca na aba "Ações"
@@ -90,6 +91,10 @@ A ficha de um jogador (`/personagens/<userId>/<aba>`) MUST NOT ficar dentro do p
 #### Scenario: Trocar para Rodada
 - **WHEN** o Mestre toca na aba "Rodada"
 - **THEN** a URL passa a ser `/personagens/rodada`, só a aba "Rodada" tem `aria-current="page"` e a página mostra a rodada
+
+#### Scenario: Trocar para Conta
+- **WHEN** o Mestre toca na aba "Conta"
+- **THEN** a URL passa a ser `/personagens/conta`, a aba "Conta" fica ativa e a página mostra a conta do próprio Mestre
 
 #### Scenario: Recarregar no Bestiário
 - **WHEN** o Mestre recarrega a página em `/personagens/bestiario`
@@ -104,7 +109,7 @@ A ficha de um jogador (`/personagens/<userId>/<aba>`) MUST NOT ficar dentro do p
 - **THEN** a página mostra o cabeçalho e o menu da ficha, sem a barra de abas do painel
 
 #### Scenario: Jogador tenta abrir abas do Mestre
-- **WHEN** um jogador com personagem criado acessa `/personagens/acoes`, `/personagens/coteries`, `/personagens/rodada` ou `/personagens/bestiario`
+- **WHEN** um jogador com personagem criado acessa `/personagens/acoes`, `/personagens/coteries`, `/personagens/rodada`, `/personagens/bestiario` ou `/personagens/conta`
 - **THEN** a URL passa a ser `/ficha/caracteristicas`
 
 ### Requirement: Faixa do Mestre na ficha

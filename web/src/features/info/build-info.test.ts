@@ -200,17 +200,16 @@ describe("buildInfo", () => {
     expect(info.nota).toBe("Este poder exige checagem de sangue.");
   });
 
-  it("rolagem com vs. sai da descrição", () => {
+  it("nome antigo do poder abre o poder atual", () => {
     const info = buildInfo({
       disc: "Animalismo",
       key: "Sussurro Ferino",
       kind: "poder",
       nivel: 1,
     });
-    expect(info.desc).toBe("Permite comunicar-se com animais e convocá-los.");
     expect(info.niveis[0]).toMatchObject({
-      n: "Rolagem",
-      txt: "Manipulação + Animalismo vs. resistência do animal",
+      n: "Parada de Dados",
+      txt: "Manipulação + Animalismo ou Carisma + Animalismo",
     });
   });
 

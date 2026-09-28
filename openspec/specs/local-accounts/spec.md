@@ -31,11 +31,19 @@ Ao iniciar, o app SHALL exibir a tela de abertura ("Vampiro · A Máscara", "Abr
 - **THEN** a tela de abertura sai imediatamente, sem aguardar um tempo mínimo
 
 ### Requirement: Criar conta local
-O usuário SHALL poder criar uma conta informando nome, nome de usuário, e-mail e senha duas vezes, nessa ordem no formulário. A conta MUST ser criada na API (`POST /auth/signup`); o `web` confere antes, sem chamar a API, os campos vazios, o formato do nome de usuário (`^[a-z][a-z0-9_.]{2,19}$` depois de tirar os espaços das pontas e passar para minúsculas), o formato do e-mail, a senha de pelo menos 6 caracteres e a confirmação de senha. O campo "Nome de usuário" MUST usar `autoComplete="username"`, sem correção nem capitalização automáticas. Erros de cadastro MUST ser exibidos como toast de erro (ver `notifications`), com a mensagem que a API devolver, e não como texto inline no formulário.
+O usuário SHALL poder criar uma conta informando nome, nome de usuário (opcional), e-mail e senha duas vezes, nessa ordem no formulário. O campo de nome de usuário MUST ter o rótulo "Nome de usuário (opcional)" e o texto de apoio "Se ficar em branco, criamos um a partir do seu nome.". A conta MUST ser criada na API (`POST /auth/signup`); com o nome de usuário em branco, o `web` MUST NOT enviar `username`, e a API gera o nome de usuário. O `web` confere antes, sem chamar a API, os campos obrigatórios vazios, o formato do nome de usuário só quando preenchido (`^[a-z][a-z0-9_.]{2,19}$` depois de tirar os espaços das pontas e passar para minúsculas), o formato do e-mail, a senha de pelo menos 6 caracteres e a confirmação de senha. O campo "Nome de usuário" MUST usar `autoComplete="username"`, sem correção nem capitalização automáticas. Erros de cadastro MUST ser exibidos como toast de erro (ver `notifications`), com a mensagem que a API devolver, e não como texto inline no formulário.
 
 #### Scenario: Cadastro válido
 - **WHEN** o usuário preenche nome, um nome de usuário válido e livre, um e-mail válido ainda não cadastrado e duas senhas iguais com pelo menos 6 caracteres e confirma
 - **THEN** a conta é criada na API, o token é salvo, a sessão é iniciada e o assistente de criação abre
+
+#### Scenario: Cadastro sem nome de usuário
+- **WHEN** o usuário deixa "Nome de usuário (opcional)" em branco e preenche o resto corretamente
+- **THEN** o `web` chama `POST /auth/signup` sem `username`, a conta é criada com o nome de usuário gerado pela API e o assistente de criação abre
+
+#### Scenario: Rótulo opcional
+- **WHEN** o formulário "Criar conta" é exibido
+- **THEN** o campo aparece como "Nome de usuário (opcional)" com o texto "Se ficar em branco, criamos um a partir do seu nome."
 
 #### Scenario: Senhas diferentes
 - **WHEN** as senhas não conferem
@@ -57,12 +65,8 @@ O usuário SHALL poder criar uma conta informando nome, nome de usuário, e-mail
 - **WHEN** o nome está vazio no cadastro
 - **THEN** um toast de erro com a mensagem "Informe o nome." é exibido
 
-#### Scenario: Nome de usuário ausente
-- **WHEN** o nome de usuário está vazio no cadastro
-- **THEN** um toast de erro com a mensagem "Informe o nome de usuário." é exibido e a API não é chamada
-
 #### Scenario: Nome de usuário inválido
-- **WHEN** o nome de usuário tem menos de 3 ou mais de 20 caracteres, caracteres fora de letras, números, `_` e `.`, ou não começa por letra
+- **WHEN** o nome de usuário preenchido tem menos de 3 ou mais de 20 caracteres, caracteres fora de letras, números, `_` e `.`, ou não começa por letra
 - **THEN** um toast de erro com a mensagem "Nome de usuário: 3 a 20 letras, números, _ ou ., começando por letra." é exibido e a API não é chamada
 
 #### Scenario: Sem erro inline

@@ -20,7 +20,12 @@ import { SheetLayout } from "./sheet-layout";
 function renderLayout(role: Role, url: string) {
   usePlayerStore.setState({ role, user: "eu@exemplo.com" });
   useCharacterStore.setState({
-    owner: { email: "jogador@exemplo.com", userId: "u1" },
+    owner: {
+      email: "jogador@exemplo.com",
+      name: "Jogador",
+      userId: "u1",
+      username: "jogador",
+    },
     sheet: { ...blankSheet(), criada: true, nome: "Vitória Salles" },
   });
   const root = createRootRoute({
@@ -40,6 +45,11 @@ function renderLayout(role: Role, url: string) {
     getParentRoute: () => ficha,
     path: "$aba",
   });
+  const fichaConta = createRoute({
+    component: () => <div>página da conta</div>,
+    getParentRoute: () => ficha,
+    path: "conta",
+  });
   const player = createRoute({
     component: () => (
       <SheetLayout tabs={{ id: "u1", to: "/personagens/$id/$aba" }} />
@@ -52,6 +62,11 @@ function renderLayout(role: Role, url: string) {
     getParentRoute: () => player,
     path: "$aba",
   });
+  const playerConta = createRoute({
+    component: () => <div>conta do jogador</div>,
+    getParentRoute: () => player,
+    path: "conta",
+  });
   const list = createRoute({
     component: () => <div>Página da lista</div>,
     getParentRoute: () => root,
@@ -60,8 +75,8 @@ function renderLayout(role: Role, url: string) {
   const router = createRouter({
     history: createMemoryHistory({ initialEntries: [url] }),
     routeTree: root.addChildren([
-      ficha.addChildren([fichaAba]),
-      player.addChildren([playerAba]),
+      ficha.addChildren([fichaAba, fichaConta]),
+      player.addChildren([playerAba, playerConta]),
       list,
     ]),
   });
@@ -99,6 +114,47 @@ describe("cabeçalho e menu da ficha", () => {
     expect(within(menu).getByText("Sair")).toBeInTheDocument();
   });
 
+  it("jogador: Conta abre /ficha/conta e fica destacada no menu", async () => {
+    const router = renderLayout("player", "/ficha/acoes");
+    await userEvent.click(await screen.findByLabelText("Abrir menu"));
+    const menu = screen.getByRole("dialog");
+    expect(within(menu).getByText("@jogador")).toBeInTheDocument();
+    const items = [...within(menu).getByRole("navigation").children].map(
+      (el) => el.textContent
+    );
+    expect(items.slice(-2)).toEqual(["Conta", "Sair"]);
+
+    await userEvent.click(within(menu).getByRole("link", { name: "Conta" }));
+    expect(await screen.findByText("página da conta")).toBeInTheDocument();
+    expect(router.state.location.pathname).toBe("/ficha/conta");
+
+    await userEvent.click(screen.getByLabelText("Abrir menu"));
+    const reopened = screen.getByRole("dialog");
+    expect(
+      within(reopened).getByRole("link", { name: "Conta" })
+    ).toHaveAttribute("aria-current", "page");
+    expect(
+      within(reopened).getByRole("link", { name: "Características" })
+    ).not.toHaveAttribute("aria-current");
+  });
+
+  it("link direto para /ficha/conta abre a conta, não uma aba", async () => {
+    const router = renderLayout("player", "/ficha/conta");
+    expect(await screen.findByText("página da conta")).toBeInTheDocument();
+    expect(screen.queryByText("conteúdo")).toBeNull();
+    expect(router.state.location.pathname).toBe("/ficha/conta");
+  });
+
+  it("Mestre: Conta abre a conta do jogador da ficha", async () => {
+    const router = renderLayout("dm", "/personagens/u1/caracteristicas");
+    await userEvent.click(await screen.findByLabelText("Abrir menu"));
+    await userEvent.click(
+      within(screen.getByRole("dialog")).getByRole("link", { name: "Conta" })
+    );
+    expect(await screen.findByText("conta do jogador")).toBeInTheDocument();
+    expect(router.state.location.pathname).toBe("/personagens/u1/conta");
+  });
+
   it("jogador: sem faixa do Mestre", async () => {
     renderLayout("player", "/ficha/acoes");
     await screen.findByText("conteúdo");
@@ -131,14 +187,14 @@ describe("cabeçalho e menu da ficha", () => {
 
     await userEvent.click(screen.getByLabelText("Abrir menu"));
     const menu = screen.getByRole("dialog");
-    expect(within(menu).getByText("jogador@exemplo.com")).toBeInTheDocument();
+    expect(within(menu).getByText("@jogador")).toBeInTheDocument();
     expect(
       within(menu).getByRole("link", { name: "Rolagens" })
     ).toHaveAttribute("href", "/personagens/u1/rolagens");
     const items = [...within(menu).getByRole("navigation").children].map(
       (el) => el.textContent
     );
-    expect(items.slice(-2)).toEqual(["Lista de personagens", "Sair"]);
+    expect(items.slice(-3)).toEqual(["Conta", "Lista de personagens", "Sair"]);
 
     await userEvent.click(
       within(menu).getByRole("link", { name: "Lista de personagens" })

@@ -210,9 +210,9 @@ O passo MUST NOT exibir a Potência de Sangue nem a Geração: o passo termina n
 - **THEN** não há pontos de Potência de Sangue, nem rótulo "Geração 12ª", nem gatilho de Potência de Sangue no passo
 
 ### Requirement: Passo 6 — Predador
-O passo SHALL listar em cartões os 16 tipos de predador do Livro Básico e do Players Guide: Gato de Rua, Extorsionário, Sereia, Saqueador, Sanguessuga, Doméstico, Consensualista, Fazendeiro, Osíris, João Pestana, Rainha da Cena, Ladrão de Túmulos, Ceifador, Montero, Perseguidor e Alçapão. Para o escolhido, o passo SHALL oferecer a escolha de uma especialidade entre as opções do Predador (duas, ou três na Rainha da Cena), um ponto de disciplina entre duas com a escolha de um poder, e listar os ajustes obrigatórios. Especialidades, Disciplinas e ajustes MUST seguir o Livro Básico (p. 175–178) e o Players Guide (p. 107–109). Os nomes de Disciplina MUST ser os do catálogo `DISCIPLINES` (Dominação, Proteanismo, Oblívio, Feitiçaria de Sangue…), e os nomes de mérito MUST ser os de `data/merits.ts` quando o mérito existe lá. Os ajustes MUST vir da lista estruturada do Predador em `data/predators.ts`, cada um com tipo (`humanidade`, `potencia`, `merito` ou `escolha`), valores e rótulo. O passo MUST exibir o rótulo e colorir o filete pelo tipo: ganho (Humanidade ou Potência positivas, `merito`/`escolha` de vantagem) em Moss, custo (Humanidade negativa, `merito`/`escolha` de defeito) em Blood.
+O passo SHALL listar em cartões os 16 tipos de predador do Livro Básico e do Players Guide: Vira-lata, Extorsionário, Sereia, Sacoleiro, Sanguessuga, Trinchador, Consensualista, Fazendeiro, Osíris, João Pestana, Rainha da Cena, Ladrão de Túmulos, Ceifador, Montero, Perseguidor e Tocaia. Para o escolhido, o passo SHALL oferecer a escolha de uma especialidade entre as opções do Predador (duas, ou três na Rainha da Cena), um ponto de disciplina entre duas com a escolha de um poder, e listar os ajustes obrigatórios. Especialidades, Disciplinas e ajustes MUST seguir o Livro Básico (p. 175–178) e o Players Guide (p. 107–109). Os nomes de Disciplina MUST ser os do catálogo `DISCIPLINES` (Dominação, Proteanismo, Oblívio, Feitiçaria de Sangue…), e os nomes de mérito MUST ser os de `data/merits.ts` quando o mérito existe lá. Os ajustes MUST vir da lista estruturada do Predador em `data/predators.ts`, cada um com tipo (`humanidade`, `potencia`, `merito` ou `escolha`), valores e rótulo. O passo MUST exibir o rótulo e colorir o filete pelo tipo: ganho (Humanidade ou Potência positivas, `merito`/`escolha` de vantagem) em Moss, custo (Humanidade negativa, `merito`/`escolha` de defeito) em Blood. Fichas gravadas com os nomes antigos Gato de Rua, Saqueador, Doméstico e Alçapão MUST continuar reconhecidas como Vira-lata, Sacoleiro, Trinchador e Tocaia.
 
-Um Predador pode proibir clãs e limitar a Potência de Sangue: Fazendeiro e Saqueador não podem ser escolhidos por Ventrue, e Fazendeiro exige Potência de Sangue 2 ou menos (Potência da Geração, sem o Predador). O cartão de um Predador indisponível para o clã e a Geração do passo 1 MUST aparecer desabilitado, com opacidade reduzida e o motivo em Blood no lugar da descrição ("Ventrue não pode ser <Predador>" ou "Exige Potência de Sangue 2 ou menos"). Clicar nele MUST NOT escolhê-lo. Um Predador já gravado que ficou indisponível MUST continuar marcado, com o motivo, até o usuário trocar. Cada ajuste do tipo `escolha` MUST mostrar, abaixo do rótulo, um seletor: no modo `uma`, um botão por opção, com uma só selecionada; no modo `dividir`, um `DotRating` por opção com o total de pontos do ajuste como máximo e a soma entre as opções limitada a esse total. As escolhas MUST ser gravadas em `predEscolhas` (id do ajuste → pontos por opção). Trocar de Predador MUST limpar `predEspec`, `predEspecNome`, `predDisc`, `predPoder` e `predEscolhas`. Para Sangue Fraco, o passo MUST esconder os cartões e mostrar só o aviso "Sangues-ralos não têm Tipo de Predador. Siga para o próximo passo."; ao salvar o passo, `predador`, `predEspec`, `predEspecNome`, `predDisc`, `predPoder` e `predEscolhas` MUST ser gravados vazios.
+Um Predador pode proibir clãs e limitar a Potência de Sangue: Fazendeiro e Sacoleiro não podem ser escolhidos por Ventrue, e Fazendeiro exige Potência de Sangue 2 ou menos (Potência da Geração, sem o Predador). O cartão de um Predador indisponível para o clã e a Geração do passo 1 MUST aparecer desabilitado, com opacidade reduzida e o motivo em Blood no lugar da descrição ("Ventrue não pode ser <Predador>" ou "Exige Potência de Sangue 2 ou menos"). Clicar nele MUST NOT escolhê-lo. Um Predador já gravado que ficou indisponível MUST continuar marcado, com o motivo, até o usuário trocar. Cada ajuste do tipo `escolha` MUST mostrar, abaixo do rótulo, um seletor: no modo `uma`, um botão por opção, com uma só selecionada; no modo `dividir`, um `DotRating` por opção com o total de pontos do ajuste como máximo e a soma entre as opções limitada a esse total. As escolhas MUST ser gravadas em `predEscolhas` (id do ajuste → pontos por opção). Trocar de Predador MUST limpar `predEspec`, `predEspecNome`, `predDisc`, `predPoder` e `predEscolhas`. Para Sangue Fraco, o passo MUST esconder os cartões e mostrar só o aviso "Sangues-ralos não têm Tipo de Predador. Siga para o próximo passo."; ao salvar o passo, `predador`, `predEspec`, `predEspecNome`, `predDisc`, `predPoder` e `predEscolhas` MUST ser gravados vazios.
 
 #### Scenario: Escolher Sereia
 - **WHEN** o usuário escolhe "Sereia"
@@ -220,7 +220,7 @@ Um Predador pode proibir clãs e limitar a Potência de Sangue: Fazendeiro e Saq
 
 #### Scenario: Os 16 tipos
 - **WHEN** o clã é "Brujah" e o usuário abre o passo 6
-- **THEN** aparecem 16 cartões habilitados, entre eles "Ceifador", "Montero", "Perseguidor" e "Alçapão"
+- **THEN** aparecem 16 cartões habilitados, entre eles "Ceifador", "Montero", "Perseguidor" e "Tocaia"
 
 #### Scenario: Três especialidades na Rainha da Cena
 - **WHEN** o usuário escolhe "Rainha da Cena"
@@ -228,14 +228,14 @@ Um Predador pode proibir clãs e limitar a Potência de Sangue: Fazendeiro e Saq
 
 #### Scenario: Ventrue não pode ser Fazendeiro
 - **WHEN** o clã é "Ventrue" e o usuário abre o passo 6
-- **THEN** os cartões "Fazendeiro" e "Saqueador" aparecem desabilitados, com "Ventrue não pode ser Fazendeiro" e "Ventrue não pode ser Saqueador", e clicar neles não escolhe nada
+- **THEN** os cartões "Fazendeiro" e "Sacoleiro" aparecem desabilitados, com "Ventrue não pode ser Fazendeiro" e "Ventrue não pode ser Sacoleiro", e clicar neles não escolhe nada
 
 #### Scenario: Fazendeiro com Potência alta
 - **WHEN** o clã é "Brujah", a Geração é 7ª (Potência 3) e o usuário abre o passo 6
 - **THEN** o cartão "Fazendeiro" aparece desabilitado com "Exige Potência de Sangue 2 ou menos"
 
-#### Scenario: Méritos do Alçapão
-- **WHEN** o usuário escolhe "Alçapão"
+#### Scenario: Méritos do Tocaia
+- **WHEN** o usuário escolhe "Tocaia"
 - **THEN** os ajustes são "Refúgio •", uma escolha de uma opção entre "Lacaios", "Rebanho" e "Refúgio", e uma escolha de uma opção entre "Refúgio Assustador" e "Refúgio Assombrado"
 
 #### Scenario: Escolha de uma opção
@@ -490,7 +490,7 @@ Ao clicar "Concluir" no passo 8, o assistente SHALL aplicar o Predador escolhido
 A aplicação MUST ficar registrada na ficha em `predBonus`, que guarda só a Potência somada pelo Predador (`{ potencia }`) e marca que o Predador já foi aplicado. Uma ficha que já tem `predBonus` ou linhas de mérito com `origem: "predador"` MUST NOT receber o Predador de novo. Sangue Fraco, ou ficha sem Predador, MUST NOT receber nada nem `predBonus`.
 
 #### Scenario: Ponto em Disciplina do clã
-- **WHEN** o passo 5 tem Potência 2 e Celeridade 1, o Predador é "Gato de Rua" com Disciplina "Potência" e poder "Força Prodigiosa", e o usuário conclui
+- **WHEN** o passo 5 tem Potência 2 e Celeridade 1, o Predador é "Vira-lata" com Disciplina "Potência" e poder "Força Prodigiosa", e o usuário conclui
 - **THEN** a ficha fica com Potência 3 com o poder "Força Prodigiosa" somado aos do passo 5, e Celeridade 1
 
 #### Scenario: Disciplina nova
@@ -502,7 +502,7 @@ A aplicação MUST ficar registrada na ficha em `predBonus`, que guarda só a Po
 - **THEN** a ficha ganha Potência 1 com o poder "Toque Letal" de nível 1
 
 #### Scenario: Humanidade reduzida
-- **WHEN** a ficha tem Humanidade 7, o Predador é "Gato de Rua" e o usuário conclui
+- **WHEN** a ficha tem Humanidade 7, o Predador é "Vira-lata" e o usuário conclui
 - **THEN** a ficha fica com Humanidade 6
 
 #### Scenario: Sereia não mexe na Humanidade
@@ -526,7 +526,7 @@ A aplicação MUST ficar registrada na ficha em `predBonus`, que guarda só a Po
 - **THEN** `meritos` ganha "Rebanho" (vantagem, 2), "Fama" (vantagem, 1) e "Inimigo" (defeito, 2) com `origem: "predador"`, e nenhuma linha "Defeito Mítico"
 
 #### Scenario: Méritos repetidos somam
-- **WHEN** o Predador é "Alçapão" com "Refúgio" na escolha de vantagem e "Refúgio Assustador" na escolha de defeito, e o usuário conclui
+- **WHEN** o Predador é "Tocaia" com "Refúgio" na escolha de vantagem e "Refúgio Assustador" na escolha de defeito, e o usuário conclui
 - **THEN** `meritos` ganha uma só linha "Refúgio" (vantagem, 2) e "Refúgio Assustador" (defeito, 1), com `origem: "predador"`
 
 #### Scenario: Sangue-ralo sem Predador aplicado
@@ -541,7 +541,7 @@ No passo 6, as duas Disciplinas do Predador SHALL aparecer como cartões lado a 
 
 Uma Disciplina conta como "do clã" quando está entre as Disciplinas do clã escolhido; para Caitiff, quando foi escolhida no passo 5. Os pontos do passo 5 MUST ser lidos das duas posições do assistente. O cartão escolhido MUST ter borda Moss e fundo `field`; os outros, borda `ink/20` e fundo transparente. Cada cartão MUST ser um `<button>` com `aria-pressed`. Escolher outra Disciplina MUST limpar `predPoder`.
 
-Uma opção de Disciplina pode ser restrita a clãs: Feitiçaria de Sangue, no Saqueador e no Osíris, só vale para Tremere e Banu Haqim. Para os demais clãs, o cartão dela MUST ficar desabilitado, com opacidade reduzida e a linha de contexto "só Tremere e Banu Haqim" em Blood, e clicar nele MUST NOT escolhê-lo.
+Uma opção de Disciplina pode ser restrita a clãs: Feitiçaria de Sangue, no Sacoleiro e no Osíris, só vale para Tremere e Banu Haqim. Para os demais clãs, o cartão dela MUST ficar desabilitado, com opacidade reduzida e a linha de contexto "só Tremere e Banu Haqim" em Blood, e clicar nele MUST NOT escolhê-lo.
 
 #### Scenario: Ventrue com Extorsionário
 - **WHEN** o clã é "Ventrue" com Dominação 2 no passo 5 e o Predador é "Extorsionário"
@@ -556,7 +556,7 @@ Uma opção de Disciplina pode ser restrita a clãs: Feitiçaria de Sangue, no S
 - **THEN** o cartão "Feitiçaria de Sangue" aparece desabilitado com "só Tremere e Banu Haqim" e só "Presença" pode ser escolhida
 
 #### Scenario: Feitiçaria de Sangue para Banu Haqim
-- **WHEN** o clã é "Banu Haqim" e o Predador é "Saqueador"
+- **WHEN** o clã é "Banu Haqim" e o Predador é "Sacoleiro"
 - **THEN** o cartão "Feitiçaria de Sangue" está habilitado e mostra "do clã · nível 1" ou "do clã · N → N+1"
 
 ### Requirement: Poder do Predador

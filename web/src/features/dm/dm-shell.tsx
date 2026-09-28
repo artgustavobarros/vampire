@@ -11,6 +11,7 @@ const TABS = [
   { label: "Ações", to: "/personagens/acoes" },
   { label: "Rodada", to: "/personagens/rodada" },
   { label: "Bestiário", to: "/personagens/bestiario" },
+  { label: "Conta", to: "/personagens/conta" },
 ] as const;
 
 /** Painel do Mestre: cabeçalho e as abas da mesa. */

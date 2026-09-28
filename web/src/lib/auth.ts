@@ -22,19 +22,22 @@ export interface AuthInput {
   name?: string;
   password: string;
   password2?: string;
-  /** cadastro */
+  /** cadastro, opcional: em branco, a API gera um a partir do nome */
   username?: string;
 }
 
-const EMAIL = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+export const EMAIL = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
 /** o mesmo formato da API; sem `@`, o que separa o usuário do e-mail ao entrar */
-const USERNAME = /^[a-z][a-z0-9_.]{2,19}$/;
-const MIN_PASSWORD = 6;
+export const USERNAME = /^[a-z][a-z0-9_.]{2,19}$/;
+export const MIN_PASSWORD = 6;
+export const USERNAME_FORMAT =
+  "Nome de usuário: 3 a 20 letras, números, _ ou ., começando por letra.";
+export const SHORT_PASSWORD = "A senha precisa ter pelo menos 6 caracteres.";
 /** quanto o "Sair" espera as mudanças pendentes irem para a API */
 const LOGOUT_WAIT = 2000;
 
 /** sem espaços nas pontas e em minúsculas, como a API guarda */
-const normalize = (value = "") => value.trim().toLowerCase();
+export const normalize = (value = "") => value.trim().toLowerCase();
 
 /** Mesmas regras e mensagens da API, sem ida e volta. */
 function validateLogin({ identifier, password }: AuthInput): string | null {
@@ -63,14 +66,11 @@ function validateSignup(input: AuthInput): string | null {
   if (!(input.name ?? "").trim()) {
     return "Informe o nome.";
   }
-  if (!username) {
-    return "Informe o nome de usuário.";
-  }
-  if (!USERNAME.test(username)) {
-    return "Nome de usuário: 3 a 20 letras, números, _ ou ., começando por letra.";
+  if (username && !USERNAME.test(username)) {
+    return USERNAME_FORMAT;
   }
   if (password.length < MIN_PASSWORD) {
-    return "A senha precisa ter pelo menos 6 caracteres.";
+    return SHORT_PASSWORD;
   }
   if (password !== input.password2) {
     return "As senhas não conferem.";
@@ -97,7 +97,7 @@ export async function authenticate(
         email: normalize(input.email),
         name: (input.name ?? "").trim(),
         password,
-        username: normalize(input.username),
+        username: normalize(input.username) || undefined,
       });
       setToken(res.accessToken);
       if (options.exampleData) {

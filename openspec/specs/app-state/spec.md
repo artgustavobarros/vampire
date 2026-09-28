@@ -4,11 +4,11 @@
 Estado do cliente dividido em store do jogador (sessão) e store do personagem (ficha), em Zustand, com sessão restaurada e ficha gravada pela API (envio agrupado) e estado inicial estável no servidor.
 ## Requirements
 ### Requirement: Store do jogador
-O app SHALL manter o estado da sessão num store Zustand próprio do jogador (`usePlayerStore`), com o e-mail do usuário (`user`), o nome (`name`) e o papel (`role`: `"player"` ou `"dm"`), todos vindos do `user` da API, e a flag `ready`, que indica que a sessão salva já foi restaurada no cliente. A restauração MUST ser assíncrona: com `vtm5.token`, busca `GET /auth/me` e `GET /me/sheet` em paralelo antes de marcar `ready`. Para o `dm`, a ficha de `GET /me/sheet` MUST ser ignorada e o store do personagem MUST ficar com a ficha em branco e sem destino de gravação até uma ficha ser aberta pela Lista de personagens. Ao entrar pelo formulário como `dm`, o app MUST NOT buscar `GET /me/sheet`.
+O app SHALL manter o estado da sessão num store Zustand próprio do jogador (`usePlayerStore`), com o e-mail do usuário (`user`), o nome (`name`), o nome de usuário (`username`) e o papel (`role`: `"player"` ou `"dm"`), todos vindos do `user` da API, e a flag `ready`, que indica que a sessão salva já foi restaurada no cliente. Depois de salvar a própria conta, o store MUST passar a ter os valores do usuário devolvido pela API, sem recarregar a sessão. A restauração MUST ser assíncrona: com `vtm5.token`, busca `GET /auth/me` e `GET /me/sheet` em paralelo antes de marcar `ready`. Para o `dm`, a ficha de `GET /me/sheet` MUST ser ignorada e o store do personagem MUST ficar com a ficha em branco e sem destino de gravação até uma ficha ser aberta pela Lista de personagens. Ao entrar pelo formulário como `dm`, o app MUST NOT buscar `GET /me/sheet`.
 
 #### Scenario: Restaurar sessão salva
 - **WHEN** o app restaura a sessão de um jogador com `vtm5.token` válido
-- **THEN** o store do jogador passa a ter `user`, `name` e `role: "player"` iguais aos de `GET /auth/me`, o store do personagem recebe a ficha de `GET /me/sheet` e `ready` vira `true`
+- **THEN** o store do jogador passa a ter `user`, `name`, `username` e `role: "player"` iguais aos de `GET /auth/me`, o store do personagem recebe a ficha de `GET /me/sheet` e `ready` vira `true`
 
 #### Scenario: Restaurar sessão do Mestre
 - **WHEN** o app restaura a sessão do Mestre com `vtm5.token` válido
@@ -16,7 +16,7 @@ O app SHALL manter o estado da sessão num store Zustand próprio do jogador (`u
 
 #### Scenario: Restaurar sem sessão
 - **WHEN** o app restaura a sessão sem `vtm5.token`
-- **THEN** o store do jogador fica com `user: null`, `role: null` e `ready: true`, sem chamar a API
+- **THEN** o store do jogador fica com `user: null`, `username: null`, `role: null` e `ready: true`, sem chamar a API
 
 #### Scenario: Restaurar só uma vez
 - **WHEN** a restauração é chamada novamente enquanto uma está em andamento ou depois de `ready: true`
@@ -25,6 +25,10 @@ O app SHALL manter o estado da sessão num store Zustand próprio do jogador (`u
 #### Scenario: Restauração sem conexão
 - **WHEN** a API não responde durante a restauração
 - **THEN** `ready` continua `false`, o token é mantido e a restauração pode ser tentada de novo
+
+#### Scenario: Conta salva
+- **WHEN** o jogador muda o nome de usuário e o e-mail na página "Conta" e a API responde com sucesso
+- **THEN** `username` e `user` do store passam a ser os novos valores, e a gaveta da ficha já mostra o `@nome_de_usuario` novo
 
 ### Requirement: Store do personagem
 O app SHALL manter a ficha do personagem aberta (`Sheet`), a indicação de onde ela é gravada e o alerta de Fome pendente num store Zustand próprio do personagem (`useCharacterStore`), separado do store do jogador. A ficha aberta MUST ser a do próprio jogador (gravada em `PATCH /me/sheet`) ou, para o Mestre, a de um jogador escolhido (gravada em `PATCH /sheets/:userId`). Cada alteração da ficha MUST ser mesclada à ficha atual na hora, marcada como pendente e, quando mudar `fome`, atualizar o alerta de Fome (0 ou 5). As chaves pendentes MUST ser enviadas à API num único `PATCH` para o destino da ficha aberta depois de um intervalo curto sem novas alterações, com no máximo uma requisição de gravação em andamento por vez. Abrir outra ficha MUST enviar antes as mudanças pendentes da ficha anterior para o destino dela e só então descartar o estado anterior.
@@ -82,4 +86,15 @@ Na renderização no servidor e na hidratação, os stores MUST expor o estado i
 #### Scenario: Primeira renderização
 - **WHEN** a página é renderizada no servidor
 - **THEN** os componentes leem `user: null`, `ready: false` e a ficha em branco, sem acessar `localStorage` nem chamar a API
+
+### Requirement: Dono da ficha com nome de usuário
+O dono da ficha aberta no store do personagem (`owner`) SHALL trazer, além do e-mail, o nome de usuário e o nome da conta (vindos do `user` da API). Quando a conta do dono é salva pela página "Conta" (pelo próprio jogador ou pelo Mestre), o `owner` MUST ser atualizado com o usuário devolvido pela API, sem reabrir a ficha nem descartar mudanças pendentes.
+
+#### Scenario: Mestre abre uma ficha
+- **WHEN** o Mestre abre a ficha do jogador `ana_s`
+- **THEN** `owner` tem o `userId`, o e-mail, o nome e o nome de usuário `ana_s` desse jogador
+
+#### Scenario: Mestre muda o nome de usuário do jogador
+- **WHEN** o Mestre salva `ana` como nome de usuário na conta do jogador aberto
+- **THEN** `owner.username` passa a ser `ana` e a ficha continua aberta com as mudanças pendentes
 

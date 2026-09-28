@@ -1,4 +1,10 @@
-import { Link, Outlet, useNavigate, useParams } from "@tanstack/react-router";
+import {
+  Link,
+  Outlet,
+  useNavigate,
+  useParams,
+  useRouterState,
+} from "@tanstack/react-router";
 import { type ReactNode, useState } from "react";
 import {
   Sheet as Drawer,
@@ -35,6 +41,24 @@ interface TabLinkProps {
   onClick?: () => void;
 }
 
+/** A página "Conta" do dono da ficha, no mesmo layout. */
+function AccountLink({
+  base,
+  ...props
+}: Omit<TabLinkProps, "aba" | "children">) {
+  return base.to === "/ficha/$aba" ? (
+    <Link {...props} to="/ficha/conta">
+      Conta
+    </Link>
+  ) : (
+    <Link {...props} params={{ id: base.id }} to="/personagens/$id/conta">
+      Conta
+    </Link>
+  );
+}
+
+const ACCOUNT_ROUTES = new Set(["/ficha/conta", "/personagens/$id/conta"]);
+
 function TabLink({ aba, base, ...props }: TabLinkProps) {
   return base.to === "/ficha/$aba" ? (
     <Link {...props} params={{ aba }} to="/ficha/$aba" />
@@ -45,11 +69,16 @@ function TabLink({ aba, base, ...props }: TabLinkProps) {
 
 export function SheetLayout({ tabs }: { tabs: SheetTabsBase }) {
   const role = usePlayerStore((s) => s.role);
-  const ownerEmail = useCharacterStore((s) => s.owner?.email);
+  const ownerUsername = useCharacterStore((s) => s.owner?.username);
+  const onAccount = useRouterState({
+    select: (s) => s.matches.some((m) => ACCOUNT_ROUTES.has(m.routeId)),
+  });
   const sheet = useSheet();
   const { aba } = useParams({ strict: false });
   const context = tabs.to === "/ficha/$aba" ? "jogador" : "mestre";
-  const current = aba && isSheetTab(aba, context) ? aba : DEFAULT_TAB;
+  const tab = aba && isSheetTab(aba, context) ? aba : DEFAULT_TAB;
+  // na página "Conta" nenhuma aba fica destacada
+  const current = onAccount ? null : tab;
   const [menuOpen, setMenuOpen] = useState(false);
   const navigate = useNavigate();
   const name = sheet.nome || "Sem nome";
@@ -122,8 +151,8 @@ export function SheetLayout({ tabs }: { tabs: SheetTabsBase }) {
               className="w-70 max-w-[84vw] gap-1 border-line border-l px-5 py-6 sm:max-w-70"
               showCloseButton={false}
             >
-              <div className="mb-2 font-label font-semibold text-ink-faint text-xs uppercase leading-none tracking-[.12em]">
-                {ownerEmail}
+              <div className="mb-2 font-label font-semibold text-ink-faint text-sm leading-none tracking-[.04em]">
+                {ownerUsername && `@${ownerUsername}`}
               </div>
               <DrawerTitle className="mb-6 font-semibold font-serif text-2xl leading-tight">
                 {name}
@@ -144,6 +173,15 @@ export function SheetLayout({ tabs }: { tabs: SheetTabsBase }) {
                     {t.label}
                   </TabLink>
                 ))}
+                <AccountLink
+                  aria-current={onAccount ? "page" : undefined}
+                  base={tabs}
+                  className={cn(
+                    MENU_ITEM,
+                    onAccount ? "bg-ink px-4 text-white" : "text-ink"
+                  )}
+                  onClick={() => setMenuOpen(false)}
+                />
                 {role === "dm" && (
                   <Link
                     className={cn(MENU_ITEM, "text-blood")}

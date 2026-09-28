@@ -16,13 +16,16 @@ import { Route as FichaRouteImport } from './routes/ficha'
 import { Route as PersonagensRouteImport } from './routes/personagens'
 import { Route as FichaIndexRouteImport } from './routes/ficha.index'
 import { Route as FichaAbaRouteImport } from './routes/ficha.$aba'
+import { Route as FichaContaRouteImport } from './routes/ficha.conta'
 import { Route as PersonagensIdRouteImport } from './routes/personagens.$id'
 import { Route as PersonagensPainelRouteImport } from './routes/personagens._painel'
 import { Route as PersonagensIdIndexRouteImport } from './routes/personagens.$id.index'
 import { Route as PersonagensIdAbaRouteImport } from './routes/personagens.$id.$aba'
+import { Route as PersonagensIdContaRouteImport } from './routes/personagens.$id.conta'
 import { Route as PersonagensPainelIndexRouteImport } from './routes/personagens._painel.index'
 import { Route as PersonagensPainelAcoesRouteImport } from './routes/personagens._painel.acoes'
 import { Route as PersonagensPainelBestiarioRouteImport } from './routes/personagens._painel.bestiario'
+import { Route as PersonagensPainelContaRouteImport } from './routes/personagens._painel.conta'
 import { Route as PersonagensPainelCoteriesRouteImport } from './routes/personagens._painel.coteries'
 import { Route as PersonagensPainelRodadaRouteImport } from './routes/personagens._painel.rodada'
 
@@ -61,6 +64,11 @@ const FichaAbaRoute = FichaAbaRouteImport.update({
   path: '/$aba',
   getParentRoute: () => FichaRoute,
 } as any)
+const FichaContaRoute = FichaContaRouteImport.update({
+  id: '/conta',
+  path: '/conta',
+  getParentRoute: () => FichaRoute,
+} as any)
 const PersonagensIdRoute = PersonagensIdRouteImport.update({
   id: '/$id',
   path: '/$id',
@@ -80,6 +88,11 @@ const PersonagensIdAbaRoute = PersonagensIdAbaRouteImport.update({
   path: '/$aba',
   getParentRoute: () => PersonagensIdRoute,
 } as any)
+const PersonagensIdContaRoute = PersonagensIdContaRouteImport.update({
+  id: '/conta',
+  path: '/conta',
+  getParentRoute: () => PersonagensIdRoute,
+} as any)
 const PersonagensPainelIndexRoute = PersonagensPainelIndexRouteImport.update({
   id: '/',
   path: '/',
@@ -96,6 +109,11 @@ const PersonagensPainelBestiarioRoute =
     path: '/bestiario',
     getParentRoute: () => PersonagensPainelRoute,
   } as any)
+const PersonagensPainelContaRoute = PersonagensPainelContaRouteImport.update({
+  id: '/conta',
+  path: '/conta',
+  getParentRoute: () => PersonagensPainelRoute,
+} as any)
 const PersonagensPainelCoteriesRoute =
   PersonagensPainelCoteriesRouteImport.update({
     id: '/coteries',
@@ -115,11 +133,14 @@ export interface FileRoutesByFullPath {
   '/ficha': typeof FichaRouteWithChildren
   '/personagens': typeof PersonagensRouteWithChildren
   '/ficha/$aba': typeof FichaAbaRoute
+  '/ficha/conta': typeof FichaContaRoute
   '/personagens/$id': typeof PersonagensIdRouteWithChildren
   '/ficha/': typeof FichaIndexRoute
   '/personagens/$id/$aba': typeof PersonagensIdAbaRoute
+  '/personagens/$id/conta': typeof PersonagensIdContaRoute
   '/personagens/acoes': typeof PersonagensPainelAcoesRoute
   '/personagens/bestiario': typeof PersonagensPainelBestiarioRoute
+  '/personagens/conta': typeof PersonagensPainelContaRoute
   '/personagens/coteries': typeof PersonagensPainelCoteriesRoute
   '/personagens/rodada': typeof PersonagensPainelRodadaRoute
   '/personagens/$id/': typeof PersonagensIdIndexRoute
@@ -131,10 +152,13 @@ export interface FileRoutesByTo {
   '/entrar': typeof EntrarRoute
   '/personagens': typeof PersonagensPainelIndexRoute
   '/ficha/$aba': typeof FichaAbaRoute
+  '/ficha/conta': typeof FichaContaRoute
   '/ficha': typeof FichaIndexRoute
   '/personagens/$id/$aba': typeof PersonagensIdAbaRoute
+  '/personagens/$id/conta': typeof PersonagensIdContaRoute
   '/personagens/acoes': typeof PersonagensPainelAcoesRoute
   '/personagens/bestiario': typeof PersonagensPainelBestiarioRoute
+  '/personagens/conta': typeof PersonagensPainelContaRoute
   '/personagens/coteries': typeof PersonagensPainelCoteriesRoute
   '/personagens/rodada': typeof PersonagensPainelRodadaRoute
   '/personagens/$id': typeof PersonagensIdIndexRoute
@@ -147,12 +171,15 @@ export interface FileRoutesById {
   '/ficha': typeof FichaRouteWithChildren
   '/personagens': typeof PersonagensRouteWithChildren
   '/ficha/$aba': typeof FichaAbaRoute
+  '/ficha/conta': typeof FichaContaRoute
   '/personagens/$id': typeof PersonagensIdRouteWithChildren
   '/personagens/_painel': typeof PersonagensPainelRouteWithChildren
   '/ficha/': typeof FichaIndexRoute
   '/personagens/$id/$aba': typeof PersonagensIdAbaRoute
+  '/personagens/$id/conta': typeof PersonagensIdContaRoute
   '/personagens/_painel/acoes': typeof PersonagensPainelAcoesRoute
   '/personagens/_painel/bestiario': typeof PersonagensPainelBestiarioRoute
+  '/personagens/_painel/conta': typeof PersonagensPainelContaRoute
   '/personagens/_painel/coteries': typeof PersonagensPainelCoteriesRoute
   '/personagens/_painel/rodada': typeof PersonagensPainelRodadaRoute
   '/personagens/$id/': typeof PersonagensIdIndexRoute
@@ -167,11 +194,14 @@ export interface FileRouteTypes {
     | '/ficha'
     | '/personagens'
     | '/ficha/$aba'
+    | '/ficha/conta'
     | '/personagens/$id'
     | '/ficha/'
     | '/personagens/$id/$aba'
+    | '/personagens/$id/conta'
     | '/personagens/acoes'
     | '/personagens/bestiario'
+    | '/personagens/conta'
     | '/personagens/coteries'
     | '/personagens/rodada'
     | '/personagens/$id/'
@@ -183,10 +213,13 @@ export interface FileRouteTypes {
     | '/entrar'
     | '/personagens'
     | '/ficha/$aba'
+    | '/ficha/conta'
     | '/ficha'
     | '/personagens/$id/$aba'
+    | '/personagens/$id/conta'
     | '/personagens/acoes'
     | '/personagens/bestiario'
+    | '/personagens/conta'
     | '/personagens/coteries'
     | '/personagens/rodada'
     | '/personagens/$id'
@@ -198,12 +231,15 @@ export interface FileRouteTypes {
     | '/ficha'
     | '/personagens'
     | '/ficha/$aba'
+    | '/ficha/conta'
     | '/personagens/$id'
     | '/personagens/_painel'
     | '/ficha/'
     | '/personagens/$id/$aba'
+    | '/personagens/$id/conta'
     | '/personagens/_painel/acoes'
     | '/personagens/_painel/bestiario'
+    | '/personagens/_painel/conta'
     | '/personagens/_painel/coteries'
     | '/personagens/_painel/rodada'
     | '/personagens/$id/'
@@ -269,6 +305,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof FichaAbaRouteImport
       parentRoute: typeof FichaRoute
     }
+    '/ficha/conta': {
+      id: '/ficha/conta'
+      path: '/conta'
+      fullPath: '/ficha/conta'
+      preLoaderRoute: typeof FichaContaRouteImport
+      parentRoute: typeof FichaRoute
+    }
     '/personagens/$id': {
       id: '/personagens/$id'
       path: '/$id'
@@ -297,6 +340,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof PersonagensIdAbaRouteImport
       parentRoute: typeof PersonagensIdRoute
     }
+    '/personagens/$id/conta': {
+      id: '/personagens/$id/conta'
+      path: '/conta'
+      fullPath: '/personagens/$id/conta'
+      preLoaderRoute: typeof PersonagensIdContaRouteImport
+      parentRoute: typeof PersonagensIdRoute
+    }
     '/personagens/_painel/': {
       id: '/personagens/_painel/'
       path: '/'
@@ -318,6 +368,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof PersonagensPainelBestiarioRouteImport
       parentRoute: typeof PersonagensPainelRoute
     }
+    '/personagens/_painel/conta': {
+      id: '/personagens/_painel/conta'
+      path: '/conta'
+      fullPath: '/personagens/conta'
+      preLoaderRoute: typeof PersonagensPainelContaRouteImport
+      parentRoute: typeof PersonagensPainelRoute
+    }
     '/personagens/_painel/coteries': {
       id: '/personagens/_painel/coteries'
       path: '/coteries'
@@ -337,11 +394,13 @@ declare module '@tanstack/react-router' {
 
 interface FichaRouteChildren {
   FichaAbaRoute: typeof FichaAbaRoute
+  FichaContaRoute: typeof FichaContaRoute
   FichaIndexRoute: typeof FichaIndexRoute
 }
 
 const FichaRouteChildren: FichaRouteChildren = {
   FichaAbaRoute: FichaAbaRoute,
+  FichaContaRoute: FichaContaRoute,
   FichaIndexRoute: FichaIndexRoute,
 }
 
@@ -349,11 +408,13 @@ const FichaRouteWithChildren = FichaRoute._addFileChildren(FichaRouteChildren)
 
 interface PersonagensIdRouteChildren {
   PersonagensIdAbaRoute: typeof PersonagensIdAbaRoute
+  PersonagensIdContaRoute: typeof PersonagensIdContaRoute
   PersonagensIdIndexRoute: typeof PersonagensIdIndexRoute
 }
 
 const PersonagensIdRouteChildren: PersonagensIdRouteChildren = {
   PersonagensIdAbaRoute: PersonagensIdAbaRoute,
+  PersonagensIdContaRoute: PersonagensIdContaRoute,
   PersonagensIdIndexRoute: PersonagensIdIndexRoute,
 }
 
@@ -364,6 +425,7 @@ const PersonagensIdRouteWithChildren = PersonagensIdRoute._addFileChildren(
 interface PersonagensPainelRouteChildren {
   PersonagensPainelAcoesRoute: typeof PersonagensPainelAcoesRoute
   PersonagensPainelBestiarioRoute: typeof PersonagensPainelBestiarioRoute
+  PersonagensPainelContaRoute: typeof PersonagensPainelContaRoute
   PersonagensPainelCoteriesRoute: typeof PersonagensPainelCoteriesRoute
   PersonagensPainelRodadaRoute: typeof PersonagensPainelRodadaRoute
   PersonagensPainelIndexRoute: typeof PersonagensPainelIndexRoute
@@ -372,6 +434,7 @@ interface PersonagensPainelRouteChildren {
 const PersonagensPainelRouteChildren: PersonagensPainelRouteChildren = {
   PersonagensPainelAcoesRoute: PersonagensPainelAcoesRoute,
   PersonagensPainelBestiarioRoute: PersonagensPainelBestiarioRoute,
+  PersonagensPainelContaRoute: PersonagensPainelContaRoute,
   PersonagensPainelCoteriesRoute: PersonagensPainelCoteriesRoute,
   PersonagensPainelRodadaRoute: PersonagensPainelRodadaRoute,
   PersonagensPainelIndexRoute: PersonagensPainelIndexRoute,

@@ -201,7 +201,7 @@ describe("schemas do assistente", () => {
       { nivel: 1, nome: "Potência", powers: [] },
       { nivel: 2, nome: "Celeridade", powers: [] },
     ];
-    const nivel3 = "Golpe Brutal";
+    const nivel3 = "Alimentação Brutal";
     expect(issues(6, values({ predPoder: nivel3 }))).toEqual({});
     expect(issues(6, values({ disc, predPoder: nivel3 }))).toEqual({
       predPoder: "Escolha um poder de Potência",
@@ -226,7 +226,7 @@ describe("schemas do assistente", () => {
       predDisc: "Animalismo",
       predEspec: "Sobrevivência (Caça)",
       predEspecNome: "Caça",
-      predPoder: "Sentir a Fera",
+      predPoder: "Sentir a Besta",
     };
     expect(issues(6, values(fazendeiro))).toEqual({});
     expect(issues(6, values({ ...fazendeiro, cla: "Ventrue" }))).toMatchObject({
@@ -239,11 +239,11 @@ describe("schemas do assistente", () => {
 
   it("passo 6: Feitiçaria de Sangue só para Tremere e Banu Haqim", () => {
     const saqueador = {
-      predador: "Saqueador",
+      predador: "Sacoleiro",
       predDisc: "Feitiçaria de Sangue",
       predEspec: "Manha (Mercado Negro)",
       predEspecNome: "Mercado Negro",
-      predPoder: "Vitae Corrosiva",
+      predPoder: "Vitae Corrosivo",
     };
     expect(issues(6, values(saqueador))).toEqual({
       predDisc: "Feitiçaria de Sangue: só Tremere e Banu Haqim",

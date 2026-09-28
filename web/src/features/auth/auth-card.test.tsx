@@ -10,6 +10,7 @@ import { fireEvent, render, screen, within } from "@testing-library/react";
 import { toast } from "sonner";
 import { afterEach, describe, expect, it } from "vitest";
 import { Toaster } from "#/components/ui/sonner";
+import { usePlayerStore } from "#/stores/player-store";
 import { resetStores } from "#/stores/test-utils";
 import { fakeApi } from "#/test/fake-api";
 import { AuthCard } from "./auth-card";
@@ -84,25 +85,24 @@ describe("AuthCard", () => {
     });
   });
 
-  it("cadastro pede o nome de usuário logo depois do nome", async () => {
+  it("cadastro pede o nome de usuário, opcional, logo depois do nome", async () => {
     renderAuth("signup");
-    await screen.findByLabelText("Nome de usuário");
+    await screen.findByLabelText("Nome de usuário (opcional)");
     const labels = screen
       .getAllByRole("textbox")
       .map((el) => el.id)
       .filter(Boolean);
     expect(labels).toEqual(["auth-name", "auth-username", "auth-email"]);
-    expect(screen.getByLabelText("Nome de usuário")).toHaveAttribute(
-      "autocomplete",
-      "username"
+    const usernameInput = screen.getByLabelText("Nome de usuário (opcional)");
+    expect(usernameInput).toHaveAttribute("autocomplete", "username");
+    expect(usernameInput).toHaveAccessibleDescription(
+      "Se ficar em branco, criamos um a partir do seu nome."
     );
 
     fireEvent.change(screen.getByLabelText("Nome"), {
       target: { value: "Ana" },
     });
-    fireEvent.change(screen.getByLabelText("Nome de usuário"), {
-      target: { value: "Ana_S" },
-    });
+    fireEvent.change(usernameInput, { target: { value: "Ana_S" } });
     fireEvent.change(screen.getByLabelText("E-mail"), {
       target: { value: "ana@exemplo.com" },
     });
@@ -116,6 +116,27 @@ describe("AuthCard", () => {
 
     expect(await screen.findByText("Assistente")).toBeInTheDocument();
     expect(fakeApi.calls[0]?.body).toMatchObject({ username: "ana_s" });
+  });
+
+  it("cadastro com o nome de usuário em branco entra com o gerado", async () => {
+    renderAuth("signup");
+    fireEvent.change(await screen.findByLabelText("Nome"), {
+      target: { value: "Vitória Salles" },
+    });
+    fireEvent.change(screen.getByLabelText("E-mail"), {
+      target: { value: "vitoria@exemplo.com" },
+    });
+    fireEvent.change(screen.getByLabelText("Senha"), {
+      target: { value: "123456" },
+    });
+    fireEvent.change(screen.getByLabelText("Confirmar senha"), {
+      target: { value: "123456" },
+    });
+    fireEvent.click(screen.getByRole("button", { name: "Criar conta" }));
+
+    expect(await screen.findByText("Assistente")).toBeInTheDocument();
+    expect(fakeApi.calls[0]?.body).not.toHaveProperty("username");
+    expect(usePlayerStore.getState().username).toBe("vitoria_salles");
   });
 
   it("erro de entrada sai como toast, não dentro do formulário", async () => {

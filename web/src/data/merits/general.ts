@@ -714,7 +714,7 @@ export const GENERAL: readonly MeritTemplate[] = [
     category: PSICOLOGICOS,
     description:
       "Você tem uma obsessão por um personagem do Narrador: uma vez por sessão, ignore uma falha bestial ou um crítico confuso. Se essa pessoa morrer, você sofre 3 Máculas.",
-    name: "Fera Apaziguada",
+    name: "Besta Apaziguada",
     points: 1,
     source: "Blood Stained Love",
     tipo: "vantagem",

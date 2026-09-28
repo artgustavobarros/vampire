@@ -98,18 +98,27 @@ export function AuthCard({ mode }: { mode: "login" | "signup" }) {
               placeholder="Nome completo"
               value={name}
             />
-            <FieldLabel htmlFor="auth-username">Nome de usuário</FieldLabel>
+            <FieldLabel htmlFor="auth-username">
+              Nome de usuário (opcional)
+            </FieldLabel>
             <Input
+              aria-describedby="auth-username-hint"
               autoCapitalize="none"
               autoComplete="username"
               autoCorrect="off"
-              className="mb-4"
+              className="mb-1"
               id="auth-username"
               onChange={edit(setUsername)}
               placeholder="vitoria_salles"
               spellCheck={false}
               value={username}
             />
+            <p
+              className="mt-0 mb-4 text-base text-ink-soft"
+              id="auth-username-hint"
+            >
+              Se ficar em branco, criamos um a partir do seu nome.
+            </p>
             <FieldLabel htmlFor="auth-email">E-mail</FieldLabel>
             <Input
               autoComplete="email"

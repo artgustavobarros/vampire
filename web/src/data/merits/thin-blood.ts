@@ -145,7 +145,7 @@ export const THIN_BLOOD_FLAWS: readonly MeritTemplate[] = [
     ...defeito,
     aliases: ["Bestial Temper"],
     description:
-      "Sua Fera é tão forte quanto a de um vampiro completo: você testa frenesi pelas regras normais.",
+      "Sua Besta é tão forte quanto a de um vampiro completo: você testa frenesi pelas regras normais.",
     name: "Temperamento Bestial",
     source: "Corebook",
   },
@@ -249,7 +249,7 @@ export const THIN_BLOOD_FLAWS: readonly MeritTemplate[] = [
     ...defeito,
     aliases: ["Unending Hunger"],
     description:
-      "Sua Fera nunca se satisfaz com pouco: ao se alimentar numa cena, você sacia 1 de Fome a menos. Vale uma vez por cena.",
+      "Sua Besta nunca se satisfaz com pouco: ao se alimentar numa cena, você sacia 1 de Fome a menos. Vale uma vez por cena.",
     name: "Fome Infinita",
     source: "Players Guide",
   },
