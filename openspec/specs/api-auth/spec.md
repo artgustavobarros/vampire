@@ -94,15 +94,23 @@ Cada usuário SHALL ter um papel (`role`), `player` ou `dm`, guardado na tabela 
 - **THEN** a conta é criada com `role: "player"`
 
 ### Requirement: Conta do Mestre
-As migrações do banco SHALL garantir a conta `admin@admin.com` com a senha `!@#ASD123asd` (guardada só como hash bcrypt) e `role: "dm"`. Se já existir conta com esse e-mail, a migração MUST promovê-la a `dm` e redefinir a senha, sem criar outra conta.
+A API SHALL garantir, ao subir, a conta do Mestre a partir das variáveis `ADMIN_EMAIL` e `ADMIN_PASSWORD`: se não existe conta com esse e-mail, cria uma com nome `Mestre`, a senha guardada só como hash bcrypt e `role: "dm"`; se já existe, MUST promovê-la a `dm` e redefinir a senha, sem criar outra conta. Sem as duas variáveis, nenhuma conta é criada, e definir só uma delas MUST impedir a API de subir. As migrações MUST NOT criar contas nem conter senhas. Em desenvolvimento (`api/.env.example` e `docker-compose.yml`) os valores padrão são `admin@admin.com` e `!@#ASD123asd`.
 
 #### Scenario: Entrar como Mestre
-- **WHEN** após as migrações o cliente chama `POST /api/auth/login` com `admin@admin.com` e `!@#ASD123asd`
+- **WHEN** a API sobe com `ADMIN_EMAIL` e `ADMIN_PASSWORD` e o cliente chama `POST /api/auth/login` com esses valores
 - **THEN** a API responde `200` com o token e `user.role` igual a `"dm"`
 
 #### Scenario: Conta já existente
-- **WHEN** antes da migração já existia um jogador `admin@admin.com`
-- **THEN** depois da migração há uma única conta com esse e-mail, com `role: "dm"` e a senha do Mestre
+- **WHEN** antes da subida já existia um jogador com o e-mail de `ADMIN_EMAIL`
+- **THEN** depois da subida há uma única conta com esse e-mail, com `role: "dm"` e a senha de `ADMIN_PASSWORD`
+
+#### Scenario: Trocar a senha do Mestre
+- **WHEN** `ADMIN_PASSWORD` muda e a API sobe de novo
+- **THEN** o Mestre entra só com a senha nova
+
+#### Scenario: Banco novo sem as variáveis
+- **WHEN** as migrações rodam num banco vazio e a API sobe sem `ADMIN_EMAIL` e `ADMIN_PASSWORD`
+- **THEN** não existe nenhuma conta com `role: "dm"`
 
 ### Requirement: Papel no usuário público
 O usuário devolvido por `POST /api/auth/signup`, `POST /api/auth/login` e `GET /api/auth/me` SHALL ser `{ id, email, name, role }`, sem o hash da senha.
