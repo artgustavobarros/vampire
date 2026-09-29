@@ -57,7 +57,7 @@ export const CAITIFF: readonly MeritTemplate[] = [
     ...caitiff,
     aliases: ["Debt Peon"],
     description:
-      "Você deve favores a um vampiro de alto Status, que ganha +2 dados em combate social contra você diante de outros Membros. Recusar leva a Evitado e a uma Caçada de Sangue.",
+      "Você deve favores a um vampiro de alto Status, que ganha +2 dados em combate social contra você diante de outros Membros. Recusar leva a Segregado e a uma Caçada de Sangue.",
     name: "Peão de Dívida",
     points: 2,
     tipo: "defeito",

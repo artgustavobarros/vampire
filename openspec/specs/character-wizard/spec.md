@@ -236,18 +236,18 @@ Um Predador pode proibir clãs e limitar a Potência de Sangue: Fazendeiro e Sac
 
 #### Scenario: Méritos do Tocaia
 - **WHEN** o usuário escolhe "Tocaia"
-- **THEN** os ajustes são "Refúgio •", uma escolha de uma opção entre "Lacaios", "Rebanho" e "Refúgio", e uma escolha de uma opção entre "Refúgio Assustador" e "Refúgio Assombrado"
+- **THEN** os ajustes são "Refúgio •", uma escolha de uma opção entre "Lacaios", "Rebanho" e "Refúgio", e uma escolha de uma opção entre "Assustador" e "Assombrado"
 
 #### Scenario: Escolha de uma opção
 - **WHEN** o usuário escolhe "Sanguessuga"
-- **THEN** o ajuste "Defeito Segredo Obscuro •• (diablerista) ou Evitado ••" mostra os botões "Segredo Obscuro (diablerista)" e "Evitado", e clicar em "Evitado" deixa só ele selecionado
+- **THEN** o ajuste "Defeito Segredo Obscuro •• (diablerista) ou Segregado ••" mostra os botões "Segredo Obscuro (diablerista)" e "Segregado", e clicar em "Segregado" deixa só ele selecionado
 
 #### Scenario: Dividir pontos
 - **WHEN** o usuário escolhe "Osíris" e marca 2 pontos em Rebanho no ajuste "3 pontos entre Rebanho e Fama"
 - **THEN** Fama aceita no máximo 1 ponto
 
 #### Scenario: Trocar de Predador limpa escolhas
-- **WHEN** "Sanguessuga" tinha "Evitado" escolhido e um poder do Predador escolhido, e o usuário troca para "Osíris"
+- **WHEN** "Sanguessuga" tinha "Segregado" escolhido e um poder do Predador escolhido, e o usuário troca para "Osíris"
 - **THEN** `predEscolhas` fica vazio, `predEspecNome` e `predPoder` ficam vazios e nenhum seletor do Osíris vem marcado
 
 #### Scenario: Sangue-ralo sem Predador
@@ -281,7 +281,7 @@ Para Sangue Fraco:
 - a regra MUST acrescentar "Sangues-ralos devem adquirir entre uma e três Qualidades de Sangue-Ralo e a mesma quantidade de Defeitos de Sangue-Ralo.";
 - o status MUST cobrar de 1 a 3 Qualidades SR e o mesmo número de Defeitos SR.
 
-Opções por clã e Disciplinas (ver `v5-merits-catalog`, `meritOptions`): o grupo "Caitiff" MUST aparecer só para Caitiff; itens com `excludeClans` MUST NOT aparecer para esses clãs ("Fazendeiro" some para Ventrue); as Falhas de Disciplina Enraizada MUST aparecer só para as Disciplinas escolhidas no Passo 5, lidas como contexto; o grupo "Carniçais" MUST NOT aparecer.
+Opções por clã e Disciplinas (ver `v5-merits-catalog`, `meritOptions`): o grupo "Caitiff" MUST aparecer só para Caitiff; itens com `excludeClans` MUST NOT aparecer para esses clãs ("Fazendeiro" some para Ventrue); as Falhas de Disciplina Enraizada MUST aparecer só para as Disciplinas escolhidas no Passo 5, lidas como contexto.
 
 Pré-requisitos no status: o status MUST acrescentar às pendências, na ordem das linhas, "<Item> exige <Antecedente> <pontinhos>" quando o Antecedente de `requires.merit` não está na lista ou tem menos pontos que o mínimo; "<Clã> não pode ter <Item>" quando a linha é de um item que o clã atual não pode ter (`clans`/`excludeClans`); e "<Item> exige a Disciplina <Disciplina>" quando a Disciplina de `requires.discipline` não está no Passo 5. Itens de custo 0 MUST NOT entrar nas somas.
 
@@ -526,8 +526,8 @@ A aplicação MUST ficar registrada na ficha em `predBonus`, que guarda só a Po
 - **THEN** `meritos` ganha "Rebanho" (vantagem, 2), "Fama" (vantagem, 1) e "Inimigo" (defeito, 2) com `origem: "predador"`, e nenhuma linha "Defeito Mítico"
 
 #### Scenario: Méritos repetidos somam
-- **WHEN** o Predador é "Tocaia" com "Refúgio" na escolha de vantagem e "Refúgio Assustador" na escolha de defeito, e o usuário conclui
-- **THEN** `meritos` ganha uma só linha "Refúgio" (vantagem, 2) e "Refúgio Assustador" (defeito, 1), com `origem: "predador"`
+- **WHEN** o Predador é "Tocaia" com "Refúgio" na escolha de vantagem e "Assustador" na escolha de defeito, e o usuário conclui
+- **THEN** `meritos` ganha uma só linha "Refúgio" (vantagem, 2) e "Assustador" (defeito, 1), com `origem: "predador"`
 
 #### Scenario: Sangue-ralo sem Predador aplicado
 - **WHEN** o clã é "Sangue Fraco" e o usuário conclui

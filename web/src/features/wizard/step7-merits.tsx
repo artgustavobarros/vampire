@@ -128,9 +128,16 @@ export function Step7Merits() {
                 {nome}
               </InfoTrigger>
               <div className={cn(ACTION, "mt-1 text-ink-soft normal-case")}>
-                {canon
-                  ? `${meritGroupLabel(canon.category)} · ${meritRangeLabel(allowed)}`
-                  : "Fora do catálogo"}
+                {canon ? (
+                  <>
+                    {meritGroupLabel(canon.category)} ·{" "}
+                    <span className="text-base tracking-normal">
+                      {meritRangeLabel(allowed)}
+                    </span>
+                  </>
+                ) : (
+                  "Fora do catálogo"
+                )}
               </div>
             </div>
             {allowed.every((v) => v === 0) ? null : (

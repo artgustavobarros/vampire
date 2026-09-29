@@ -126,8 +126,8 @@ export const PREDATORS: readonly Predator[] = [
     adjustments: [
       {
         kind: "merito",
-        label: "Vantagem Estômago de Ferro •••",
-        nome: "Estômago de Ferro",
+        label: "Vantagem Esôfago de Ferro •••",
+        nome: "Esôfago de Ferro",
         pontos: 3,
         tipo: "vantagem",
       },
@@ -152,11 +152,11 @@ export const PREDATORS: readonly Predator[] = [
       {
         id: "segredo-evitado",
         kind: "escolha",
-        label: "Defeito Segredo Obscuro •• (diablerista) ou Evitado ••",
+        label: "Defeito Segredo Obscuro •• (diablerista) ou Segregado ••",
         modo: "uma",
         opcoes: [
           { detalhe: "diablerista", nome: "Segredo Obscuro" },
-          { nome: "Evitado" },
+          { nome: "Segregado" },
         ],
         pontos: 2,
         tipo: "defeito",
@@ -164,8 +164,8 @@ export const PREDATORS: readonly Predator[] = [
       {
         detalhe: "mortais",
         kind: "merito",
-        label: "Defeito Presa Excluída •• (mortais)",
-        nome: "Presa Excluída",
+        label: "Defeito Exclusão de Presa •• (mortais)",
+        nome: "Exclusão de Presa",
         pontos: 2,
         tipo: "defeito",
       },
@@ -212,8 +212,8 @@ export const PREDATORS: readonly Predator[] = [
       {
         detalhe: "sem consentimento",
         kind: "merito",
-        label: "Defeito Presa Excluída • (sem consentimento)",
-        nome: "Presa Excluída",
+        label: "Defeito Exclusão de Presa • (sem consentimento)",
+        nome: "Exclusão de Presa",
         pontos: 1,
         tipo: "defeito",
       },
@@ -308,11 +308,11 @@ export const PREDATORS: readonly Predator[] = [
         id: "rejeitado-presa",
         kind: "escolha",
         label:
-          "Defeito Rejeitado • (fora da subcultura) ou Presa Excluída • (outra subcultura)",
+          "Defeito Odiado • (fora da subcultura) ou Exclusão de Presa • (outra subcultura)",
         modo: "uma",
         opcoes: [
-          { detalhe: "fora da subcultura", nome: "Rejeitado" },
-          { detalhe: "outra subcultura", nome: "Presa Excluída" },
+          { detalhe: "fora da subcultura", nome: "Odiado" },
+          { detalhe: "outra subcultura", nome: "Exclusão de Presa" },
         ],
         pontos: 1,
         tipo: "defeito",
@@ -327,8 +327,8 @@ export const PREDATORS: readonly Predator[] = [
     adjustments: [
       {
         kind: "merito",
-        label: "Vantagem Estômago de Ferro •••",
-        nome: "Estômago de Ferro",
+        label: "Vantagem Esôfago de Ferro •••",
+        nome: "Esôfago de Ferro",
         pontos: 3,
         tipo: "vantagem",
       },
@@ -341,8 +341,8 @@ export const PREDATORS: readonly Predator[] = [
       },
       {
         kind: "merito",
-        label: "Defeito Predador Óbvio ••",
-        nome: "Predador Óbvio",
+        label: "Defeito Predador Manifesto ••",
+        nome: "Predador Manifesto",
         pontos: 2,
         tipo: "defeito",
       },
@@ -370,8 +370,8 @@ export const PREDATORS: readonly Predator[] = [
       {
         detalhe: "mortais saudáveis",
         kind: "merito",
-        label: "Defeito Presa Excluída • (mortais saudáveis)",
-        nome: "Presa Excluída",
+        label: "Defeito Exclusão de Presa • (mortais saudáveis)",
+        nome: "Exclusão de Presa",
         pontos: 1,
         tipo: "defeito",
       },
@@ -442,12 +442,9 @@ export const PREDATORS: readonly Predator[] = [
       {
         id: "refugio-defeito",
         kind: "escolha",
-        label: "Defeito Refúgio Assustador • ou Refúgio Assombrado •",
+        label: "Defeito Assustador • ou Assombrado •",
         modo: "uma",
-        opcoes: [
-          { nome: "Refúgio Assustador" },
-          { nome: "Refúgio Assombrado" },
-        ],
+        opcoes: [{ nome: "Assustador" }, { nome: "Assombrado" }],
         pontos: 1,
         tipo: "defeito",
       },

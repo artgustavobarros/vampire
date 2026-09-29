@@ -4,9 +4,7 @@ import { sameDiscipline } from "#/data/disciplines";
 import type { MeritKind } from "#/lib/types";
 import { BACKGROUND_EXTRAS, BACKGROUNDS } from "./backgrounds";
 import { CAITIFF } from "./caitiff";
-import { CULTS } from "./cults";
 import { GENERAL } from "./general";
-import { GHOULS } from "./ghouls";
 import { INGRAINED_FLAWS } from "./ingrained";
 import type { MeritTemplate } from "./model";
 import { THIN_BLOOD_FLAWS, THIN_BLOOD_MERITS } from "./thin-blood";
@@ -19,10 +17,8 @@ export const ALL_MERIT_TEMPLATES: readonly MeritTemplate[] = [
   ...GENERAL,
   ...INGRAINED_FLAWS,
   ...CAITIFF,
-  ...CULTS,
   ...THIN_BLOOD_MERITS,
   ...THIN_BLOOD_FLAWS,
-  ...GHOULS,
 ];
 
 const NORMALIZE = (s: string) =>
@@ -117,13 +113,11 @@ export function meritDisciplineMet(
   return (disciplinas ?? []).some((d) => sameDiscipline(d, req.discipline));
 }
 
-/** Opções do Passo 7: sem itens ocultos, só os permitidos ao clã e às Disciplinas. */
+/** Opções do Passo 7: só os permitidos ao clã e às Disciplinas. */
 export function meritOptions(ctx: MeritContext): readonly MeritTemplate[] {
   return ALL_MERIT_TEMPLATES.filter(
     (m) =>
-      !m.hidden &&
-      meritClanAllowed(m, ctx.cla) &&
-      meritDisciplineMet(m, ctx.disciplinas)
+      meritClanAllowed(m, ctx.cla) && meritDisciplineMet(m, ctx.disciplinas)
   );
 }
 

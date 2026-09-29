@@ -69,12 +69,6 @@ describe("catálogo de méritos no Passo 7", () => {
     expect(opts).not.toContain("Indomado");
   });
 
-  it("carniçais fora do assistente", () => {
-    const opts = meritOptions({ cla: "Brujah" });
-    expect(opts.some((m) => m.category === "Carniçais")).toBe(false);
-    expect(findMerit("Empatia de Sangue")?.category).toBe("Carniçais");
-  });
-
   it("filtra por aba", () => {
     const opts = meritOptions({ cla: "Sangue-ralo" });
     const flaws = filterMeritOptions(opts, { query: "", tab: "defeitos" });
@@ -98,7 +92,7 @@ describe("catálogo de méritos no Passo 7", () => {
       query: "iron gullet",
       tab: "todos",
     });
-    expect(hits[0]?.name).toBe("Estômago de Ferro");
+    expect(hits[0]?.name).toBe("Esôfago de Ferro");
   });
 
   it("agrupa na ordem do catálogo, sub-itens depois dos Antecedentes", () => {
@@ -112,7 +106,10 @@ describe("catálogo de méritos no Passo 7", () => {
 describe("findMerit", () => {
   it("resolve alias e nome antigo", () => {
     expect(findMerit("Vegano")?.name).toBe("Fazendeiro");
-    expect(findMerit("Assombrado")?.name).toBe("Refúgio Assombrado");
+    expect(findMerit("Refúgio Assombrado")?.name).toBe("Assombrado");
+    expect(findMerit("Creepy")?.name).toBe("Assustador");
+    expect(findMerit("Estômago de Ferro")?.name).toBe("Esôfago de Ferro");
+    expect(findMerit("Evitado")?.name).toBe("Segregado");
     expect(findMerit("Conta Sobrenatural")?.name).toBe("Sinal Sobrenatural");
     expect(findMerit("Belíssimo")?.name).toBe("Bonito");
     expect(findMerit("farmer")?.name).toBe("Fazendeiro");
@@ -120,7 +117,9 @@ describe("findMerit", () => {
 
   it("detalhe entre parênteses", () => {
     expect(findMerit("Recursos (herança)")?.name).toBe("Recursos");
-    expect(findMerit("Presa Excluída (mortais)")?.name).toBe("Presa Excluída");
+    expect(findMerit("Exclusão de Presa (mortais)")?.name).toBe(
+      "Exclusão de Presa"
+    );
   });
 
   it("não casa por prefixo", () => {
@@ -178,36 +177,36 @@ describe("conteúdo do catálogo", () => {
   it("custos do V5", () => {
     expect(findMerit("Feio")?.points).toBe(1);
     expect(findMerit("Repulsivo")?.points).toBe(2);
-    expect(findMerit("Evitado")?.points).toBe(2);
+    expect(findMerit("Segregado")?.points).toBe(2);
     expect(
       meritPointOptions(findMerit("Aliados") ?? ALL_MERIT_TEMPLATES[0])
-    ).toEqual([2, 3, 4, 5, 6]);
+    ).toEqual([1, 2, 3, 4]);
     expect(findMerit("Zerado")?.requires).toEqual({ merit: "Máscara", min: 2 });
+  });
+
+  it("defeitos de Fama", () => {
+    const fama = ALL_MERIT_TEMPLATES.filter(
+      (m) => m.parent === "Fama" && m.tipo === "defeito"
+    ).map((m) => m.name);
+    expect(fama).toEqual(["Segredo Obscuro", "Infâmia"]);
+    expect(findMerit("Segredo Obscuro")?.points).toBe(1);
+    expect(findMerit("Infamy")?.points).toBe(2);
   });
 
   it("contagem por categoria", () => {
     const count = (category: string) =>
       ALL_MERIT_TEMPLATES.filter((m) => m.category === category).length;
     expect(count("Antecedente")).toBe(11);
-    expect(count("Linguística")).toBe(2);
+    expect(count("Linguística")).toBe(1);
     expect(count("Aparência")).toBe(13);
     expect(count("Uso de Substâncias")).toBe(3);
-    expect(count("Arcaicos")).toBe(5);
-    expect(count("Laço de Sangue")).toBe(8);
-    expect(count("Sobrenatural")).toBe(1);
-    expect(count("Alimentação")).toBe(13);
-    expect(count("Míticos")).toBe(18);
+    expect(count("Arcaicos")).toBe(2);
+    expect(count("Laço de Sangue")).toBe(5);
+    expect(count("Alimentação")).toBe(7);
+    expect(count("Míticos")).toBe(9);
     expect(count("Falhas de Disciplina Enraizada")).toBe(11);
-    expect(count("Psicológicos")).toBe(9);
-    expect(count("Contágio")).toBe(2);
-    expect(count("Laços de Linhagem")).toBe(3);
-    expect(count("Diablerie")).toBe(2);
-    expect(count("Outros")).toBe(9);
+    expect(count("Outros")).toBe(8);
     expect(count("Caitiff")).toBe(12);
-    expect(count("Carniçais")).toBe(5);
-    expect(count("Antecedente · Refúgio")).toBe(27);
-    expect(
-      ALL_MERIT_TEMPLATES.filter((m) => m.category.startsWith("Cult")).length
-    ).toBe(24);
+    expect(count("Antecedente · Refúgio")).toBe(19);
   });
 });
