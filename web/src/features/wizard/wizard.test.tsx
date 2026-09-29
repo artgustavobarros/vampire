@@ -93,7 +93,7 @@ const RECURSOS = /^Recursos/;
 const BONITO = /^Bonito/;
 const MASCARA = /^Máscara/;
 const BIBLIOTECA = /^Biblioteca/;
-const INQUEBRANTAVEL = /^Inquebrantável/;
+const A_PROVA_DE_LACO = /^À Prova de Laço/;
 const INSTINTO = /^Instinto Assassino/;
 const ALIADOS = /^Aliados/;
 const SANGUE_FAVORECIDO = /^Sangue Favorecido/;
@@ -732,18 +732,18 @@ describe("regras do clã nos passos 5 a 7", () => {
     it("busca pelo nome em inglês", async () => {
       renderWizard(empty(), "/criar?passo=7");
       type(await search(), "unbondable");
-      expect(option(INQUEBRANTAVEL)).toBeInTheDocument();
+      expect(option(A_PROVA_DE_LACO)).toBeInTheDocument();
     });
 
-    it("Aliados até 6", async () => {
+    it("Aliados até 4", async () => {
       renderWizard(empty(), "/criar?passo=7");
       type(await search(), "aliados");
       click(option(ALIADOS));
       expect(
-        screen.getByRole("button", { name: "Pontos de Aliados 2" })
+        screen.getByRole("button", { name: "Pontos de Aliados 1" })
       ).toHaveAttribute("aria-pressed", "true");
       expect(
-        screen.getByRole("button", { name: "Pontos de Aliados 6" })
+        screen.getByRole("button", { name: "Pontos de Aliados 4" })
       ).toBeEnabled();
     });
   });
@@ -976,8 +976,8 @@ describe("Predador aplicado na ficha", () => {
   it("escolha de uma opção seleciona só uma", async () => {
     renderWizard(completeSheet(), "/criar?passo=6");
     click(await screen.findByRole("button", { name: SANGUESSUGA }));
-    click("Evitado");
-    expect(pressed("Evitado")).toBe("true");
+    click("Segregado");
+    expect(pressed("Segregado")).toBe("true");
     expect(pressed("Segredo Obscuro (diablerista)")).toBe("false");
   });
 

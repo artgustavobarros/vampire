@@ -13,8 +13,6 @@ export interface MeritTemplate {
   clans?: readonly string[];
   description: string;
   excludeClans?: readonly string[];
-  /** fora do Passo 7 (ex.: méritos de carniçal) */
-  hidden?: boolean;
   /** um texto por valor permitido de `points` */
   levels?: readonly string[];
   name: string;

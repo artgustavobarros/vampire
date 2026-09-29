@@ -167,20 +167,14 @@ describe("buildInfo", () => {
     expect(info.nota).toContain("Exige Máscara ••");
   });
 
-  it("níveis de Aliados vão de 2 a 6", () => {
+  it("níveis de Aliados vão de 1 a 4", () => {
     const info = buildInfo({
       key: "Aliados",
       kind: "merit",
       pontos: 4,
       tipo: "vantagem",
     });
-    expect(info.niveis.map((l) => l.n)).toEqual([
-      "••",
-      "•••",
-      "••••",
-      "•••••",
-      "••••••",
-    ]);
+    expect(info.niveis.map((l) => l.n)).toEqual(["•", "••", "•••", "••••"]);
     expect(current(info.niveis)).toEqual(["••••"]);
   });
 

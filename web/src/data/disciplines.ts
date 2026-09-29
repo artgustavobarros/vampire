@@ -134,7 +134,7 @@ const ALCHEMY_POWERS: readonly PowerTemplate[] = [
     name: "Desfracionar",
     rouse: false,
     system:
-      "O alquimista purifica bolsas de sangue frio, permitindo que vampiros sem o mérito Estômago de Ferro consigam saciar Fome com sangue hospitalar normalmente.",
+      "O alquimista purifica bolsas de sangue frio, permitindo que vampiros sem o mérito Esôfago de Ferro consigam saciar Fome com sangue hospitalar normalmente.",
   },
   {
     cost: "Uma checagem de sangue",

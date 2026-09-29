@@ -832,12 +832,12 @@ describe("Predador", () => {
       {
         id: "segredo-evitado",
         message:
-          "Escolha uma opção: Defeito Segredo Obscuro •• (diablerista) ou Evitado ••",
+          "Escolha uma opção: Defeito Segredo Obscuro •• (diablerista) ou Segregado ••",
       },
     ]);
     expect(
       predatorChoiceStatus(pred("Sanguessuga"), {
-        "segredo-evitado": { Evitado: 2 },
+        "segredo-evitado": { Segregado: 2 },
       })
     ).toEqual([]);
     const osiris = pred("Osíris");
@@ -886,12 +886,12 @@ describe("Predador", () => {
     expect(
       predatorMerits(pred("Tocaia"), {
         "lacaios-rebanho-refugio": { Refúgio: 1 },
-        "refugio-defeito": { "Refúgio Assustador": 1 },
+        "refugio-defeito": { Assustador: 1 },
       })
     ).toEqual([
       { nome: "Refúgio", origem: "predador", pontos: 2, tipo: "vantagem" },
       {
-        nome: "Refúgio Assustador",
+        nome: "Assustador",
         origem: "predador",
         pontos: 1,
         tipo: "defeito",
@@ -1032,14 +1032,14 @@ describe("Predador", () => {
       brujah({
         predador: "Sanguessuga",
         predDisc: "Celeridade",
-        predEscolhas: { "segredo-evitado": { Evitado: 2 } },
+        predEscolhas: { "segredo-evitado": { Segregado: 2 } },
       })
     );
     expect(bloodPotency(s)).toBe(2);
     expect(potencyNote(s)).toBe(
       "Geração 12ª — Potência de Sangue 2. (+1 do Predador)"
     );
-    expect(s.meritos?.map((m) => m.nome)).toContain("Evitado");
+    expect(s.meritos?.map((m) => m.nome)).toContain("Segregado");
   });
 
   it("não aplica duas vezes", () => {

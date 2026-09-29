@@ -19,16 +19,16 @@ O catálogo em `web/src/data/merits/` SHALL fornecer as 14 Qualidades de Sangue-
 - **THEN** o texto não contém "Méritos de", "Sangue Abominável" nem frases da regra de outro item
 
 ### Requirement: Catálogo de Vantagens, Defeitos e Antecedentes Gerais
-O catálogo SHALL conter os itens de [Advantages and Flaws](https://vtm.paradoxwikis.com/Advantages_and_Flaws), exceto os de Forbidden Religions, Gehenna War, Blood Stained Love, Live from the Succubus Club e In Memoriam ("Segredo Obscuro" é do Corebook), agrupados por categoria: Linguística, Aparência, Uso de Substâncias, Arcaicos, Laço de Sangue, Alimentação, Míticos, Falhas de Disciplina Enraizada, Outros, Caitiff, Sangue-ralo, Carniçais, Cultos (gerais e por culto) e os 11 Antecedentes (`BACKGROUNDS`: Aliados, Contatos, Fama, Influência, Mawla, Rebanho, Recursos, Refúgio, Lacaios, Máscara, Status) com suas sub-vantagens e sub-defeitos. Os custos MUST seguir o V5:
+O catálogo SHALL conter os itens de [Advantages and Flaws](https://vtm.paradoxwikis.com/Advantages_and_Flaws), exceto os de Children of the Blood, Cults of the Blood Gods, Forbidden Religions, Gehenna War, Blood Stained Love, Live from the Succubus Club e In Memoriam ("Segredo Obscuro" • e "Infâmia" •• são do Corebook; a Aparência mantém Semblante do Matusalém, Rosto Impassível, Virado na Noite e Da Cena, desses livros), agrupados por categoria: Linguística, Aparência, Uso de Substâncias, Arcaicos, Laço de Sangue, Alimentação, Míticos, Falhas de Disciplina Enraizada, Outros, Caitiff, Sangue-ralo e os 11 Antecedentes (`BACKGROUNDS`: Aliados, Contatos, Fama, Influência, Mawla, Rebanho, Recursos, Refúgio, Lacaios, Máscara, Status) com suas sub-vantagens e sub-defeitos. Os custos MUST seguir o V5:
 - Aparência: Bonito ••, Deslumbrante ••••, Feio •, Repulsivo ••;
 - Antecedentes: Aliados de 2 a 6, Contatos de 1 a 3, Refúgio de 1 a 3, Máscara de 1 a 2, Lacaios de 1 a 3, os demais de 1 a 5, cada um com um texto de nível por valor permitido;
 - custo "• +" sem teto no livro vira de 1 a 5; "•• ou ••••" aceita só 2 e 4;
 - Falhas de Disciplina Enraizada têm custo 0.
 
-"Monstruoso", "Perseguido" e a Vantagem "Linguística" MUST NOT existir no catálogo; a categoria Linguística tem só o Defeito "Analfabeto" ••. "Vivendo no Passado" (Living in the Past) é do Corebook. "Evitado" (Shunned) MUST custar ••. O Defeito de alimentação Farmer MUST se chamar "Fazendeiro", com alias "Vegano".
+"Monstruoso", "Perseguido" e a Vantagem "Linguística" MUST NOT existir no catálogo; a categoria Linguística tem só o Defeito "Analfabeto" ••. "Vivendo no Passado" (Living in the Past) é do Corebook. "Segregado" (Shunned) MUST custar ••. O Defeito de alimentação Farmer MUST se chamar "Fazendeiro", com alias "Vegano".
 
 #### Scenario: Consulta de mérito com custo fixo
-- **WHEN** a aplicação busca pelo mérito "Estômago de Ferro" em `findMerit("Estômago de Ferro")`
+- **WHEN** a aplicação busca pelo mérito "Esôfago de Ferro" em `findMerit("Esôfago de Ferro")`
 - **THEN** o mérito é retornado com tipo "vantagem", custo fixo de 3 pontos e descrição das regras de alimentação
 
 #### Scenario: Consulta de antecedente escalonado
@@ -52,7 +52,7 @@ O catálogo SHALL conter os itens de [Advantages and Flaws](https://vtm.paradoxw
 - **THEN** as contagens batem com o Inventário do `design.md` desta mudança (ex.: Míticos 18, Caitiff 12, Falhas de Disciplina Enraizada 11)
 
 ### Requirement: Sugestões e preenchimento de pontos no Assistente
-O Passo 7 do assistente de criação (`web/src/features/wizard/step7-merits.tsx`) SHALL oferecer as opções do catálogo num combobox de busca (ver `character-wizard`, "Passo 7 — Vantagens e defeitos"). O catálogo MUST expor, para cada item, os valores de pontos permitidos (`[points]` para custo fixo, a lista de `points` para faixa) e o rótulo do grupo da categoria ("Antecedente" → "Antecedentes"; sub-itens de Antecedente como "Antecedente · <Antecedente>"; demais categorias como estão). `meritOptions({ cla, disciplinas })` MUST devolver os itens sem `hidden`, cujo `clans` (quando existe) inclui o clã, cujo `excludeClans` não inclui o clã e cujo `requires.discipline` (quando existe) está entre as Disciplinas informadas. Itens com `requires.merit` MUST aparecer mesmo sem o Antecedente. Ao escolher um item, os pontos MUST ser preenchidos com o menor valor permitido, e o `DotRating` da linha MUST aceitar só os valores permitidos.
+O Passo 7 do assistente de criação (`web/src/features/wizard/step7-merits.tsx`) SHALL oferecer as opções do catálogo num combobox de busca (ver `character-wizard`, "Passo 7 — Vantagens e defeitos"). O catálogo MUST expor, para cada item, os valores de pontos permitidos (`[points]` para custo fixo, a lista de `points` para faixa) e o rótulo do grupo da categoria ("Antecedente" → "Antecedentes"; sub-itens de Antecedente como "Antecedente · <Antecedente>"; demais categorias como estão). `meritOptions({ cla, disciplinas })` MUST devolver os itens cujo `clans` (quando existe) inclui o clã, cujo `excludeClans` não inclui o clã e cujo `requires.discipline` (quando existe) está entre as Disciplinas informadas. Itens com `requires.merit` MUST aparecer mesmo sem o Antecedente. Ao escolher um item, os pontos MUST ser preenchidos com o menor valor permitido, e o `DotRating` da linha MUST aceitar só os valores permitidos.
 
 #### Scenario: Qualidades SR para Sangue Fraco
 - **WHEN** o clã é "Sangue Fraco" e o usuário ativa a aba "Vantagens" do combobox
@@ -69,10 +69,6 @@ O Passo 7 do assistente de criação (`web/src/features/wizard/step7-merits.tsx`
 #### Scenario: Falha Enraizada exige a Disciplina
 - **WHEN** `meritOptions` é chamado com as Disciplinas "Potência" e "Presença"
 - **THEN** "Instinto Assassino" e "Egomaníaco" aparecem e "Indomado" (Animalismo) não aparece
-
-#### Scenario: Carniçais fora do assistente
-- **WHEN** `meritOptions` é chamado com qualquer clã
-- **THEN** nenhum item do grupo "Carniçais" aparece, mas `findMerit("Empatia de Sangue")` encontra o item
 
 #### Scenario: Autopreenchimento de pontuação de mérito fixo
 - **WHEN** o usuário escolhe "Bonito" no combobox
@@ -106,7 +102,7 @@ Cada item SHALL ter `name`, `tipo`, `points`, `category`, `source` (livro de ori
 
 #### Scenario: Nome em inglês
 - **WHEN** o usuário digita "iron gullet" no combobox
-- **THEN** "Estômago de Ferro" aparece entre as primeiras opções
+- **THEN** "Esôfago de Ferro" aparece entre as primeiras opções
 
 #### Scenario: Detalhe entre parênteses
 - **WHEN** a aplicação chama `findMerit("Recursos (herança)")`

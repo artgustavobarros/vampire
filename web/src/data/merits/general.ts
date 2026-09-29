@@ -64,6 +64,16 @@ export const GENERAL: readonly MeritTemplate[] = [
     tipo: "defeito",
   },
   {
+    aliases: ["Semblance of the Methuselah"],
+    category: APARENCIA,
+    description:
+      "Você se parece com um Matusalém. +1 dado para impressionar quem reconhece a semelhança; com 2 pontos, vantagens extras ao lidar com esse Matusalém ou seus seguidores.",
+    name: "Semblante do Matusalém",
+    points: [1, 2],
+    source: "Forbidden Religions",
+    tipo: "vantagem",
+  },
+  {
     aliases: ["Stench"],
     category: APARENCIA,
     description:
@@ -104,6 +114,16 @@ export const GENERAL: readonly MeritTemplate[] = [
     tipo: "vantagem",
   },
   {
+    aliases: ["Unblinking Visage"],
+    category: APARENCIA,
+    description:
+      "Seu rosto não engana ninguém: trate a Humanidade como 2 menor (mínimo 0) ao usar o Rubor da Vida, comer, beber ou fazer sexo.",
+    name: "Rosto Impassível",
+    points: 2,
+    source: "Gehenna War",
+    tipo: "defeito",
+  },
+  {
     aliases: ["Remarkable Feature"],
     category: APARENCIA,
     description:
@@ -111,6 +131,26 @@ export const GENERAL: readonly MeritTemplate[] = [
     name: "Traço Marcante",
     points: 1,
     source: "Players Guide",
+    tipo: "vantagem",
+  },
+  {
+    aliases: ["Up All Night"],
+    category: APARENCIA,
+    description:
+      "Você passa por mortal com facilidade: trate a Humanidade como 1 maior (2 pontos) ou 2 maior (4 pontos), máximo 10, ao usar o Rubor da Vida, comer, beber ou fazer sexo.",
+    name: "Virado na Noite",
+    points: [2, 4],
+    source: "Blood Stained Love",
+    tipo: "vantagem",
+  },
+  {
+    aliases: ["Scene Kid"],
+    category: APARENCIA,
+    description:
+      "Você é da cena: +1 dado nas paradas Sociais com gente da subcultura escolhida.",
+    name: "Da Cena",
+    points: 1,
+    source: "Live from the Succubus Club",
     tipo: "vantagem",
   },
   // Uso de Substâncias
@@ -226,7 +266,7 @@ export const GENERAL: readonly MeritTemplate[] = [
     tipo: "vantagem",
   },
   {
-    aliases: ["Prey Exclusion"],
+    aliases: ["Prey Exclusion", "Presa Excluída"],
     category: ALIMENTACAO,
     description:
       "Você não se alimenta de um grupo específico (ex.: crianças, policiais). Fazer isso causa Máculas como violar um Princípio da Crônica.",
@@ -236,7 +276,7 @@ export const GENERAL: readonly MeritTemplate[] = [
     tipo: "defeito",
   },
   {
-    aliases: ["Iron Gullet"],
+    aliases: ["Iron Gullet", "Estômago de Ferro"],
     category: ALIMENTACAO,
     description:
       "Você consegue beber sangue rançoso, fracionado, de bolsa velha ou que outros vampiros não aguentam.",
@@ -286,16 +326,16 @@ export const GENERAL: readonly MeritTemplate[] = [
     source: "Corebook",
     tipo: "defeito",
   },
-  // {
-  //   aliases: ["Vein Tapper"],
-  //   category: ALIMENTACAO,
-  //   description:
-  //     "Você prefere vítimas que não sabem o que está acontecendo: drogadas, inconscientes ou distraídas, e as procura ativamente.",
-  //   name: "Sangria às Escondidas",
-  //   points: 1,
-  //   source: "Players Guide",
-  //   tipo: "defeito",
-  // },
+  {
+    aliases: ["Vein Tapper"],
+    category: ALIMENTACAO,
+    description:
+      "Você prefere vítimas que não sabem o que está acontecendo: drogadas, inconscientes ou distraídas, e as procura ativamente.",
+    name: "Sangria às Escondidas",
+    points: 1,
+    source: "Players Guide",
+    tipo: "defeito",
+  },
   // Míticos
   {
     aliases: ["Eat Food"],
@@ -337,16 +377,16 @@ export const GENERAL: readonly MeritTemplate[] = [
     source: "Corebook",
     tipo: "defeito",
   },
-  // {
-  //   aliases: ["Luck of the Devil"],
-  //   category: MITICOS,
-  //   description:
-  //     "Uma vez por sessão, um azar que cairia sobre você cai sobre alguém próximo.",
-  //   name: "Sorte do Diabo",
-  //   points: 4,
-  //   source: "Players Guide",
-  //   tipo: "vantagem",
-  // },
+  {
+    aliases: ["Luck of the Devil"],
+    category: MITICOS,
+    description:
+      "Uma vez por sessão, um azar que cairia sobre você cai sobre alguém próximo.",
+    name: "Sorte do Diabo",
+    points: 4,
+    source: "Players Guide",
+    tipo: "vantagem",
+  },
   {
     aliases: ["Stake Bait"],
     category: MITICOS,
@@ -356,125 +396,115 @@ export const GENERAL: readonly MeritTemplate[] = [
     source: "Corebook",
     tipo: "defeito",
   },
-  // {
-  //   aliases: ["Nuit Mode"],
-  //   category: MITICOS,
-  //   description:
-  //     "Seu corpo não volta ao estado da morte a cada noite: você mantém cortes de cabelo e modificações, e desfazê-las cura como Dano Agravado. Exige Potência de Sangue 1 ou menos.",
-  //   name: "Modo Nuit",
-  //   points: 2,
-  //   source: "Players Guide",
-  //   tipo: "vantagem",
-  // },
-  // {
-  //   aliases: ["Starving Decay"],
-  //   category: MITICOS,
-  //   description:
-  //     "Com Fome 3 ou mais, seu corpo murcha: −2 dados nos testes Físicos e nas interações Sociais com mortais, e risco à Máscara.",
-  //   name: "Decomposição Faminta",
-  //   points: 2,
-  //   source: "Players Guide",
-  //   tipo: "defeito",
-  // },
-  // {
-  //   aliases: ["Twice Cursed"],
-  //   category: MITICOS,
-  //   description:
-  //     "Você sofre a Perdição variante do seu clã além da normal. O Narrador pode vetar se as duas forem incompatíveis.",
-  //   name: "Duas Vezes Amaldiçoado",
-  //   points: 2,
-  //   source: "Players Guide",
-  //   tipo: "defeito",
-  // },
+  {
+    aliases: ["Nuit Mode"],
+    category: MITICOS,
+    description:
+      "Seu corpo não volta ao estado da morte a cada noite: você mantém cortes de cabelo e modificações, e desfazê-las cura como Dano Agravado. Exige Potência de Sangue 1 ou menos.",
+    name: "Modo Nuit",
+    points: 2,
+    source: "Players Guide",
+    tipo: "vantagem",
+  },
+  {
+    aliases: ["Starving Decay"],
+    category: MITICOS,
+    description:
+      "Com Fome 3 ou mais, seu corpo murcha: −2 dados nos testes Físicos e nas interações Sociais com mortais, e risco à Máscara.",
+    name: "Decomposição Faminta",
+    points: 2,
+    source: "Players Guide",
+    tipo: "defeito",
+  },
+  {
+    aliases: ["Twice Cursed"],
+    category: MITICOS,
+    description:
+      "Você sofre a Perdição variante do seu clã além da normal. O Narrador pode vetar se as duas forem incompatíveis.",
+    name: "Duas Vezes Amaldiçoado",
+    points: 2,
+    source: "Players Guide",
+    tipo: "defeito",
+  },
   // Outros
-  // {
-  //   aliases: ["Check the Trunk"],
-  //   category: OUTROS,
-  //   description:
-  //     "Você tem acesso fácil a um arsenal ou esconderijo: +2 dados nos testes de preparação para itens de até Recursos 2.",
-  //   name: "Confira o Porta-malas",
-  //   points: 1,
-  //   source: "Players Guide",
-  //   tipo: "vantagem",
-  // },
-  // {
-  //   aliases: ["Knowledge Hungry"],
-  //   category: OUTROS,
-  //   description:
-  //     "Escolha um assunto. Diante de um jeito de estudá-lo, teste Força de Vontade (Dificuldade 3) para resistir.",
-  //   name: "Sede de Saber",
-  //   points: 1,
-  //   source: "Players Guide",
-  //   tipo: "defeito",
-  // },
-  // {
-  //   aliases: ["Side Hustler"],
-  //   category: OUTROS,
-  //   description:
-  //     "Uma vez por sessão, consiga um item, informação ou acesso como se tivesse 2 pontos em Recursos, Contatos ou Influência.",
-  //   name: "Corre por Fora",
-  //   points: 2,
-  //   source: "Players Guide",
-  //   tipo: "vantagem",
-  // },
-  // {
-  //   aliases: ["Prestation Debts"],
-  //   category: OUTROS,
-  //   description:
-  //     "Você deve favores a outros Membros; os credores ganham +1 dado em combate social contra você.",
-  //   name: "Dívidas de Prestação",
-  //   points: 1,
-  //   source: "Players Guide",
-  //   tipo: "defeito",
-  // },
-  // {
-  //   aliases: ["Tempered Will"],
-  //   category: OUTROS,
-  //   description:
-  //     "Você sempre sabe quando Dominação ou Presença são usadas contra você e, uma vez por sessão, soma 2 dados para resistir. Exige 0 pontos em Dominação e Presença.",
-  //   name: "Vontade Temperada",
-  //   points: 3,
-  //   source: "Players Guide",
-  //   tipo: "vantagem",
-  // },
-  // {
-  //   aliases: ["Risk-Taker", "Risk Taker"],
-  //   category: OUTROS,
-  //   description:
-  //     "Diante de uma tentação arriscada que você nunca experimentou, −2 dados em todas as ações até participar dela ou a cena acabar.",
-  //   name: "Inconsequente",
-  //   points: 1,
-  //   source: "Players Guide",
-  //   tipo: "defeito",
-  // },
-  // {
-  //   aliases: ["Untouchable"],
-  //   category: OUTROS,
-  //   description:
-  //     "Uma vez por história, você escapa de toda punição oficial por um crime que normalmente levaria à sua destruição.",
-  //   name: "Intocável",
-  //   points: 5,
-  //   source: "Players Guide",
-  //   tipo: "vantagem",
-  // },
-  // {
-  //   aliases: ["Weak-Willed", "Weak Willed"],
-  //   category: OUTROS,
-  //   description:
-  //     "Você não pode usar resistência ativa contra tentativas de influenciá-lo, mesmo quando percebe.",
-  //   name: "Vontade Fraca",
-  //   points: 2,
-  //   source: "Players Guide",
-  //   tipo: "defeito",
-  // },
-  // {
-  //   aliases: ["Mystic of the Void"],
-  //   category: OUTROS,
-  //   description:
-  //     "Escolha um poder de Oblívio que você não tem: ele conta como conhecido para pré-requisitos de Rituais. Com 2 pontos, Hecata e Lasombra escolhem três poderes.",
-  //   name: "Místico do Vazio",
-  //   points: [1, 2],
-  //   source: "Tattered Facade",
-  //   tipo: "vantagem",
-  // },
+  {
+    aliases: ["Check the Trunk"],
+    category: OUTROS,
+    description:
+      "Você tem acesso fácil a um arsenal ou esconderijo: +2 dados nos testes de preparação para itens de até Recursos 2.",
+    name: "Confira o Porta-malas",
+    points: 1,
+    source: "Players Guide",
+    tipo: "vantagem",
+  },
+  {
+    aliases: ["Knowledge Hungry"],
+    category: OUTROS,
+    description:
+      "Escolha um assunto. Diante de um jeito de estudá-lo, teste Força de Vontade (Dificuldade 3) para resistir.",
+    name: "Sede de Saber",
+    points: 1,
+    source: "Players Guide",
+    tipo: "defeito",
+  },
+  {
+    aliases: ["Side Hustler"],
+    category: OUTROS,
+    description:
+      "Uma vez por sessão, consiga um item, informação ou acesso como se tivesse 2 pontos em Recursos, Contatos ou Influência.",
+    name: "Corre por Fora",
+    points: 2,
+    source: "Players Guide",
+    tipo: "vantagem",
+  },
+  {
+    aliases: ["Prestation Debts"],
+    category: OUTROS,
+    description:
+      "Você deve favores a outros Membros; os credores ganham +1 dado em combate social contra você.",
+    name: "Dívidas de Prestação",
+    points: 1,
+    source: "Players Guide",
+    tipo: "defeito",
+  },
+  {
+    aliases: ["Tempered Will"],
+    category: OUTROS,
+    description:
+      "Você sempre sabe quando Dominação ou Presença são usadas contra você e, uma vez por sessão, soma 2 dados para resistir. Exige 0 pontos em Dominação e Presença.",
+    name: "Vontade Temperada",
+    points: 3,
+    source: "Players Guide",
+    tipo: "vantagem",
+  },
+  {
+    aliases: ["Risk-Taker", "Risk Taker"],
+    category: OUTROS,
+    description:
+      "Diante de uma tentação arriscada que você nunca experimentou, −2 dados em todas as ações até participar dela ou a cena acabar.",
+    name: "Inconsequente",
+    points: 1,
+    source: "Players Guide",
+    tipo: "defeito",
+  },
+  {
+    aliases: ["Untouchable"],
+    category: OUTROS,
+    description:
+      "Uma vez por história, você escapa de toda punição oficial por um crime que normalmente levaria à sua destruição.",
+    name: "Intocável",
+    points: 5,
+    source: "Players Guide",
+    tipo: "vantagem",
+  },
+  {
+    aliases: ["Weak-Willed", "Weak Willed"],
+    category: OUTROS,
+    description:
+      "Você não pode usar resistência ativa contra tentativas de influenciá-lo, mesmo quando percebe.",
+    name: "Vontade Fraca",
+    points: 2,
+    source: "Players Guide",
+    tipo: "defeito",
+  },
 ];
