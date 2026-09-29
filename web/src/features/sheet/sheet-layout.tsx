@@ -93,7 +93,7 @@ export function SheetLayout({ tabs }: { tabs: SheetTabsBase }) {
 
   return (
     <RuleDialogProvider>
-      <div className="min-h-screen pb-84 sm:pb-52">
+      <div className="min-h-screen pb-16 sm:pb-52">
         <div className="mx-auto max-w-[1440px] pb-5">
           {tabs.to === "/personagens/$id/$aba" && (
             <div className="flex flex-wrap items-center justify-between gap-x-4 gap-y-2 bg-blood px-4 py-3">
