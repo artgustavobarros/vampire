@@ -20,10 +20,6 @@ import { usePlayerStore } from "#/stores/player-store";
 import { BottomBar } from "./bottom-bar";
 import { DEFAULT_TAB, isSheetTab, type SheetTab, tabsFor } from "./tabs";
 
-/** Botão da faixa do Mestre: Karla caixa-alta com borda. */
-const BAR_BTN =
-  "flex min-h-9 cursor-pointer items-center border px-3 font-label font-semibold text-xs uppercase leading-none tracking-[.12em] focus-visible:outline-2 focus-visible:outline-white focus-visible:outline-offset-2";
-
 const MENU_ITEM =
   "cursor-pointer flex min-h-12 items-center border-line-soft border-b font-label font-semibold text-xs uppercase leading-none tracking-widest";
 
@@ -96,25 +92,8 @@ export function SheetLayout({ tabs }: { tabs: SheetTabsBase }) {
       <div className="min-h-screen pb-16 sm:pb-52">
         <div className="mx-auto max-w-[1440px] pb-5">
           {tabs.to === "/personagens/$id/$aba" && (
-            <div className="flex flex-wrap items-center justify-between gap-x-4 gap-y-2 bg-blood px-4 py-3">
-              <div className="min-w-0 basis-full truncate font-label font-semibold text-white text-xs uppercase leading-none tracking-[.12em] sm:flex-1 sm:basis-auto">
-                Modo Mestre · {name} · Ficha de jogador
-              </div>
-              <div className="ml-auto flex flex-none gap-2">
-                <Link
-                  className={cn(BAR_BTN, "border-white text-white")}
-                  to="/personagens"
-                >
-                  Lista de personagens
-                </Link>
-                <button
-                  className={cn(BAR_BTN, "border-white bg-white text-blood")}
-                  onClick={signOut}
-                  type="button"
-                >
-                  Sair
-                </button>
-              </div>
+            <div className="bg-blood px-4 py-3 font-label font-semibold text-white text-xs uppercase leading-none tracking-[.12em]">
+              Modo Mestre
             </div>
           )}
           <header className="flex items-center justify-between gap-3 border-line border-b px-4 py-2">

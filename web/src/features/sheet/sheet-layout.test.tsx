@@ -162,23 +162,14 @@ describe("cabeçalho e menu da ficha", () => {
   });
 
   it("Mestre: faixa acima do cabeçalho e cabeçalho sem MESTRE", async () => {
-    const router = renderLayout("dm", "/personagens/u1/caracteristicas");
+    renderLayout("dm", "/personagens/u1/caracteristicas");
     await screen.findByText("conteúdo");
     expect(within(header()).queryByText(MESTRE)).toBeNull();
-    const faixa = screen.getByText(
-      "Modo Mestre · Vitória Salles · Ficha de jogador"
-    ).parentElement as HTMLElement;
+    const faixa = screen.getByText("Modo Mestre");
     expect(faixa).toHaveClass("bg-blood");
     expect(header().previousElementSibling).toBe(faixa);
-    expect(
-      within(faixa).getByRole("button", { name: "Sair" })
-    ).toBeInTheDocument();
-
-    await userEvent.click(
-      within(faixa).getByRole("link", { name: "Lista de personagens" })
-    );
-    expect(await screen.findByText("Página da lista")).toBeInTheDocument();
-    expect(router.state.location.pathname).toBe("/personagens");
+    expect(within(faixa).queryByRole("link")).toBeNull();
+    expect(within(faixa).queryByRole("button")).toBeNull();
   });
 
   it("Mestre: abas dentro de /personagens", async () => {
