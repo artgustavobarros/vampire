@@ -1,6 +1,7 @@
 // Portado de design/reference/logic.js e atualizado com base no livro oficial V5 (disciplines and powers.pdf).
 // Poderes, Cerimônias, Rituais e Fórmulas marcados como "Guia do Jogador" vêm do Players Guide (disciplinas.pdf);
-// os marcados como "Tattered Facade" vêm do cap. 4 desse livro.
+// os marcados como "Tattered Facade" vêm do cap. 4 desse livro; os marcados como "Sabbat" vêm do
+// Sabbat: A Mão Negra (cap. 2, p. 46–53 da edição em espanhol).
 export const DISCIPLINES: readonly string[] = [
   "Animalismo",
   "Auspícios",
@@ -353,6 +354,36 @@ const ALCHEMY_POWERS: readonly PowerTemplate[] = [
     system:
       "Só funciona ingerida por mortais (ou preparada direto num mortal via Calcinatio). A poção fica no organismo por uma semana, com náusea e mal-estar. O alquimista pode ativá-la a qualquer momento com uma checagem de sangue; se não ativar, ela passa sem efeito. Ativada, a vítima tem um instante de pânico e consciência e explode numa torrente de sangue: quem estiver perto sofre dano Agravado igual ao dobro do Vigor da vítima, e quem estiver mais longe, metade. Vampiros atingidos testam frenesi de fome (Dificuldade 3).",
   },
+  // Fórmulas do Sabbat
+  {
+    cost: "Uma checagem de sangue",
+    description:
+      'Chamada com menos reverência de "protetor solar", a fórmula foi criada por Cainitas da Senda do Sol para levar a já considerável resistência do sangue-ralo à luz do sol a níveis quase mortais. Não dá imunidade total, mas estende o tempo que o usuário aguenta a luz do dia e disfarça as queimaduras imediatas.',
+    dicePool: "Vigor + Alquimia",
+    duration:
+      "Horas iguais aos sucessos no teste, ou até o próximo pôr do sol, o que vier primeiro",
+    ingredients:
+      "Sangue do alquimista, sangue humano sanguíneo e folhas frescas; alguns alquimistas misturam protetor solar comum, sem saber se ajuda de fato",
+    level: 1,
+    name: "Sombra Portátil",
+    rouse: true,
+    system:
+      "Teste Vigor + Alquimia ao ingerir a fórmula: o usuário suporta a luz do sol sem dano por tantas horas quanto os sucessos. Ao entardecer, teste de novo a mesma parada com Dificuldade igual às horas passadas ao sol. Uma falha causa 1 de dano Agravado; uma falha total, 2, já que a luz acumulada ferve o Sangue nas veias.",
+  },
+  {
+    cost: "Uma checagem de sangue",
+    description:
+      "Ferramenta terrível da Senda do Sol: prende a luz do sol no corpo do usuário para liberá-la como força destrutiva pela própria pele, queimando a si e à presa num abraço crepitante. Um usuário sozinho não basta para incinerar um vampiro, mas um grupo de Heliófilos que se imolam pode ser a ruína de neófitos e anciões.",
+    duration:
+      "Até ser liberada ou até o próximo pôr do sol, o que vier primeiro",
+    ingredients:
+      "Sangue do alquimista, sangue humano colérico, limalha de ouro, mercúrio e halogênios (normalmente cloro ou bromo); a fórmula precisa ficar exposta ao sol por várias horas antes do uso, e quem usa Athanor Corporis costuma se proteger com Sombra Portátil para isso",
+    level: 3,
+    name: "Queimadura sob Encomenda",
+    rouse: true,
+    system:
+      "Ativada, a fórmula transforma o alquimista numa bateria morta-viva de luz solar com uma única carga. Ele pode liberá-la quando quiser, ao tocar a pele de outro vampiro: sofre 2 de dano Agravado, e a vítima sofre dano Agravado igual à sua Gravidade da Perdição, como se passasse um turno inteiro exposta ao sol (meios de reduzir o dano, como Fortitude, valem). Se não for liberada antes, dispara sozinha no primeiro entardecer depois de ingerida, causando 2 de dano Agravado ao usuário.",
+  },
 ];
 
 const ANIMALISM_POWERS: readonly PowerTemplate[] = [
@@ -552,6 +583,19 @@ const ANIMALISM_POWERS: readonly PowerTemplate[] = [
     system:
       "O vampiro gasta a ação se concentrando e testa contra a Humanidade de um alvo próximo (mortais resistem com Vigor + Raciocínio). Conforme a margem: 0, a vítima perde 1 dado nas paradas Sociais e Mentais, com larvas se remexendo sob a pele, confusão, dor de cabeça e náusea em quem vê; 1, -2 dados em todas as paradas, e testes Sociais em geral falham sem rolagem (a Máscara fica muito ameaçada); 2 ou mais, as larvas viram moscas que explodem numa chuva de sangue, matando mortais, enquanto alvos sobrenaturais sofrem -2 dados, 2 de dano Superficial (dividido) e não conseguem falar. Uma vitória crítica também aumenta em 1 a Fome de um alvo vampiro. Usado em si mesmo, para intimidar ou enojar, o vampiro sofre -2 dados nos outros testes da cena.",
   },
+  // Sabbat
+  {
+    cost: "Uma checagem de sangue",
+    description:
+      "O medo de quem percebe que virou presa é único, e vampiros acostumados a sentir a Besta aprendem a reconhecê-lo. O vampiro fareja qualquer mortal da área que exale o cheiro do animal diante do predador e rastreia, rápido e em silêncio, quem ameaçaria sua existência clandestina.",
+    dicePool: "Determinação + Animalismo",
+    duration: "Uma cena (uma noite com vitória crítica)",
+    level: 3,
+    name: "Aroma da Presa",
+    rouse: true,
+    system:
+      "O vampiro fareja o ar e testa Determinação + Animalismo. Cada sucesso permite sentir e rastrear a posição de um mortal que testemunhou o que a Camarilla chamaria de quebra da Máscara, começando pelo mais próximo. Não funciona em mortais familiarizados o bastante com vampiros para sublimar esse medo, como carniçais, servos de vampiros ou caçadores devotos.",
+  },
 ];
 
 const AUSPEX_POWERS: readonly PowerTemplate[] = [
@@ -742,6 +786,20 @@ const AUSPEX_POWERS: readonly PowerTemplate[] = [
     rouse: true,
     system:
       'O usuário escolhe medos ou desejos e conversa alguns minutos com o alvo antes do teste. Contra mortais desprevenidos, Dificuldade 0; mortais com habilidades vampíricas e sobrenaturais resistem com Autocontrole + Subterfúgio. Sucessos: 1–2, uma noção geral ("riqueza", "sexo", "insetos", "solidão"); 3–5, algo mais específico ("entrar na bolsa de valores", "perder meu parceiro"); 6 ou mais, uma imagem nítida com contexto ou história. +1 sucesso se o objeto do desejo ou medo estiver presente, e outro se a conversa tocar no assunto (a vítima pode perceber a intenção, a menos que o usuário vença Autocontrole + Subterfúgio vs. Raciocínio + Percepção).',
+  },
+  // Sabbat
+  {
+    amalgam: "Dominação 1",
+    cost: "Uma checagem de sangue",
+    description:
+      "Fixando o olhar no alvo, o vampiro cria um elo sobrenatural com ele: por algumas noites, vê relances do alvo e do lugar onde ele está sempre que ele se vê numa superfície refletora. O alvo raramente sabe que está sendo observado, mas sente o perseguidor logo atrás de si no próprio reflexo. Não é exclusivo do Sabbat, mas a Mão Negra o usa para rastrear presas, sejam vampiros marcados ou testemunhas que precisam ser silenciadas.",
+    dicePool: "Determinação + Auspícios",
+    duration: "Uma noite, mais uma por sucesso (na margem, contra vampiros)",
+    level: 2,
+    name: "Busca Infalível",
+    rouse: true,
+    system:
+      "O usuário fixa o olhar no alvo, nem que seja por um segundo, e testa Determinação + Auspícios (Dificuldade 3 contra vampiros). Com o poder ativo, pode se concentrar um turno para ver a última vez que a vítima se viu, de propósito ou não, num espelho ou outra superfície refletora (cromo polido, vitrines, os óculos escuros de alguém). Ofuscação não protege, já que o poder depende da autopercepção da vítima. Reconhecer o lugar exige Inteligência + Manha (zona urbana) ou Inteligência + Sobrevivência (zona rural), Dificuldade 2 a 4. O alvo pode vislumbrar o perseguidor no reflexo com Raciocínio + Percepção (Dificuldade 4); só numa vitória crítica reconhece o rosto, ou lembra onde o viu se não o conhece.",
   },
 ];
 
@@ -1081,6 +1139,19 @@ const DOMINATE_POWERS: readonly PowerTemplate[] = [
     rouse: true,
     system:
       "Exige contato visual. Não há teste contra mortais; Membros e outros sobrenaturais resistem com Determinação + Performance. O afetado não consegue se comunicar: a voz não sai, a escrita fica ilegível, gestos e sinais tremem em espasmos e até bater nas paredes só produz um baque surdo.",
+  },
+  // Sabbat
+  {
+    cost: "Duas checagens de sangue",
+    description:
+      "Mais erradicação que manipulação da memória: o vampiro apaga cada lembrança da vítima e deixa uma efígie maleável. Ela mantém a maior parte do que aprendeu, mas esquece experiências, amigos, família, desejos e anseios, quase sempre para sempre. Até os mortos-vivos mais cruéis acham o poder excessivo, mas a Mão Negra o usa para preparar um servo cativo para o condicionamento ou refazer uma Cria promissora ao seu gosto.",
+    dicePool: "Determinação + Dominação vs. Autocontrole + Determinação",
+    duration: "Permanente",
+    level: 4,
+    name: "Tabula Rasa",
+    rouse: true,
+    system:
+      "Sustentando o olhar da vítima, o vampiro entra num conflito de Determinação + Dominação contra Autocontrole + Determinação, e precisa acumular dez sucessos ao longo da cena. A vítima deve estar contida ou subjugada: qualquer interrupção, ou uma vitória crítica dela, reinicia o conflito (e custa mais duas checagens de sangue). Ao fim, a vítima vira uma casca confusa e balbuciante: perde nome, história, a maior parte da personalidade, Convicções, Pilares e Ambição, e a maioria dos Antecedentes deixa de ter uso (as Vantagens ficam a critério do Narrador). Atributos, Habilidades e Disciplinas permanecem. A perda é permanente, mas um trauma envolvendo um antigo Pilar pode trazer parte do passado de volta (Determinação + Autocontrole, Dificuldade 5, a critério do Narrador). Usar este poder é tremendamente cruel e deve render Máculas na maioria das crônicas.",
   },
 ];
 
@@ -1447,6 +1518,21 @@ const OBFUSCATE_POWERS: readonly PowerTemplate[] = [
     rouse: true,
     system:
       "O usuário atrai o olhar da vítima e vence a disputa. O usuário e todos ao redor desaparecem para ela: não percebe ninguém, vivo ou morto, desvia deles sem perceber e não ouve seus sons. Só quem tentar feri-la fisicamente é percebido por um momento; a cada vez, faça outro teste de Disciplina, e se a vítima resistir, o efeito acaba.",
+  },
+  // Sabbat
+  {
+    amalgam: "Dominação 1",
+    cost: "Uma checagem de sangue",
+    description:
+      "O usuário impõe o efeito de Máscara de Mil Faces a um alvo que não sabe disso: ninguém, nem as pessoas mais próximas, o reconhece mais. Serve para quebrar alguém de forma sutil mas absoluta, isolando-o de todos os seus recursos e da sociedade até ele fazer qualquer coisa para escapar desse destino.",
+    dicePool: "Manipulação + Ofuscação vs. Carisma + Sagacidade",
+    duration: "Uma noite, mais uma por sucesso na margem",
+    level: 3,
+    name: "Máscara do Isolamento",
+    prerequisite: "Máscara de Mil Faces",
+    rouse: true,
+    system:
+      "O usuário fixa o olhar na vítima e vence a disputa. Enquanto durar, a vítima é tratada como se usasse Máscara de Mil Faces e ninguém a reconhece; ela pode tentar convencer família e amigos com Autocontrole + Persuasão, mas mesmo com provas a apreensão causada pelo poder torna isso muito difícil. Se o alvo descobrir o poder, o efeito acaba e não pode mais ser usado nele, já que depende da ignorância da vítima; como o uso não é evidente, pode ser reaplicado enquanto o usuário não revelar suas intenções. Usá-lo para quebrar alguém deve render Máculas na maioria das crônicas.",
   },
 ];
 
@@ -1966,6 +2052,20 @@ const PROTEAN_POWERS: readonly PowerTemplate[] = [
     system:
       "Leva um turno inteiro. A espécie é escolhida uma vez e fica fixa: criaturas pequenas, pouco maiores que uma mão (morcegos, corvos, ratos, baratas, aranhas, moscas, gafanhotos, cobras, sanguessugas). O vampiro ganha as características do enxame, inclusive velocidade e movimento, e percebe tudo o que ele percebe, mas não pode usar Disciplinas. A cada turno ataca alvos iguais à Potência de Sangue: eles sofrem -2 dados em todos os testes e 1 de dano por turno (Agravado para mortais, Superficial para sobrenaturais). Muitos mortais cercados testam Força de Vontade (Dificuldade 3, mais ou menos conforme fobias) ou fogem. Ataques convencionais quase não ferem o enxame, mas fogo, sol e efeitos de área funcionam. Se sobrar um único membro, o vampiro se regenera por completo; se não sobrar nenhum, sofre a morte final.",
   },
+  // Sabbat
+  {
+    amalgam: "Feitiçaria de Sangue 2",
+    cost: "Uma checagem de sangue",
+    description:
+      "O corpo do vampiro fica semipermeável e puxa para dentro o sangue inerte e as vísceras ao redor, alimentando a Besta. O resto dos cadáveres, já sem sangue, desfaz-se em cinzas ou some numa fumaça oleosa. A área fica visivelmente limpa, e o Sabbat usa o poder para cobrir seus rastros.",
+    dicePool: "Força + Protean",
+    duration: "Um turno por corpo",
+    level: 3,
+    name: "Absorção Visceral",
+    rouse: true,
+    system:
+      "Exige ao menos um cadáver fresco num raio de cerca de 5 metros; o estado dele não importa, mesmo que não passe de uma mancha vermelha. Teste Força + Protean: cada sucesso absorve o sangue e apaga os restos de um corpo, gastando um turno por corpo. Cada corpo sacia 1 de Fome, até no máximo o nível de Feitiçaria de Sangue, e o poder não reduz a Fome abaixo de 1. É eficiente para sumir com provas, mas nada discreto: o usuário vira um vórtice literal de sangue e vísceras. Restos de vampiros não são afetados.",
+  },
 ];
 
 const BLOOD_SORCERY_POWERS: readonly PowerTemplate[] = [
@@ -2125,6 +2225,29 @@ const BLOOD_SORCERY_POWERS: readonly PowerTemplate[] = [
     rouse: true,
     system:
       "O vampiro se concentra um turno e faz o teste. Contra sangue derramado (ou cadáveres), Dificuldade 2; criaturas vivas resistem com Vigor + Ocultismo (ou Fortitude). Vampiros e vitae não podem ser manipulados, só o sangue dos vivos. Para cada ponto de margem, controla o sangue por um turno, usando Manipulação + Feitiçaria de Sangue em todas as ações físicas da marionete; sangue sem corpo se solidifica, fica afiado e causa +2 de dano em combate. Alvos vivos continuam conscientes e podem falar; podem retomar o controle por um turno ao custo de 1 de dano Agravado. Objetos inanimados não são afetados. O feiticeiro precisa manter a concentração: movimentos simples e conversa são permitidos, mas ações ofensivas com parada de dados encerram o poder, a menos que tirem vitória crítica.",
+  },
+  // Poderes do Sabbat
+  {
+    cost: "Uma checagem de sangue",
+    description:
+      "O feiticeiro estende as propriedades de laço da sua vitae, que continua capaz de prender mesmo armazenada ou correndo no corpo de um carniçal: quem bebê-la fica afetado como se tivesse bebido do pulso do usuário. Os Tremere o criaram numa tentativa fracassada de aliviar sua Perdição, e o poder ressurgiu no Sabbat, onde a Disciplina é menos restrita a linhagens de clã.",
+    duration: "N/A",
+    level: 3,
+    name: "Laço Transitivo",
+    rouse: true,
+    system:
+      "O usuário ativa o poder ao evocar o Sangue, seja para armazená-lo ou para dá-lo a um carniçal; cada uso cobre o equivalente a três checagens de sangue. Quem for preso pelo Laço Transitivo não percebe os efeitos até pôr os olhos no regente, mas pode ficar inquieto e vê-lo em sonhos durante o sono diurno. Fora isso, o Laço de Sangue funciona normalmente.",
+  },
+  {
+    cost: "Uma ou mais Máculas (quando o Sangue é cobrado)",
+    description:
+      "Não importa a distância, sangue chama sangue. O vampiro exige de volta a vitae que deu a seus carniçais: onde quer que estejam, o Sangue se rebela nas veias deles e retorna misticamente à fonte, enquanto os corpos sofrem danos catastróficos. Anciões do Sabbat mantêm carniçais só para isso, como reserva de emergência disponível a qualquer hora e lugar.",
+    duration: "N/A",
+    level: 5,
+    name: "Reclamar a Vitae",
+    rouse: false,
+    system:
+      "O usuário se concentra um turno e escolhe quais servos vão pagar a dívida de Sangue; o carniçal não precisa estar presente e a distância não importa. Cada carniçal sacia 2 de Fome do vampiro e sofre 5 de dano Agravado, envelhecendo de forma rápida e irregular enquanto o Sangue tenta sair dele à força. Não exige checagem de sangue, mas deve render Máculas a quem não segue uma Senda.",
   },
   // Rituais
   {
@@ -2709,6 +2832,64 @@ const BLOOD_SORCERY_POWERS: readonly PowerTemplate[] = [
     system:
       "Faça o teste de Ritual antes de tirar a mistura do fogo. Numa vitória, o bálsamo dá o efeito temporário da Vantagem Deslumbrante (Vampiro: A Máscara, p. 179), que substitui e não soma com Beleza ou Deslumbrante inatas. É viciante: o sangue mortal necessário dobra a cada infusão (a oitava pede 128 pints, e depois não aumenta mais). A partir do segundo lote, o bálsamo fica tóxico após a primeira semana: 1 de dano Superficial por noite, em feridas necróticas onde foi aplicado, até preparar outro lote ou passar um mês sem ele por lote preparado.",
   },
+  // Rituais do Sabbat
+  {
+    cost: "Uma checagem de sangue",
+    description:
+      "Criaturas de ordem de vida inferior passam a achar repulsiva a área do ritual: animais a evitam, vermes fogem dela e até as plantas murcham. Protege contra espiões de Animalismo e impede infestações de bichos atraídos por vísceras, carniça e os restos que o Sabbat costuma deixar.",
+    duration: "Uma cena ou uma noite, o que terminar primeiro",
+    ingredients: "Vinagre ou álcool",
+    level: 1,
+    name: "Beelzebeatit",
+    process:
+      "O ritualista borrifa vinagre ou álcool no chão e gira no sentido anti-horário, circunscrevendo a área de onde as criaturas serão expulsas.",
+    rouse: true,
+    system:
+      "Num sucesso, criaturas vivas de intelecto animal ou inferior deixam às pressas uma área de uns 100 metros quadrados. Nada impede uma criatura dirigida ou controlada de voltar, mas ela se destaca por causa da expulsão; por vontade própria, só voltam se estiverem raivosas ou se não tiverem como sair sem atravessá-la.",
+  },
+  {
+    cost: "Uma checagem de sangue",
+    description:
+      "O ritual perturba violentamente as correntes elétricas, causando curto-circuito ou fundindo toda a fiação por perto. Serve para derrubar alarmes, vigilância e iluminação, mas a discrição dura pouco: incêndios costumam vir em seguida, o que muitos bandos do Sabbat consideram mais uma vantagem que um defeito.",
+    duration: "Instantânea",
+    ingredients: "Uma moeda de cobre",
+    level: 3,
+    name: "Ruína Galvânica",
+    process:
+      "O conjurador unta a moeda com o próprio Sangue, deixa-a cair no chão e pisa nela como quem apaga um cigarro. Num sucesso, a moeda quebra como porcelana e uma corrente sanguínea destrói os sistemas elétricos ao redor.",
+    rouse: true,
+    system:
+      "Toda a fiação da área para de funcionar na hora, inclusive circuitos isolados como carros elétricos e geradores de emergência ligados ou acionados no minuto seguinte. A área equivale a um armazém grande ou um prédio de três andares, e cada prédio adicional aumenta a Dificuldade em 1. Numa vitória crítica o apagão é discreto; nos outros casos, causa pelo menos um incêndio e descargas de estática que disparam alto-falantes, alarmes de carro e outros aparelhos barulhentos.",
+  },
+  {
+    cost: "Uma checagem de sangue",
+    description:
+      "Baseado nas propriedades sanguinárias da Vaulderie, o ritual permite ao Sacerdote do bando dividir a Potência de Sangue com o bando e reforça sua capacidade de manter os companheiros na linha.",
+    duration: "Uma noite",
+    ingredients: "Uma unha do Sacerdote do bando",
+    level: 3,
+    name: "Vigor Comunal",
+    process:
+      "O Sacerdote arranca uma unha e a quebra em pedaços, um por membro do bando. Ele põe o próprio pedaço no cálice da Vaulderie e os outros põem os seus sob a língua; num sucesso, os pedaços se dissolvem no Sangue bebido na Vaulderie.",
+    rouse: true,
+    system:
+      "Além dos efeitos da Vaulderie, a Potência de Sangue dos membros do bando sobe ao nível da do Sacerdote oficiante, e o Sacerdote ganha três dados em testes de Dominação ou Presença contra os outros membros.",
+  },
+  {
+    cost: "Uma checagem de sangue",
+    description:
+      "Tarefa colossal e demorada: constrói um portal que desafia a distância e leva vários vampiros a lugares muito longe em instantes. Só se conhece um exemplo, mas os feiticeiros do Sabbat acham que é questão de tempo até erguerem outros para ataques-relâmpago no coração dos domínios de seitas rivais.",
+    duration: "Até voltarem tantos viajantes quantos saíram",
+    ingredients:
+      "Tudo o que for preciso para construir uma cópia do destino (areia, argamassa, cimento, metal, barro...); um mortal sacrificado por viajante e um vampiro sacrificado na ativação",
+    level: 5,
+    name: "Portal Simulacro",
+    process:
+      "O portal precisa ser uma cópia exata do destino (um prédio, porão, sótão ou outro lugar com uma estrutura que possa servir de passagem). Espiões passam semanas documentando o lugar, trazendo amostras de materiais e incontáveis imagens enquanto a réplica é construída (quanto mais remota, mais segura) e consagrada com muito sangue. Preparar o portal exige sacrificar ao menos um mortal por viajante previsto, espalhando os restos pelo simulacro; a ativação final exige sacrificar um vampiro. Sem vítima adequada, a sorte cai sobre o vampiro presente menos capaz de resistir, embora alguns ritualistas proponham Abraçar um sacrifício mortal para isso.",
+    rouse: true,
+    system:
+      "Num sucesso, o portal deixa passar o número desejado de vampiros e o mesmo número (não necessariamente os mesmos) voltar. Até esse número ser igualado, fica aberto indefinidamente, embora nada revele o destino. Mortais não conseguem usá-lo: para eles, parece só um monumento repulsivo.",
+  },
 ];
 
 const OBLIVION_POWERS: readonly PowerTemplate[] = [
@@ -2950,6 +3131,19 @@ const OBLIVION_POWERS: readonly PowerTemplate[] = [
     system:
       "Com a vítima bem visível, o vampiro faz gestos convidativos e vence a disputa: a entidade sombria se separa, causando 1 de dano Agravado ao hospedeiro. O doppelganger tem os mesmos Atributos Físicos e Habilidades do hospedeiro, nenhuma Força de Vontade e 6 de Vitalidade, e sofre dano como vampiro. Tem os poderes sobrenaturais físicos do hospedeiro, como Disciplinas, com metade dos níveis (arredondado para baixo), pagando os custos com Vitalidade. Seu único objetivo é destruir o hospedeiro, e ele ignora todo o resto.",
   },
+  // Sabbat
+  {
+    cost: "Uma checagem de sangue e uma Mácula",
+    description:
+      "O usuário transforma a sombra da vítima numa porta temporária através do Oblívio: ela parece cair na própria sombra e reaparece despencando da sombra do usuário, direto nos braços dele. A breve viagem pelo fim de todas as coisas costuma bastar para traumatizá-la e submetê-la, mas é bom estar pronto caso a presa reaja com violência.",
+    dicePool: "Raciocínio + Oblívio vs. Destreza + Raciocínio",
+    duration: "Instantânea",
+    level: 4,
+    name: "Garra Umbrosa",
+    rouse: true,
+    system:
+      "O vampiro precisa ver claramente a vítima e a sombra dela, e vence a disputa para abrir a passagem sob o alvo; a critério do Narrador, uma vítima parada e distraída é pega automaticamente. Ela reaparece caindo da sombra do usuário (o poder não funciona se ele não tiver sombra). Um mortal despreparado fica aterrorizado e provavelmente catatônico; um vampiro testa frenesi de terror ou de fúria, à escolha do Narrador, com Dificuldade 4.",
+  },
   // Cerimônias do Guia do Jogador
   {
     cost: "Uma checagem de sangue",
@@ -3172,6 +3366,56 @@ const OBLIVION_POWERS: readonly PowerTemplate[] = [
     rouse: true,
     system:
       "O vampiro faz a checagem de sangue ao abrir as veias e uma disputa de Cerimônia contra Vigor + Determinação do mortal drenado; se perder, as sombras recuam. Numa vitória, a cada cinco minutos o alvo perde 10 anos de vida para o outro (na proporção de 1:1 entre parentes ou pessoas muito ligadas; se não, uma década para cada três anos recebidos). Quando o alvo esgota a expectativa de vida (tradicionalmente 70 anos), deteriora rapidamente. O receptor fica com aparência saudável e, depois da Cerimônia, envelhece e adoece na metade da velocidade até gastar os anos extras, sem outra proteção contra a morte. Para cortar o vínculo antes de o alvo virar pó, é preciso um teste de Cerimônia com Dificuldade 6, ou simplesmente matar o mortal. Seja como for, quem a realiza provavelmente ganha uma ou mais Máculas.",
+  },
+  // Cerimônias do Sabbat
+  {
+    cost: "Uma checagem de sangue",
+    description:
+      "Com um pacto com um espírito da morte, o conjurador ganha um curto período de imunidade a toda vigilância: a entidade manipula as câmeras ao redor dele.",
+    dicePool: "Determinação + Oblívio",
+    duration: "Uma cena, ou até a malha ser retirada",
+    ingredients: "Um pedaço pequeno de malha de alumínio",
+    level: 2,
+    name: "Cegar o Olho de Liga",
+    prerequisite: "Sombra Projetada",
+    process:
+      "O usuário passa uma cena isolado, contatando o espectro e prendendo-o à malha, que fica guardada num recipiente à prova de luz. O efeito começa quando ela é retirada e presa à pele ou à roupa do conjurador.",
+    rouse: true,
+    system:
+      "O teste de Cerimônia só é feito quando o efeito é ativado e, se possível, o resultado fica em segredo do jogador. Num sucesso, as câmeras ao redor mostram interferência na imagem dele, mas o resto aparece normalmente.",
+  },
+  {
+    cost: "Uma checagem de sangue",
+    description:
+      "Alguns lugares parecem mal-assombrados e arrepiam mortais e vampiros; este é de outra categoria. O terror miasmático é tanto que a maioria das criaturas que respiram mal consegue respirar, quanto mais ficar. O Sabbat o usa para afastar visitantes indesejados dos refúgios comunais: não expulsa vampiros invasores, mas a maioria dos mortais desvia sem perceber ou arranja desculpas para checar os boatos sobre o lugar (amanhã... provavelmente).",
+    dicePool: "Determinação + Oblívio",
+    duration: "Indefinida",
+    ingredients:
+      "Mortais submetidos a terror abjeto e sofrimento; quanto mais, melhor",
+    level: 3,
+    name: "Assombração Atormentada",
+    prerequisite: "Aura de Decadência",
+    process:
+      'Começa com uma "festa": mortais são confinados no lugar e aterrorizados e torturados até a morte. Os restos despedaçados de suas almas, pouco mais que impulsos de medo e repulsa, ficam presos ao lugar, os ossos são enterrados no chão e eles passam a dividir o tormento com quem entrar sem convite.',
+    rouse: true,
+    system:
+      "Mortais que entram na área (até um prédio de dois andares) são tomados por um terror irracional e precisam de um teste de Autocontrole + Determinação a cada turno para ficar. Numa falha, aceitam qualquer desculpa para sair; numa falha total, fogem gritando. Vampiros são menos afetados, mas cada cena no lugar exige um teste de frenesi de terror.",
+  },
+  {
+    cost: "Uma checagem de sangue",
+    description:
+      "A maioria dos efeitos entrópicos do Oblívio só atinge mortais, mas esta Cerimônia infecta o sangue de um receptáculo e transforma um mortal aparentemente saudável em veneno para os filhos de Caim.",
+    dicePool: "Determinação + Oblívio",
+    duration: "Até a noite seguinte, quando o mortal morre",
+    ingredients: "A saliva do vampiro",
+    level: 4,
+    name: "Receptáculo Conspurcado",
+    prerequisite: "Praga Necrótica",
+    process:
+      "O vampiro só precisa pôr uma gota da própria baba na pele da vítima, dando-a de comer ou esfregando por contato físico.",
+    rouse: true,
+    system:
+      "A vítima não tem sintomas nem sabe o que carrega. Quem se alimentar dela também não percebe nada além de um sangue estranho e rançoso (Narradores generosos permitem Raciocínio + Sobrevivência, Dificuldade 3, para notar algo errado e parar). Depois de se alimentar, o vampiro ganha Fome em vez de saciá-la, na proporção de 1 para 1 (quem saciaria 3 ganha 3), o que provavelmente o põe em risco de frenesi. Com ou sem alimentação, o mortal morre dormindo na noite seguinte; a única pista é uma mancha de... mofo? e um suor noturno acre.",
   },
 ];
 

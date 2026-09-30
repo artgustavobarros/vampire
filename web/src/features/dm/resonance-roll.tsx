@@ -9,6 +9,7 @@ import {
   rollDie,
   rollResonance,
 } from "#/rules/resonance";
+import { CompulsionRoll } from "./compulsion-roll";
 import { NpcGenerator } from "./npc-generator";
 import { ChipGroup, ResonanceResult } from "./resonance-parts";
 
@@ -16,8 +17,8 @@ const LABEL =
   "font-label font-semibold text-xs uppercase leading-none tracking-[.12em]";
 
 /**
- * Aba Ações do Mestre: Rolagem de Ressonância e Gerador de NPC. `d` só é
- * trocado nos testes.
+ * Aba Ações do Mestre: Rolagem de Ressonância, Rolagem de Compulsão e Gerador
+ * de NPC. `d` só é trocado nos testes.
  */
 export function ResonanceRollTab({ d = rollDie }: { d?: Die }) {
   const [escolha, setEscolha] = useState<ResonanceChoice>({
@@ -94,6 +95,7 @@ export function ResonanceRollTab({ d = rollDie }: { d?: Die }) {
           <ResonanceResult roll={roll} />
         </div>
       </div>
+      <CompulsionRoll d={d} />
       <NpcGenerator d={d} />
     </>
   );

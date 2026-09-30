@@ -170,9 +170,7 @@ describe("rotas do Mestre", () => {
     renderAt(`/personagens/${ana.id}/rolagens`);
     expect(await screen.findByText("conteúdo da aba")).toBeInTheDocument();
     expect(screen.getByText("Vitória Salles")).toBeInTheDocument();
-    expect(
-      screen.getByText("Modo Mestre · Vitória Salles · Ficha de jogador")
-    ).toBeInTheDocument();
+    expect(screen.getByText("Modo Mestre")).toBeInTheDocument();
     // a ficha fica fora do painel
     expect(screen.queryByText("Sair da conta")).toBeNull();
     expect(useCharacterStore.getState().owner).toEqual({
@@ -183,13 +181,14 @@ describe("rotas do Mestre", () => {
     });
   });
 
-  it("Sair na faixa do Mestre encerra a sessão", async () => {
+  it("Sair no menu da ficha encerra a sessão", async () => {
     const ana = fakeApi.seed({
       email: "ana@exemplo.com",
       sheet: { ...blankSheet(), criada: true, nome: "Vitória Salles" },
     });
     const router = renderAt(`/personagens/${ana.id}/caracteristicas`);
     await screen.findByText("conteúdo da aba");
+    await userEvent.click(screen.getByLabelText("Abrir menu"));
     await userEvent.click(screen.getByRole("button", { name: "Sair" }));
     expect(await screen.findByText("Página de entrada")).toBeInTheDocument();
     expect(router.state.location.pathname).toBe("/entrar");
@@ -266,7 +265,7 @@ describe("rotas do Mestre", () => {
     const router = renderAt(`/personagens/${ana.id}/rodada`, "dm", {
       realAba: true,
     });
-    await screen.findByText("Modo Mestre · Vitória Salles · Ficha de jogador");
+    await screen.findByText("Modo Mestre");
     await vi.waitFor(() =>
       expect(router.state.location.pathname).toBe(
         `/personagens/${ana.id}/caracteristicas`

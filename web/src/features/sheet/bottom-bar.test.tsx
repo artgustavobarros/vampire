@@ -71,4 +71,29 @@ describe("barra inferior", () => {
       await screen.findByRole("dialog", { name: "Força de Vontade" })
     ).toBeInTheDocument();
   });
+
+  it("barra recolhida resume caixas vazias, Fome e Vontade", () => {
+    renderBar({ fome: 1, vit: [1, 2, 0, 0, 0] });
+    const toggle = screen.getByRole("button", { name: "Expandir barra" });
+    expect(toggle).toHaveAttribute("aria-expanded", "false");
+    expect(within(toggle).getByText("Vit 3/5")).toBeInTheDocument();
+    expect(within(toggle).getByText("Fome 1")).toBeInTheDocument();
+    expect(within(toggle).getByText("Vont 5/5")).toBeInTheDocument();
+  });
+
+  it("expande e recolhe a barra", async () => {
+    renderBar();
+    expect(
+      screen.queryByRole("button", { name: "Recolher barra" })
+    ).not.toBeInTheDocument();
+    await userEvent.click(
+      screen.getByRole("button", { name: "Expandir barra" })
+    );
+    const collapse = screen.getByRole("button", { name: "Recolher barra" });
+    expect(collapse).toHaveAttribute("aria-expanded", "true");
+    await userEvent.click(collapse);
+    expect(
+      screen.queryByRole("button", { name: "Recolher barra" })
+    ).not.toBeInTheDocument();
+  });
 });
